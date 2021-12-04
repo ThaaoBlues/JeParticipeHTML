@@ -121,14 +121,12 @@ class DataBase:
         users_match = []
         for user in self.get_users():
           if SequenceMatcher(isjunk=None,a=user,b=query).ratio() > 0.60:
-              users_match.append({"username":user,"followers":self.get_followers(self.get_user_id(user)),"type":self.get_type(user)})
+              users_match.append({"username":user,"followers":self.get_followers(user),"type":self.get_type(user)})
         return users_match
-    
     
     def get_type(self,username:str)->str:
         return self.__read_from("user",username,"type")
-
-          
+       
     def is_verified(self,username:str):
         return True if self.__read_from("user",username,"verified") == "True" else False
     
@@ -155,8 +153,8 @@ class DataBase:
         L = [p for p in L if p != ""]
         return L
     
-    def get_followers(self,user_id:str)->list:
-        return self.__list_from_str(self.__read_from("user_id",user_id,"followers"))    
+    def get_followers(self,username:str)->list:
+        return list(filter(None,self.__list_from_str(self.__read_from("user",username,"followers"))))
     
     def follow(self,user_id:str,username:str):
         self.__append_to("user_id",user_id,"following",username)
