@@ -40,31 +40,36 @@
         
         {%for post in sondages%}
 
-            <div name="post" class="card mt-4" style="width: 400px;">
-              <div class="card-title mxy-auto mb-2">{{post.header}}</div>
-              
-                <ul class="list-group list-group-flush">
+        <div name="post" class="card mt-4" style="width: 400px;">
+          <h6 class="card-title d-flex justify-content-left" style="height: 3px;">Publié par {{post.author}}</h6>
+          <hr>
+          <div clas="card-body">
 
-                    {%for choix in post.choix%}
-                      {%if post.vote%}
-                        <a class="btn btn-primary mt-2">{{choix}} : {{post.resultats[choix]}}% des votes.</a>
+            <p class="text-break">{{post.header}}</p>
+            <ul class="list-group list-group-flush">
 
-                      {%else%}
-                      <form action="add_vote" method="POST">
-                        <div class="row">
-                          <input name="author" class="d-none" value="{{post.author}}"  hidden>
-                          <input name="post_id" class="d-none" value="{{post.id}}"  hidden>
-                          <input name="choix" class="d-none" value="{{choix}}"  hidden>
-                        </div>
-                        <div class="row">
-                          <button class="btn btn-primary mt-2" type="submit">{{choix}}</button>
-                        </div>
-                      </form>
-                      {%endif%}
-                    {%endfor%}
-                  </ul>
-            </div> 
+              {%for choix in post.choix%}
+                  {%if post.vote%}
+                    <a class="btn btn-primary mt-2">{{choix}} : {{post.resultats[choix]}}% des votes.</a>
+
+                  {%else%}
+                  <form action="add_vote" method="POST">
+                    <div class="row">
+                      <input name="author" class="d-none" value="{{post.author}}"  hidden>
+                      <input name="post_id" class="d-none" value="{{post.id}}"  hidden>
+                      <input name="choix" class="d-none" value="{{choix}}"  hidden>
+                    </div>
+                    <div class="row">
+                      <button class="btn btn-primary mt-2 " type="submit">{{choix}}</button>
+                    </div>
+                  </form>
+                  {%endif%}
+                {%endfor%}
+              </ul>
+          </div> 
         {%endfor%}
+      </div>
+              
 
 
       </div>

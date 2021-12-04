@@ -157,7 +157,7 @@ def recherche():
         following = db.get_following(current_user.id)
         
         for user in db.match_users(req):
-            profils.append({"username":user["username"],"verified":db.is_verified(user["username"]),"followers":len(user["followers"])})
+            profils.append({"username":user["username"],"verified":db.is_verified(user["username"]),"followers":len(user["followers"]),"type": user["type"]})
 
         return render_template("search.html",following = following,profils=profils)
     else:
@@ -215,8 +215,8 @@ def post():
 @app.route('/register',methods=["POST"])
 def register():
     
-    
-    if (request.form.get("username",None) != None) and (request.form.get("password",None) != None):
+    print(request.form.get("type"))
+    if (request.form.get("username",None) != None) and (request.form.get("password",None) != None) and (request.form.get("type",default=None) in db.users_types):
         
         username = db.sanitize(request.form.get("username"))
         
@@ -224,7 +224,7 @@ def register():
         if db.username_exists(username):
             return render_template("page_message.html",message="Ce nom d'utilisateur existe déjà :/ Ne vous inquiétez pas, vous avez assez d'imagination pour en trouver un autre ;)",texte_btn="Revenir à la page d'enregistrement",lien="/login")
         
-        db.register_user(username,sha256_crypt.hash(request.form.get("password")),franceconnect=True)
+        db.register_user(username,sha256_crypt.hash(request.form.get("password")),type=request.form.get("type"),franceconnect=True)
       
         return render_template("page_message.html",message="Vous avez bien été enregistré ! Clickez sur le bouton pour revenir à la page de connexion ;)",texte_btn="Revenir à l'acceuil",lien="/login")
     

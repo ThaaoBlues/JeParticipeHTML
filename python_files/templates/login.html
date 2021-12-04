@@ -45,7 +45,7 @@
 
         <div class="row justify-content-md-center mt-5">
 
-             <form action='register' method='POST' class="col-md-auto">
+            <form action='register' method='POST' class="col-md-auto">
 
                 <div class="row justify-content-md-center mt-3">
                     <input type='text' name='username' id='username' placeholder="nom d'utilisateur" required/>
@@ -55,8 +55,34 @@
                 <div class="row justify-content-md-center mt-3">
                     <input type='password' name='password' id='password' placeholder='mot de passe' required/>
                 </div>
+
+
                 <div class="row justify-content-md-center">
-                    <button type='submit'  class="text-center mt-4 btn btn-primary" name='submit'>S'enregistrer</button>
+
+                    <div class="dropdown btn-group mt-3">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        Selectionnez votre statut
+                    </button>
+                    <ul class="dropdown-menu justify-content-center radio-group" aria-labelledby="dropdownMenuButton1" style="width: 480px;">
+                        <li><input name="type" type="radio" class="form-check-input" value="entreprise" id="c_entreprise" required>
+                            <label class="form-check-label" for="c_entreprise">Entreprise</label>
+                        </li>
+                        
+                        <li><input name="type" type="radio" class="form-check-input" value="institution publique" id="c_publique" resquired>
+                            <label class="form-check-label" for="c_publique">Institution Publique</label>
+                        </li>
+
+                        <li><input name="type" type="radio" class="form-check-input" value="utilisateur" id="c_user" required>
+                            <label class="form-check-label" for="c_user">Utilisateur normal</label>
+                        </li>
+                    </ul>
+                    </div>
+
+                </div>
+                
+
+                <div class="row justify-content-md-center mt-1">
+                    <button type='submit'  class="text-center mt-4 btn btn-primary" name='submit'>S'inscrire</button>
                 </div>
 
             </form>

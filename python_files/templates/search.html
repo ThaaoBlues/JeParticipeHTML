@@ -47,7 +47,12 @@
                         {%if profil["verified"]%}
                             <i class="bi bi-person-check ml-2" style = "color:blue;"></i>
                         {%endif%}
-                         ( suivi par {{profil["followers"]}} personne(s) )
+                        {%if profil["type"] == "entreprise"%}
+                            <i class="bi bi-building ml-2" style = "color:blue;"></i>
+                        {%elif profil["type"] == "institution publique"%}
+                            <i class="bi bi-flag-fill ml-2" style = "color:blue;"></i>
+                        {%endif%}
+                         ( suivi par {{profil["followers"]-1}} personne(s) )
                     </div>
                     {%if not profil["username"] in following%}
                         <button class="btn btn-success mt-2" type="submit">S'abonner</button>

@@ -7,11 +7,9 @@ from difflib import SequenceMatcher
 
 
 class DataBase:
-    """modèle : [username (str),user_id (str),following (list[str]),post (str)]
-    """
     
     def __init__(self) -> None:
-        pass
+        self.users_types = ["entreprise","institution publique","utilisateur"]
     
     def add_post(self,user_id:str,post:dict):
         
@@ -123,9 +121,14 @@ class DataBase:
         users_match = []
         for user in self.get_users():
           if SequenceMatcher(isjunk=None,a=user,b=query).ratio() > 0.60:
-              users_match.append({"username":user,"followers":self.get_followers(self.get_user_id(user))})
+              users_match.append({"username":user,"followers":self.get_followers(self.get_user_id(user)),"type":self.get_type(user)})
         return users_match
-           
+    
+    
+    def get_type(self,username:str)->str:
+        return self.__read_from("user",username,"type")
+
+          
     def is_verified(self,username:str):
         return True if self.__read_from("user",username,"verified") == "True" else False
     
@@ -139,10 +142,10 @@ class DataBase:
         # to archive each 24h
         self.__write_to_all("post","")
         
-    def register_user(self,username:str,password="",franceconnect=False):
+    def register_user(self,username:str,password="",type="utilisateur",franceconnect=False):
         
         user_id = hex(len(self.get_users())+1)
-        self.__add_row([username,user_id,"[]","[]","[]","[]",password,franceconnect,"utilisateur"])
+        self.__add_row([username,user_id,"[]","[]","[]","[]",password,franceconnect,type])
     
     def delete_user(self,user_id:str):
         self.__write_to("user_id",user_id,"","",delete=True)

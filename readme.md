@@ -1,4 +1,4 @@
-# JEPARTICIPE
+# JeParticipe
 
 
 ## What is it ?
