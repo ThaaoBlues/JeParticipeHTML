@@ -238,7 +238,7 @@ def page_not_found(error):
 
 
 
-
+"""
 if __name__ == "__main__":
     
     if not path.exists("database.csv"):
@@ -246,4 +246,4 @@ if __name__ == "__main__":
     
     app.run(host="0.0.0.0",port="80",debug=True)
 
-    
+"""
