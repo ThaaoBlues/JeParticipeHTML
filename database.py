@@ -1,15 +1,17 @@
 import csv
-from re import I, sub
+from re import sub
 from shutil import move
 from json import dumps, loads
 from post import Post
 from difflib import SequenceMatcher
-
+from os import path
 
 class DataBase:
     
     def __init__(self) -> None:
         self.users_types = ["entreprise","institution publique","utilisateur"]
+        if not path.exists("database.csv"):
+            self.__init_csv()
     
     def add_post(self,user_id:str,post:dict):
         
