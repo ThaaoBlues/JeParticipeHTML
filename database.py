@@ -164,9 +164,13 @@ class DataBase:
     def unfollow(self,user_id:str,username:str):
         self.__remove_from("user_id",user_id,"following",username)
     
-    def get_posts(self,user_id:str)->list:
-        extracted_posts = self.__read_from("user_id",user_id,"post").replace("'[]',","")
+    def get_posts(self,user_id:str,username=False)->list:
         
+        if username:
+            extracted_posts = self.__read_from("user",user_id,"post").replace("'[]',","")
+        else:
+            extracted_posts = self.__read_from("user_id",user_id,"post").replace("'[]',","")
+
         extracted_posts = extracted_posts.replace("'{","{").replace("}'","}").replace("'[","").replace("]'","")
 
         extracted_posts = extracted_posts[1:-1]

@@ -99,14 +99,38 @@ def login():
     else:
         return redirect(url_for("login"))
 
+
+
+@app.route('/partage',methods=["GET"])
+def shared():
+    
+    if (request.args.get("username",default=None) != None) and (request.args.get("post_id",default=None) != None):
+        
+        username = db.sanitize(request.args.get("username",type=str))
+        
+        # check if post_id is an int
+        try:
+            post_id = request.args.get("post_id",type=int)
+        except ValueError:
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+        
+        posts = db.get_posts(username,username=True)
+        if db.username_exists(username) and  (post_id <= len(posts)):
+            return render_template("share_post.html",post = posts[post_id])
+            
+        else:
+            return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'acceuil",lien="/login")
+
+    else:
+        return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'acceuil",lien="/login")
+    
+
 @app.route('/home',methods=['GET'])
 @login_required
 def home():    
     sondages = db.generate_tl(current_user.id)
         
     return render_template("home.html",username = current_user.name,sondages = sondages)
-
-
 
 @app.route("/add_vote",methods=["POST"])
 @login_required
@@ -237,7 +261,6 @@ def page_not_found(error):
     return redirect(url_for("home"))
 
 
-"""
 if __name__ == "__main__":
     
     if not path.exists("database.csv"):
@@ -245,4 +268,3 @@ if __name__ == "__main__":
     
     app.run(host="0.0.0.0",port="80",debug=True)
     
-"""
