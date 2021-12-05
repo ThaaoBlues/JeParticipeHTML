@@ -18,16 +18,16 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
-      <a class="navbar-brand" href="/home">JeParticipe</a>
+      <a class="navbar-brand mb-2" href="/home">JeParticipe</a>
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link active" href="/logout">Déconnection ( {{username}} )</a>
+          <button class="btn btn-primary active mb-2" onclick="window.location.href='/logout'">Déconnection ( {{username}} )</Button>
         </li>
       </ul>
-     <button class="btn btn-success btn-primary me-2" onclick="window.location.href='/creer_sondage'">Créer un sondage</button>
+     <button class="btn btn-success btn-primary me-2 mb-2" onclick="window.location.href='/creer_sondage'">Créer un sondage</button>
       <form class="d-flex" action="recherche" method="GET">
-        <input class="form-control me-2" type="search" placeholder="Rechercher" aria-label="Search" name="req">
-        <button class="btn btn-outline-success" type="submit">Rechercher</button>
+        <input class="form-control me-2 mb-2" type="search" placeholder="Rechercher" aria-label="Search" name="req">
+        <button class="btn btn-outline-success mb-2" type="submit">Rechercher</button>
       </form>
     </div>
   </div>
