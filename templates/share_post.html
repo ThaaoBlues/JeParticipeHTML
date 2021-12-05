@@ -30,12 +30,16 @@
 
       <div class="card-columns">
 
-        <div name="post" class="card mt-4" style="width: 400px;">
+        <div name="post" class="card mt-4 mx-3" style="width: auto;">
             <h6 class="card-title d-flex justify-content-left" style="height: 3px;">
                 <a class="bi bi-share-fill mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author}}',{{post.id}});"></a>
               Publié par {{post.author}}
             </h6>          
             <hr>
+
+
+            <div class="row mx-3 justify-content-md-center">
+
           <div clas="card-body">
 
             <p class="text-break text-center">{{post.header}}</p>
@@ -49,7 +53,8 @@
                   </form>
                 {%endfor%}
               </ul>
-          </div> 
+            </div>
+          </div>
       </div>
               
 
