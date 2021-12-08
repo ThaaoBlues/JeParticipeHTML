@@ -33,10 +33,14 @@ class DataBase:
                 
         self.__write_to("user",post_author,"post_stats",dumps(posts))
                    
-    def get_posts_stats(self,post_author:str)->list:
+    def get_posts_stats(self,post_author:str,username=False)->list:
         
-        extracted_posts = self.__read_from("user",post_author,"post_stats").replace("'[]'","")
-                
+        if username:
+            extracted_posts = self.__read_from("user",post_author,"post_stats").replace("'[]'","")
+        else:
+            extracted_posts = self.__read_from("user_id",post_author,"post_stats").replace("'[]'","")
+        
+              
         extracted_posts = extracted_posts.replace("'{","{").replace("}'","}").replace("'[","").replace("]'","")
 
         extracted_posts = extracted_posts[1:-1]
@@ -69,7 +73,7 @@ class DataBase:
     def get_results(self,post_author:str,post_id:int,force_post=False)->list:
         
         if not force_post:
-            stats = self.get_posts_stats(post_author)[post_id]
+            stats = self.get_posts_stats(post_author,username=True)[post_id]
         else:
             stats = force_post
         
@@ -104,17 +108,16 @@ class DataBase:
         all_post = []
                 
         for follow in self.get_following(user_id):
-            follow_id = self.get_user_id(follow)
-            
-            user_posts = self.get_posts(follow_id)
+                        
+            user_posts = self.get_posts(follow,username=True)
             
             
             for i in range(len(user_posts)):
             
-                stats = self.get_posts_stats(follow)[i]
+                stats = self.get_posts_stats(follow,username=True)[i]
             
                 if user_posts[i] != None:
-                    all_post.append(Post(user_posts[i]["header"],user_posts[i]["choix"],user_posts[i]["author"],vote=(user_id in stats["votants"]),resultats = self.get_results(follow,i,force_post=stats),id=i))
+                    all_post.append(Post(user_posts[i]["header"],user_posts[i]["choix"],user_posts[i]["author"],results=self.get_results(follow,i,force_post=stats),vote=(user_id in stats["votants"]),id=i))
                     
             
         return all_post
@@ -137,6 +140,16 @@ class DataBase:
        
     def get_user_id(self,username:str)->str:
        return self.__read_from("user",username,"user_id")
+   
+   
+    def delete_post(self,user_id:str,post_id:str,username=False):
+        
+        posts = self.get_posts(user_id,username=username)
+        posts.pop(post_id)
+        stats = self.get_posts_stats(user_id,username=username)
+        stats.pop(post_id)
+        self.__write_to("user_id",user_id,"post",dumps(posts))
+        self.__write_to("user_id",user_id,"post_stats",dumps(stats))       
     
     def archive_all(self):
         # to archive each 24h
@@ -146,6 +159,7 @@ class DataBase:
         
         user_id = hex(len(self.get_users())+1)
         self.__add_row([username,user_id,"[]","[]","[]","[]",password,franceconnect,type])
+        self.add_follower(user_id,username)
     
     def delete_user(self,user_id:str):
         self.__write_to("user_id",user_id,"","",delete=True)
@@ -426,4 +440,11 @@ class DataBase:
         return sub('\W+','', string)
     
     def __list_from_str(self,string:str)->list:
+        
         return string.strip('][').replace("\"","").replace("'","").replace(" ","").split(',')
+    
+    
+    
+    
+    
+    

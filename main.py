@@ -1,4 +1,5 @@
 
+from post import Post
 from passlib.handlers.sha2_crypt import sha256_crypt
 from flask import Flask, session, url_for, render_template,request,redirect
 import database
@@ -99,8 +100,7 @@ def login():
     else:
         return redirect(url_for("login"))
 
-
-
+ 
 @app.route('/partage',methods=["GET"])
 def shared():
     
@@ -256,15 +256,64 @@ def register():
         return render_template("page_message.html",message="Un problème est survenu lors de votre enregistrement :/",texte_btn="Revenir à l'acceuil",lien="/")
     
 
+@app.route("/stats",methods=["GET","POST"])
+@login_required
+def stats():
+    
+    # page de stats et possibilité de delete le sondage
+    
+    if request.method == "GET":
+    
+        if (request.args.get("username",default=None) != None) and (request.args.get("post_id",default=None) != None):
+            
+            username = db.sanitize(request.args.get("username",type=str))
+            
+            # check if post_id is an int
+            try:
+                post_id = request.args.get("post_id",type=int)
+            except ValueError:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+            
+            posts = db.get_posts(current_user.id)
+            
+            post = posts[post_id]
+            
+            stats = db.get_posts_stats(current_user.id)[post_id]
+            
+            post = Post(post["header"],post["choix"],post["author"],results=db.get_results("",post_id,force_post=stats),vote=(current_user.id in stats["votants"]),id=post_id)
+                    
+            
+            # vérifie que le post existe bien et appartient bien à l'utilisateur connecté
+            if (current_user.name == username) and  (post_id <= len(posts)):
+                
+                return render_template("stats.html",post = post,resultats=db.get_results(current_user.name,post_id))
+                
+            else:
+                return render_template("page_message.html",message="Vous demandez les statistiques d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'acceuil",lien="/home")
+
+        else:
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'acceuil",lien="/home")
+    
+    
+    # post pour supprimer le sondage
+    elif request.method == "POST":
+        
+        # form params post_author and post_id
+        # delete
+        pass
+
+
 @app.errorhandler(404)
 def page_not_found(error):
     return redirect(url_for("home"))
 
-"""
+
+
+
+
 if __name__ == "__main__":
     
     if not path.exists("database.csv"):
         db.__init_csv()
     
     app.run(host="0.0.0.0",port="80",debug=True)
-"""

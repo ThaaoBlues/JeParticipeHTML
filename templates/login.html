@@ -57,29 +57,29 @@
                 </div>
 
 
-                <div class="row justify-content-md-center">
+                <div class="row justify-content-md-center mt-3">
 
-                    <div class="dropdown btn-group mt-3">
-                    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                        Selectionnez votre statut
-                    </button>
-                    <ul class="dropdown-menu justify-content-center radio-group" aria-labelledby="dropdownMenuButton1" style="width: 480px;">
-                        <li><input name="type" type="radio" class="form-check-input" value="entreprise" id="c_entreprise" required>
-                            <label class="form-check-label" for="c_entreprise">Entreprise</label>
-                        </li>
+                    <select name="type" class="form-control-primary form-control-sm" required>
+                        <option>Utilisateur</option>
+                        <option>Entrprise</option>
+                        <option>Institution publique</option>
                         
-                        <li><input name="type" type="radio" class="form-check-input" value="institution publique" id="c_publique" resquired>
-                            <label class="form-check-label" for="c_publique">Institution Publique</label>
-                        </li>
-
-                        <li><input name="type" type="radio" class="form-check-input" value="utilisateur" id="c_user" required>
-                            <label class="form-check-label" for="c_user">Utilisateur normal</label>
-                        </li>
-                    </ul>
-                    </div>
-
-                </div>
+                    </select>
                 
+                </div>
+
+                <div class="row justify-content-md-center mt-3">
+                
+
+                    <select name="genre" class="form-control-primary form-control-sm" required>
+                        <option>Homme</option>
+                        <option>Femme</option>
+                        <option>Non genré</option>
+                        <option>Genre fluide</option>
+                        <option>autre</option>
+                    </select>
+                
+                </div>
 
                 <div class="row justify-content-md-center mt-1">
                     <button type='submit'  class="text-center mt-4 btn btn-primary" name='submit'>S'inscrire</button>

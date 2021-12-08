@@ -49,13 +49,17 @@
         {%for post in sondages%}
 
         <div name="post" class="card mt-4 mx-3" style="width: auto; min-width: 350px;">
-          <h6 class="card-title d-flex justify-content-left" style="height: 3px;">
+          <h6 class="card-title mt-2" style="height: 10px;">
               <a class="bi bi-share-fill mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author}}',{{post.id}});"></a>
             Publié par {{post.author}}
+            {%if post.author == username%}
+                <button class="btn btn-blue mx-2 btn-sm float-end" onclick="window.location.href='/stats?username={{username}}&post_id={{post.id}}'" style="width:fit-content">Stats</button>
+            {%endif%}
           </h6>
+
           <hr>
 
-          <div class="row mx-3 justify-content-md-center">
+          <div class="row mx-3 mb-3 justify-content-md-center">
 
             <div clas="card-body">
 
@@ -114,6 +118,12 @@
 .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited, .btn-outline-primary {
     background-color: blueviolet !important;
     border-color: blueviolet;
+}
+
+.btn-blue, .btn-blue:hover, .btn-blue:active, .btn-blue:visited, .btn-outline-blue {
+  background-color: rgb(43, 107, 226) !important;
+  border-color: rgb(43, 107, 226);
+  color: white;
 }
 
 </style>
