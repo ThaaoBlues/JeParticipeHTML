@@ -1,7 +1,9 @@
+from base64 import b64decode
+
 class Post:
     
     
-    def __init__(self,header:str,choix:list,author:str,results={},vote=False,id=0) -> None:
+    def __init__(self,header:bytes,choix:list,author:str,results={},vote=False,id=0) -> None:
         """[summary]
 
         Args:
@@ -9,9 +11,9 @@ class Post:
             choix (list): [description]
         """
         
-        self.header = header
+        self.header = self.unsanitize(header)
         
-        self.choix = choix
+        self.choix = [self.unsanitize(c) for c in choix] 
         
         self.author = author
         
@@ -20,3 +22,10 @@ class Post:
         self.resultats = results
         
         self.id = id
+        
+        
+    def unsanitize(self,header:bytes)->str:
+        
+        header = b64decode(header).decode("utf-8")
+       
+        return header

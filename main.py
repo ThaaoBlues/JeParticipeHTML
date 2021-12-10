@@ -4,7 +4,7 @@ from passlib.handlers.sha2_crypt import sha256_crypt
 from flask import Flask, session, url_for, render_template,request,redirect
 import database
 from flask_login import login_required, login_user, logout_user, LoginManager, UserMixin, current_user
-from random import choices
+from random import choices, randint
 from os import path
 #init flask app
 app = Flask(__name__)
@@ -141,9 +141,9 @@ def add_post():
 
         choix = request.form.get("choix")
         post_id = request.form.get("post_id",type=int)
-        author = request.form.get("author")
+        author = request.form.get("author",type=str)
         
-        stats = db.get_posts_stats(author)
+        stats = db.get_posts_stats(author,username=True)
         if (choix in stats[post_id]["choix"]) and (post_id < len(stats)):
             
             db.add_vote(current_user.id,author,choix,post_id)
@@ -205,13 +205,11 @@ def sondage_form():
         if (choix != None) and (post_header != None):
             
             # tries to not transmit XSS
-            choix = [db.sanitize(c) for c in choix.split("/")]
+            choix = [db.sanitize(c,text=True) for c in choix.split("/")]
             
             if len(choix) == 1:
                 return render_template("page_message.html",message="Veuillez remplir le champ des choix comme ceci : choix1/choix2/choix3....",texte_btn="Refaire le sondage",btn_url="/creer_sondage")
-
-            post_header.replace("{","").replace("}","")
-            
+                        
             db.add_post(current_user.id,{"header":post_header,"choix":choix,"author":current_user.name})
             
             return render_template("page_message.html",message="Sondage publié ! Prenez un café et attendez les retours ;)",texte_btn="Revenir à l'acceuil",lien="/home")
@@ -286,7 +284,12 @@ def stats():
             # vérifie que le post existe bien et appartient bien à l'utilisateur connecté
             if (current_user.name == username) and  (post_id <= len(posts)):
                 
-                return render_template("stats.html",post = post,resultats=db.get_results(current_user.name,post_id))
+                resultats = db.get_results(current_user.name,post_id)
+                
+                # to make the chart
+                colors = [ f"rgb({randint(0, 255)},{randint(0, 255)},{randint(0, 255)})" for _ in range(len(resultats))]
+
+                return render_template("stats.html",post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors)
                 
             else:
                 return render_template("page_message.html",message="Vous demandez les statistiques d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'acceuil",lien="/home")
@@ -298,11 +301,32 @@ def stats():
     # post pour supprimer le sondage
     elif request.method == "POST":
         
-        # form params post_author and post_id
-        # delete
-        pass
+        
+        
+        
+        
+        if (request.form.get("post_author",default=None) != None) and (request.form.get("post_id",default=None) != None):
 
+            # check if post_id is an int
+            try:
+                post_id = request.form.get("post_id",type=int)
+            except ValueError:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+            
+            
+            username = request.form.get("post_author")
+            posts = db.get_posts(username,username=True)
+            
+                    # vérifie que le post existe bien et appartient bien à l'utilisateur connecté
+            if (current_user.name == username) and  (post_id <= len(posts)):
+                db.delete_post(current_user.id,post_id)
+                return render_template("page_message.html",message="Sondage supprimé !",texte_btn="Revenir à l'acceuil",lien="/home")
+            else:
+                return render_template("page_message.html",message="Vous demandez la suppression d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'acceuil",lien="/home")
 
+        else:
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'acceuil",lien="/home")
+    
 @app.errorhandler(404)
 def page_not_found(error):
     return redirect(url_for("home"))

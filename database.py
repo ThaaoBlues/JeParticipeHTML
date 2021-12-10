@@ -1,10 +1,11 @@
 import csv
-from re import sub
+from re import sub, escape
 from shutil import move
 from json import dumps, loads
 from post import Post
 from difflib import SequenceMatcher
 from os import path
+from base64 import b64decode, b64encode
 
 class DataBase:
     
@@ -15,19 +16,24 @@ class DataBase:
     
     def add_post(self,user_id:str,post:dict):
         
+        post["header"] = self.sanitize(post["header"],text=True)
         # ajoute le sondage dans la base de donnée
         self.__append_to("user_id",user_id,"post",dumps(post),dict=True)
         self.__append_to("user_id",user_id,"post_stats",dumps({"votes":[0 for _ in range(len(post["choix"]))],"votants":[],"choix":post["choix"]}),dict=True)
  
     def add_vote(self,user_id:str,post_author:str,choix:str,post_id:int):
         
-        posts = self.get_posts_stats(post_author)
+        posts = self.get_posts_stats(post_author,username=True)
 
         posts[post_id]["votants"].append(user_id)
         
         for i in range(len(posts[post_id]["choix"])):
+            
             if posts[post_id]["choix"][i] == choix:
                 break
+            
+        posts[post_id]["choix"] = [self.sanitize(c,text=True) for c in posts[post_id]["choix"]]
+
             
         posts[post_id]["votes"][i] = int(posts[post_id]["votes"][i]) +1
                 
@@ -63,7 +69,7 @@ class DataBase:
             if (extracted_posts[i] != None) and (extracted_posts[i] != ""):
             
                 extracted_posts[i] = loads(extracted_posts[i])
-                
+                extracted_posts[i]["choix"] = [self.unsanitize(c) for c in extracted_posts[i]["choix"]]
             else:
                 extracted_posts.pop(i)
                 
@@ -77,8 +83,9 @@ class DataBase:
         else:
             stats = force_post
         
-            
         n_choix = len(stats["choix"])
+        
+        #stats["choix"] = [self.unsanitize(c) for c in stats["choix"]]
         
         ret = {}
         
@@ -90,6 +97,7 @@ class DataBase:
             else:
                 ret[stats["choix"][i]] = 0
                 
+        print(ret)
             
         return ret
          
@@ -140,8 +148,7 @@ class DataBase:
        
     def get_user_id(self,username:str)->str:
        return self.__read_from("user",username,"user_id")
-   
-   
+    
     def delete_post(self,user_id:str,post_id:str,username=False):
         
         posts = self.get_posts(user_id,username=username)
@@ -230,7 +237,7 @@ class DataBase:
     def __init_csv(self,tmp=False):
         with open('database.csv' if not tmp else "database_tmp.csv","w", newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(['user', 'user_id', 'post','post_stats','following','followers','password','verified','type'])
+            writer.writerow(['user', 'user_id', 'post','post_stats','following','followers','password','verified','type','gender'])
             csvfile.close()
 
     def __add_row(self,row:list):
@@ -256,7 +263,7 @@ class DataBase:
         
         
         
-        with open('database.csv', newline='') as csvfile:
+        with open('database.csv', newline='',encoding="utf-8") as csvfile:
             
             reader = csv.DictReader(csvfile)
             self.__init_csv(tmp=True)
@@ -313,7 +320,7 @@ class DataBase:
             move('database_tmp.csv','database.csv')
 
     def __append_to(self,check_key:str,check_value:str,key:str,new_value:str,dict=False):
-        with open('database.csv', newline='') as csvfile:
+        with open('database.csv', newline='',encoding="utf-8") as csvfile:
             
             reader = csv.DictReader(csvfile)
             self.__init_csv(tmp=True)
@@ -427,7 +434,7 @@ class DataBase:
             
             return [row[selection] for row in reader]
                         
-    def sanitize(self,string:str)->str:
+    def sanitize(self,string:str,text=False)->str:
         """sanitize and remove all special chars from a string
 
         Args:
@@ -436,15 +443,20 @@ class DataBase:
         Returns:
             str: [description]
         """
-        
-        return sub('\W+','', string)
+        if text:
+            string = b64encode(bytes(string,"utf-8")).decode("utf-8")
+        else:
+            string = sub("\W+",'',string)
+            
+        return string
     
     def __list_from_str(self,string:str)->list:
         
         return string.strip('][').replace("\"","").replace("'","").replace(" ","").split(',')
     
-    
-    
+    def unsanitize(self,string:bytes)->str:
+        
+        return b64decode(string).decode("utf-8")
     
     
     
