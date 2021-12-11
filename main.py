@@ -238,14 +238,13 @@ def post():
 @app.route('/register',methods=["POST"])
 def register():
     
-    print(request.form.get("genre",type=str).lower())
     
     
-    if (request.form.get("username",None) != None) and (request.form.get("password",None) != None) and (request.form.get("type",default=None).lower() in db.users_types) and (request.form.get("genre",default=None).lower() in db.gender_types):
+    if (request.form.get("username",None) != None) and (request.form.get("password",None) != None) and (request.form.get("type",default=None).lower() in db.users_types) and (request.form.get("genre",default=None).lower().replace(" ","_") in db.gender_types):
         
         username = db.sanitize(request.form.get("username"))
         
-        gender = request.form.get("genre",type=str).lower()
+        gender = request.form.get("genre",type=str).lower().replace(" ","_")
         
         # if user already exists, abort and return a nice message
         if db.username_exists(username):
