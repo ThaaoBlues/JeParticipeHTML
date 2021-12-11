@@ -38,54 +38,88 @@
     <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
 
 
-        
-    
-        <div name="post" class="card mt-4 mx-3" style="width: auto; min-width: 350px;">
+        <div class="row">
             
-            <div class="card-header">
-                <a class="bi bi-share-fill mt-2 mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author}}',{{post.id}});"></a>
-                Publié par {{post.author}}
+
+
+            <div class="card-group">
+
+                <div class="col-sm-3 m-auto">
+
+                    <div name="post" class="card mt-4 mx-3 w-80" style="width: auto; min-width: 350px;">
+                        
+                        <div class="card-header">
+                            <a class="bi bi-share-fill mt-2 mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author}}',{{post.id}});"></a>
+                            Publié par {{post.author}}
+                            
+                            <ul class="nav nav-pills card-header-pills float-end">
+                                <li class="nav-item">
+                                    <form action="/stats" class="d-flex" method="post" style="height:0;">
+                                        <div class="col"><input name="post_id" value="{{post.id}}" hidden></div>
+                                        <div class="col"><input name="post_author" value="{{post.author}}"  hidden></div>
+                                        <div class="col"><button type="submit" class="btn btn-danger mx-2 float-end btn-sm" style="width:fit-content;">Supprimer</button></div>
+                                    </form>
+                                </li>
+                            </ul>
+
+                        </div>
+            
+                        <div class="row mx-3 mb-3 justify-content-md-center">
+            
+                            <div clas="card-body">
+            
+                                <p class="text-break text-center mt-2">{{post.header}}</p>
                 
-                <ul class="nav nav-pills card-header-pills float-end">
-                    <li class="nav-item">
-                        <form action="/stats" class="d-flex" method="post" style="height:0;">
-                            <div class="col"><input name="post_id" value="{{post.id}}" hidden></div>
-                            <div class="col"><input name="post_author" value="{{post.author}}"  hidden></div>
-                            <div class="col"><button type="submit" class="btn btn-danger mx-2 float-end btn-sm" style="width:fit-content;">Supprimer</button></div>
-                        </form>
-                    </li>
-                </ul>
+                                <hr>
+                                <ul class="list-group list-group-flush">
+                
+                                {%for choix in post.choix%}
+                                    <a class="btn btn-primary mt-2" style="width:100%;">{{choix}} : {{post.resultats[choix]}}% des votes.</a>
+                                {%endfor%}
+                                </ul>
 
-            </div>
-  
-            <div class="row mx-3 mb-3 justify-content-md-center">
-  
-                <div clas="card-body">
-  
-                    <p class="text-break text-center mt-2">{{post.header}}</p>
-    
-                    <hr>
-                    <ul class="list-group list-group-flush">
-    
-                    {%for choix in post.choix%}
-                        <a class="btn btn-primary mt-2" style="width:100%;">{{choix}} : {{post.resultats[choix]}}% des votes.</a>
-                    {%endfor%}
-                    </ul>
+                            </div>
+            
+                        </div>
 
+                    </div>
                 </div>
-  
-            </div>
 
-        </div>
 
-        <div name="chart" class="card mt-4 mx-3" style="width: auto; min-width: 350px;">
+                <div class="col-sm-3 mx-5">
+                    
+                    <div name="chart" class="card mt-4 mx-3" style="width: auto; min-width: 350px;">
+                        <div class="card-header">Statistiques générales de votes</div>
+                        <div class="row mx-3 mb-3 justify-content-md-center">
+            
+                            <div clas="card-body">
 
-            <div class="row mx-3 mb-3 justify-content-md-center">
-  
-                <div clas="card-body">
+                                <canvas id="PieChart" width="10" height="10"></canvas>
+                            </div>
 
-                    <canvas id="PieChart" width="10" height="10"></canvas>
+                        </div>
+
+                    </div>
                 </div>
+
+                {% for choix in post.choix%}
+                <div class="col-sm-3 mx-5">
+                    <div name="chart" class="card mt-4 mx-3" style="width: auto; min-width: 350px;">
+                        <div class="card-header">Statistiques de votes du choix : {{choix}}</div>
+                        <div class="row mx-3 mb-3 justify-content-md-center">
+            
+                            <div clas="card-body">
+
+                                <canvas id="gender_chart_{{choix}}" width="10" height="10"></canvas>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                {%endfor%}
+
 
             </div>
 
@@ -98,7 +132,6 @@
 
 
     const ctx = document.getElementById('PieChart').getContext('2d');
-
 
     const data = {
         labels: {{post.choix | safe}},
@@ -115,6 +148,36 @@
     const myChart = new Chart(ctx, {
         type: 'pie',
         data: data});
+
+
+    {%for choix in post.choix%}
+        const ctx_{{choix}} = document.getElementById('gender_chart_{{choix}}').getContext('2d');
+        
+        const data_{{choix}} = {
+            labels: {{genders["list"] | safe}},
+            datasets: [{
+            label: 'Statistiques de genre du choix : {{choix}}',
+
+            data: {{genders[choix] | safe}},
+            backgroundColor: {{genders["colors"] | safe}},
+            hoverBackgroundColor: {{genders["colors"] | safe}},
+    
+            hoverOffset: 4
+            }]
+        };
+    
+        const gender_chart_{{choix}} = new Chart(ctx_{{choix}}, {
+            type: 'pie',
+            data: data_{{choix}}});
+
+
+    {%endfor%}
+
+
+
+
+    
+
 </script>
 
 
@@ -142,6 +205,18 @@
     background-color: blueviolet !important;
     border-color: blueviolet;
 }
+
+.card-columns {
+    @include media-breakpoint-only(lg) {
+      column-count: 4;
+    }
+    @include media-breakpoint-only(xl) {
+      column-count: 5;
+    }
+    @include media-breakpoint-only(md) {
+        column-count: 3;
+      }
+  }
 
 </style>
 

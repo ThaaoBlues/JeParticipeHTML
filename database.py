@@ -11,17 +11,26 @@ class DataBase:
     
     def __init__(self) -> None:
         self.users_types = ["entreprise","institution publique","utilisateur"]
+        self.gender_types = ["homme","femme","genre_fluide","non_genre","autre"]
         if not path.exists("database.csv"):
             self.__init_csv()
-    
+        
+            
     def add_post(self,user_id:str,post:dict):
         
         post["header"] = self.sanitize(post["header"],text=True)
         # ajoute le sondage dans la base de donnée
         self.__append_to("user_id",user_id,"post",dumps(post),dict=True)
-        self.__append_to("user_id",user_id,"post_stats",dumps({"votes":[0 for _ in range(len(post["choix"]))],"votants":[],"choix":post["choix"]}),dict=True)
+        
+        genres = {}
+        
+        for g in self.gender_types:
+            
+            genres[g] = [0 for _ in range(len(post["choix"]))]
+        
+        self.__append_to("user_id",user_id,"post_stats",dumps({"votes":[0 for _ in range(len(post["choix"]))],"votants":[],"choix":post["choix"],"genres":genres}),dict=True)
  
-    def add_vote(self,user_id:str,post_author:str,choix:str,post_id:int):
+    def add_vote(self,user_id:str,post_author:str,choix:str,post_id:int,gender:str):
         
         posts = self.get_posts_stats(post_author,username=True)
 
@@ -36,6 +45,8 @@ class DataBase:
 
             
         posts[post_id]["votes"][i] = int(posts[post_id]["votes"][i]) +1
+        
+        posts[post_id]["genres"][gender][i] += 1
                 
         self.__write_to("user",post_author,"post_stats",dumps(posts))
                    
@@ -63,7 +74,6 @@ class DataBase:
                 if extracted_posts[i][0] != "{":
                     extracted_posts[i] = "{" + extracted_posts[i]
 
-                
         for i in range(len(extracted_posts)):
         
             if (extracted_posts[i] != None) and (extracted_posts[i] != ""):
@@ -71,8 +81,7 @@ class DataBase:
                 extracted_posts[i] = loads(extracted_posts[i])
                 extracted_posts[i]["choix"] = [self.unsanitize(c) for c in extracted_posts[i]["choix"]]
             else:
-                extracted_posts.pop(i)
-                
+                extracted_posts.pop(i) 
                 
         return extracted_posts
     
@@ -84,9 +93,7 @@ class DataBase:
             stats = force_post
         
         n_choix = len(stats["choix"])
-        
-        #stats["choix"] = [self.unsanitize(c) for c in stats["choix"]]
-        
+                
         ret = {}
         
         for i in range(n_choix):
@@ -96,9 +103,7 @@ class DataBase:
             
             else:
                 ret[stats["choix"][i]] = 0
-                
-        print(ret)
-            
+                            
         return ret
          
     def get_votants(self,post_author:str,post_id:int)->list:
@@ -162,10 +167,10 @@ class DataBase:
         # to archive each 24h
         self.__write_to_all("post","")
         
-    def register_user(self,username:str,password="",type="utilisateur",franceconnect=False):
+    def register_user(self,username="",gender="",password="",type="utilisateur",franceconnect=False):
         
         user_id = hex(len(self.get_users())+1)
-        self.__add_row([username,user_id,"[]","[]","[]","[]",password,franceconnect,type])
+        self.__add_row([username,user_id,"[]","[]","[]","[]",password,franceconnect,type,gender])
         self.add_follower(user_id,username)
     
     def delete_user(self,user_id:str):
@@ -234,6 +239,13 @@ class DataBase:
         
         return self.__read_from("user",username,"password")
      
+    def get_gender(self,user_id:str,username=False):
+        
+        if not username:
+            return self.__read_from("user_id",user_id,"gender")
+        else:
+            return self.__read_from("user",user_id,"gender")
+
     def __init_csv(self,tmp=False):
         with open('database.csv' if not tmp else "database_tmp.csv","w", newline='') as csvfile:
             writer = csv.writer(csvfile)
@@ -246,7 +258,7 @@ class DataBase:
         Args:
             row (list): ligne à ajouter
         """
-        with open('database.csv',"a", newline='') as csvfile:
+        with open('database.csv',"a", newline='',encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(row)
             csvfile.close()

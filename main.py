@@ -24,10 +24,11 @@ app.secret_key = "".join(choices("1234567890°+AZERTYUIOP¨£µQSDFGHJKLM%WXCVBN
 class User(UserMixin):
     
     
-    def __init__(self, name="", id=0, active=True):
+    def __init__(self, name="", id=0, active=True,gender="autre"):
         self.name = name
         self.id = id
         self.active = active
+        self.gender = gender
 
     def is_active(self):
         # Here you should write whatever the code is
@@ -48,7 +49,7 @@ def user_loader(username):
     if username not in db.get_users():
         return None
 
-    user = User(name=username,id=db.get_user_id(username))
+    user = User(name=username,id=db.get_user_id(username),gender=db.get_gender(username,username=True))
     
     return user
 
@@ -146,7 +147,7 @@ def add_post():
         stats = db.get_posts_stats(author,username=True)
         if (choix in stats[post_id]["choix"]) and (post_id < len(stats)):
             
-            db.add_vote(current_user.id,author,choix,post_id)
+            db.add_vote(current_user.id,author,choix,post_id,current_user.gender)
             
     return redirect(url_for("home"))
 
@@ -237,16 +238,20 @@ def post():
 @app.route('/register',methods=["POST"])
 def register():
     
-    print(request.form.get("type"))
-    if (request.form.get("username",None) != None) and (request.form.get("password",None) != None) and (request.form.get("type",default=None) in db.users_types):
+    print(request.form.get("genre",type=str).lower())
+    
+    
+    if (request.form.get("username",None) != None) and (request.form.get("password",None) != None) and (request.form.get("type",default=None).lower() in db.users_types) and (request.form.get("genre",default=None).lower() in db.gender_types):
         
         username = db.sanitize(request.form.get("username"))
+        
+        gender = request.form.get("genre",type=str).lower()
         
         # if user already exists, abort and return a nice message
         if db.username_exists(username):
             return render_template("page_message.html",message="Ce nom d'utilisateur existe déjà :/ Ne vous inquiétez pas, vous avez assez d'imagination pour en trouver un autre ;)",texte_btn="Revenir à la page d'enregistrement",lien="/login")
         
-        db.register_user(username,sha256_crypt.hash(request.form.get("password")),type=request.form.get("type"),franceconnect=True)
+        db.register_user(username=username,gender=gender ,password=sha256_crypt.hash(request.form.get("password")),type=request.form.get("type").lower(),franceconnect=True)
       
         return render_template("page_message.html",message="Vous avez bien été enregistré ! Clickez sur le bouton pour revenir à la page de connexion ;)",texte_btn="Revenir à l'acceuil",lien="/login")
     
@@ -278,7 +283,7 @@ def stats():
             
             stats = db.get_posts_stats(current_user.id)[post_id]
             
-            post = Post(post["header"],post["choix"],post["author"],results=db.get_results("",post_id,force_post=stats),vote=(current_user.id in stats["votants"]),id=post_id)
+            post = Post(post["header"],post["choix"],post["author"],results=db.get_results("",post_id,force_post=stats),vote=(current_user.id in stats["votants"]),id=post_id,stats=stats)
                     
             
             # vérifie que le post existe bien et appartient bien à l'utilisateur connecté
@@ -286,10 +291,17 @@ def stats():
                 
                 resultats = db.get_results(current_user.name,post_id)
                 
-                # to make the chart
+                # to make the charts
                 colors = [ f"rgb({randint(0, 255)},{randint(0, 255)},{randint(0, 255)})" for _ in range(len(resultats))]
 
-                return render_template("stats.html",post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors)
+                genders = {"list":[g for g in db.gender_types],"colors":[ f"rgb({randint(0, 255)},{randint(0, 255)},{randint(0, 255)})" for _ in range(len(db.gender_types)+1)]}
+                
+                for i in range(len(post.choix)):
+                    
+                    genders[post.choix[i]] = [post.stats["genres"][db.gender_types[j]][i] for j in range(len(db.gender_types))]
+                
+                
+                return render_template("stats.html",post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders)
                 
             else:
                 return render_template("page_message.html",message="Vous demandez les statistiques d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'acceuil",lien="/home")
