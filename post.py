@@ -24,7 +24,6 @@ class Post:
         self.id = id
         
         self.stats = stats
-        print(stats)
         
         
     def unsanitize(self,header:bytes)->str:

@@ -172,6 +172,7 @@ class DataBase:
         user_id = hex(len(self.get_users())+1)
         self.__add_row([username,user_id,"[]","[]","[]","[]",password,franceconnect,type,gender])
         self.add_follower(user_id,username)
+        self.follow(user_id,username)
     
     def delete_user(self,user_id:str):
         self.__write_to("user_id",user_id,"","",delete=True)
