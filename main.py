@@ -59,7 +59,7 @@ def request_loader(request):
     if request.form.get('username',default=None) != None:
         username = db.sanitize(request.form.get('username'))
     
-        if username not in db.get_users():
+        if (username not in db.get_users()) or (username == "compteur_utilisateurs"):
             return None
         
         is_auth = sha256_crypt.verify(db.sanitize(request.form.get('password')),db.get_password(username))

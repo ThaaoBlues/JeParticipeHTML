@@ -14,6 +14,7 @@ class DataBase:
         self.gender_types = ["homme","femme","genre_fluide","non_genre","autre"]
         if not path.exists("database.csv"):
             self.__init_csv()
+            self.register_user(username="compteur_utilisateurs",gender="autre",type="compteur",franceconnect=True,init=True)
         
             
     def add_post(self,user_id:str,post:dict):
@@ -167,12 +168,19 @@ class DataBase:
         # to archive each 24h
         self.__write_to_all("post","")
         
-    def register_user(self,username="",gender="",password="",type="utilisateur",franceconnect=False):
+    def register_user(self,username="",gender="",password="",type="utilisateur",franceconnect=False,init=False):
         
         user_id = hex(len(self.get_users())+1)
         self.__add_row([username,user_id,"[]","[]","[]","[]",password,franceconnect,type,gender])
-        self.add_follower(user_id,username)
-        self.follow(user_id,username)
+        
+        
+        if not init:
+            # add user to followers counter
+            self.add_follower("0x1",username)
+            
+            # follow himself to display his own posts
+            self.add_follower(user_id,username)
+            self.follow(user_id,username)
     
     def delete_user(self,user_id:str):
         self.__write_to("user_id",user_id,"","",delete=True)
