@@ -314,11 +314,11 @@ def stats():
             except ValueError:
                 return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
             
-            post = db.get_post(current_user.id,post_id)
+            post_dict = db.get_post(current_user.id,post_id)
             
             stats = db.get_post_stats(current_user.id,post_id)
             
-            post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],results=db.get_results(current_user.id,post_id),vote=db.has_already_voted(current_user.id,post_id),id=post_id,stats=stats)
+            post = Post(post_dict["header"],post_dict["choix"],db.get_user_name(post_dict["owner_id"]),post_dict["owner_id"],results=db.get_results(current_user.id,post_id),vote=db.has_already_voted(current_user.id,post_id),id=post_id,stats=stats)
                     
             
             # vérifie que le post existe bien et appartient bien à l'utilisateur connecté
@@ -331,8 +331,12 @@ def stats():
 
                 genders = {"list":[g for g in db.gender_types],"colors":[ f"rgb({randint(0, 255)},{randint(0, 255)},{randint(0, 255)})" for _ in range(len(db.gender_types)+1)]}
                           
+                # choix without special chars to put as variable names
+                sanitized_choix = {}
+                for c in post_dict["choix"]:
+                    sanitized_choix[c] = db.sanitize(c)
                 
-                return render_template("stats.html",post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders)
+                return render_template("stats.html",post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders,sanitized_choix=sanitized_choix)
                 
             else:
                 return render_template("page_message.html",message="Vous demandez les statistiques d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'acceuil",lien="/home")

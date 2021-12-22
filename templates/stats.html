@@ -110,7 +110,7 @@
             
                             <div clas="card-body">
 
-                                <canvas id="gender_chart_{{choix}}" width="10" height="10"></canvas>
+                                <canvas id="gender_chart_{{sanitized_choix[choix]}}" width="10" height="10"></canvas>
                             </div>
 
                         </div>
@@ -151,9 +151,9 @@
 
 
     {%for choix in post.choix%}
-        const ctx_{{choix}} = document.getElementById('gender_chart_{{choix}}').getContext('2d');
+        const ctx_{{sanitized_choix[choix]}} = document.getElementById('gender_chart_{{sanitized_choix[choix]}}').getContext('2d');
         
-        const data_{{choix}} = {
+        const data_{{sanitized_choix[choix]}} = {
             labels: {{genders["list"] | safe}},
             datasets: [{
             label: 'Statistiques de genre du choix : {{choix}}',
@@ -166,9 +166,9 @@
             }]
         };
     
-        const gender_chart_{{choix}} = new Chart(ctx_{{choix}}, {
+        const gender_chart_{{sanitized_choix[choix]}} = new Chart(ctx_{{sanitized_choix[choix]}}, {
             type: 'pie',
-            data: data_{{choix}}});
+            data: data_{{sanitized_choix[choix]}}});
 
 
     {%endfor%}
