@@ -91,32 +91,69 @@ def login():
         return redirect(url_for("login"))
 
  
-@app.route('/partage',methods=["GET"])
+@app.route('/partage',methods=["GET","POST"])
 def shared():
-
-    if (request.args.get("owner_id",default=None) != None) and (request.args.get("post_id",default=None) != None):
-        
-        owner_id = request.args.get("owner_id",type=int)
-        
-        # check if post_id is an int
-        try:
-            post_id = request.args.get("post_id",type=int)
-        except ValueError:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/login")
-        
-        if (db.post_exists(post_id)):
-            post = db.get_post(owner_id,post_id)
-            post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],results=db.get_results(post["owner_id"],post["post_id"]))
-
-            return render_template("share_post.html",post = post)
-            
-        else:
-            return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'acceuil",lien="/login")
-
-    else:
-        return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'acceuil",lien="/login")
     
+    """penser à metre l'arg vote dans le script dans chaque template et mettre la condition de vote dans le template share"""
+    
+    if request.method == "GET":
 
+        if (request.args.get("owner_id",default=None) != None) and (request.args.get("post_id",default=None) != None) and (request.args.get("results",default=None)!=None):
+            
+            
+            # check if all args are of the correct type
+            try:
+                post_id = request.args.get("post_id",type=int)                
+                owner_id = request.args.get("owner_id",type=int)
+                vote = True if request.args.get("results") == "True" else False
+            except ValueError:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+            
+                        
+            if (db.post_exists(post_id)):
+                post = db.get_post(owner_id,post_id)
+
+                post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],results=db.get_results(post["owner_id"],post["post_id"]),anon_votes=post["anon_votes"],vote=vote)
+
+                return render_template("share_post.html",post = post)
+                
+            else:
+                return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'acceuil",lien="/login")
+
+        else:
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé ou un paramètre de votre requète a été mal-formé :/ :/",texte_btn="Revenir à l'acceuil",lien="/login")
+    
+    
+    elif request.method == "POST":
+        
+        # anonymous vote
+        choix = request.form.get("choix",default=None)
+        author_id = request.form.get("author_id",default=None)
+        post_id = request.form.get("post_id",default=None)
+        if (choix != None) and  (author_id != None) and  (post_id != None):
+
+            choix = request.form.get("choix")
+            # check if post_id is an int
+            try:
+                post_id = request.form.get("post_id",type=int)
+                author_id = request.form.get("author_id",type=int)
+                
+            except ValueError:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+            
+            
+            # makes sure post exists, selected choice exists and anon_votes is set to True
+            if (db.choix_exists(author_id,post_id,choix)) and (db.anon_votes(post_id)):
+                
+                db.add_vote(0,author_id,choix,post_id,"autre",anon_vote=True)
+        
+                return redirect(f"/partage?owner_id={author_id}&post_id={post_id}&results=True")
+            else:
+                return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+        else:
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+
+                
 @app.route('/home',methods=['GET'])
 @login_required
 def home():
@@ -133,8 +170,18 @@ def add_vote():
 
 
         choix = request.form.get("choix")
-        post_id = request.form.get("post_id",type=int)
-        author_id = request.form.get("author_id",type=int)
+        
+         # check if post_id is an int
+        try:
+            post_id = request.form.get("post_id",type=int)
+        except ValueError:
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+        # check if author_id is an int
+        try:
+            author_id = request.form.get("author_id",type=int)
+        except ValueError:
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+            
 
         if (db.choix_exists(author_id,post_id,choix)):
             
@@ -192,16 +239,17 @@ def sondage_form():
         
         post_header = request.form.get("post_header",default=None)
         choix = request.form.get("choix",default=None)
+        anon_votes = request.form.get("anon_votes",default=False,type=bool)
         
-        if (choix != None) and (post_header != None):
-            
+        if (choix != None) and (post_header != None) and (anon_votes != None):
+                        
             # tries to not transmit XSS
             choix = [db.sanitize(c,text=True) for c in choix.split("/")]
             
             if len(choix) == 1:
                 return render_template("page_message.html",message="Veuillez remplir le champ des choix comme ceci : choix1/choix2/choix3....",texte_btn="Refaire le sondage",btn_url="/creer_sondage")
                         
-            db.add_post(current_user.id,{"header":post_header,"choix":choix})
+            db.add_post(current_user.id,{"header":post_header,"choix":choix,"anon_votes":anon_votes})
             
             return render_template("page_message.html",message="Sondage publié ! Prenez un café et attendez les retours ;)",texte_btn="Revenir à l'acceuil",lien="/home")
 

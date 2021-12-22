@@ -40,32 +40,44 @@ class DataBase:
         # sanitize entries
         post["header"] = self.sanitize(post["header"],text=True)        
         
-        self.cursor.execute("INSERT INTO POSTS (owner_id,header) values(?,?)",(user_id,post["header"]))
+        self.cursor.execute("INSERT INTO POSTS (owner_id,header,anon_votes) values(?,?,?)",(user_id,post["header"],post["anon_votes"]))
         post_id = self.cursor.lastrowid
         for choix in post["choix"]:
             self.cursor.execute("INSERT INTO CHOIX (post_id,choix,owner_id,votes) values(?,?,?,?)",(post_id,choix,user_id,0))
 
         self.connector.commit()
         
-    def add_vote(self,user_id:int,owner_id:int,choix:str,post_id:int,user_gender:str):
+    def add_vote(self,user_id:int,owner_id:int,choix:str,post_id:int,user_gender:str,anon_vote=False):
         
         # to compare with saitized text
         choix = self.sanitize(choix,text=True)
         
-        
-        # make sure the user hasn't already voted
-        if self.has_already_voted(user_id,post_id):
-            return
-        
-        self.cursor.execute(f"UPDATE CHOIX SET votes = votes + 1 WHERE owner_id=? AND post_id=? AND choix=?",(owner_id,post_id,choix))
-        
-        
-        choix_id = dict(self.cursor.execute(f"SELECT choix_id FROM CHOIX WHERE owner_id = ? AND post_id = ? AND choix = ?",(owner_id,post_id,choix)).fetchall()[0])["choix_id"]
-        
-        username = self.get_user_name(user_id)
-        self.cursor.execute(f"INSERT INTO VOTANTS (owner_id,post_id,choix_id,username,voter_id,gender) values(?,?,?,?,?,?)",(owner_id,post_id,choix_id,username,user_id,user_gender))
-        
-        self.connector.commit()
+        if anon_vote:
+                
+            self.cursor.execute(f"UPDATE CHOIX SET votes = votes + 1 WHERE owner_id=? AND post_id=? AND choix=?",(owner_id,post_id,choix))
+            
+            
+            choix_id = dict(self.cursor.execute(f"SELECT choix_id FROM CHOIX WHERE owner_id = ? AND post_id = ? AND choix = ?",(owner_id,post_id,choix)).fetchall()[0])["choix_id"]
+            
+            username = "anonymous"
+            self.cursor.execute(f"INSERT INTO VOTANTS (owner_id,post_id,choix_id,username,voter_id,gender) values(?,?,?,?,?,?)",(owner_id,post_id,choix_id,username,user_id,user_gender))
+            
+            self.connector.commit()
+        else:
+            
+            # make sure the user hasn't already voted
+            if self.has_already_voted(user_id,post_id):
+                return
+            
+            self.cursor.execute(f"UPDATE CHOIX SET votes = votes + 1 WHERE owner_id=? AND post_id=? AND choix=?",(owner_id,post_id,choix))
+            
+            
+            choix_id = dict(self.cursor.execute(f"SELECT choix_id FROM CHOIX WHERE owner_id = ? AND post_id = ? AND choix = ?",(owner_id,post_id,choix)).fetchall()[0])["choix_id"]
+            
+            username = self.get_user_name(user_id)
+            self.cursor.execute(f"INSERT INTO VOTANTS (owner_id,post_id,choix_id,username,voter_id,gender) values(?,?,?,?,?,?)",(owner_id,post_id,choix_id,username,user_id,user_gender))
+            
+            self.connector.commit()
                   
     def get_user_name(self,user_id:int)->str:
         """get username from user id
@@ -342,6 +354,17 @@ class DataBase:
         
         return True if self.cursor.execute("SELECT 1 FROM VOTANTS WHERE post_id = ? and voter_id = ?",(post_id,user_id)).fetchall() != [] else False
       
+    def anon_votes(self,post_id:int)->bool:
+        """renvoie si le vote anonyme est autorisé pour un post ou non
+        
+        Args:
+            post_id (int): [description]
+
+        Returns:
+            bool: [description]
+        """
+        return dict(self.cursor.execute("SELECT anon_votes FROM POSTS WHERE post_id=?",(post_id,)).fetchall()[0])["anon_votes"]
+      
     def get_password(self,user_id:int):
         
         return dict(self.cursor.execute("SELECT password FROM USERS WHERE user_id=?",(user_id,)).fetchall()[0])["password"]
@@ -350,7 +373,7 @@ class DataBase:
                 
         c = sql.connect("database.db").cursor()
         c.execute("CREATE TABLE USERS (user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,username TEXT,password TEXT,age INTEGER,gender TEXT,type TEXT,is_verified BOOL)")
-        c.execute("CREATE TABLE POSTS (post_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,header TEXT)")
+        c.execute("CREATE TABLE POSTS (post_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,header TEXT,anon_votes BOOL)")
         c.execute("CREATE TABLE FOLLOWERS (link_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,user_id INTEGER,follower_id INTEGER)")
         c.execute("CREATE TABLE CHOIX (choix_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix TEXT,votes INTEGER)")
         c.execute("CREATE TABLE VOTANTS (vote_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix_id INTEGER,username TEXT,voter_id INTEGER,gender TEXT)")
