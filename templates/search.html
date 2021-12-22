@@ -45,7 +45,7 @@
             <form method="POST">
                 <div name="carte_profil" class="card text-center mt-2" style="width: 400px;">
                     <div class="card-title mxy-auto mb-2 ">{{profil["username"]}}
-                        {%if profil["verified"]%}
+                        {%if profil["is_verified"]%}
                             <i class="bi bi-person-check ml-2" style = "color:blue;"></i>
                         {%endif%}
                         {%if profil["type"] == "entreprise"%}

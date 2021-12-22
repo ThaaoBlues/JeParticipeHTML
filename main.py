@@ -220,8 +220,10 @@ def recherche():
         following = db.get_following(current_user.id)
         
         profils = db.match_users(req)
+        
+        error = profils == []
 
-        return render_template("search.html",following = following,profils=profils)
+        return render_template("search.html",following = following,profils=profils,error=error)
     else:
         return render_template("search.html",profils=[],req=req)
 

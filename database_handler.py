@@ -238,7 +238,7 @@ class DataBase:
         
         for user in users:
             user["followers"] = len(self.get_followers(user["user_id"]))
-        
+        print(users)
         return users     
     
     def get_type(self,user_id:int)->str:
