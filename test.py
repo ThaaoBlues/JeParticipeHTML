@@ -1,18 +1,23 @@
 from json import *
-import database
+import database_handler
 from random import choices
-db = database.DataBase()
+db = database_handler.DataBase()
 
 #db.archive_all()
 
-#db.add_user("test2","12345")
 #print(db.get_post("0x1").choix)
 #db.add_follower("0x1","test2")
 #db.add_follower("0x1","test")
 #db.unfollow("0x1","t")
-#print(db.get_posts("0x1")[2])
-#db.add_vote("0x2","lex","choix1",0)
+#print(db.get_posts(1))
+#db.add_vote(1,1,"choix1",3)
 #print(db.get_type("e"))
 #print(db.get_followers("u"))
-#db.delete_post("0x3",0)
-print(db.get_results("u",0))
+#db.delete_post(1,2)
+#print(db.get_results("u",0))
+#db.__init_db()
+#db.register_user(username="test",gender="non_genre",password="prout")
+#db.add_post(1,{"header":"post_header","choix":["choix1","choix2"]})
+#print(db.get_post_stats(1,3))
+#print(db.has_already_voted(1,1))
+print(db.unsanitize("dGVzdA=="))

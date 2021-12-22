@@ -32,7 +32,7 @@
 
         <div name="post" class="card mt-4 mx-3" style="width: auto;  min-width: 350px;">
             <h6 class="card-title d-flex justify-content-left" style="height: 3px;">
-                <a class="bi bi-share-fill mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author}}',{{post.id}});"></a>
+                <a class="bi bi-share-fill mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author_id}}',{{post.id}});"></a>
               Publié par {{post.author}}
             </h6>          
             <hr>
@@ -68,12 +68,12 @@
 
 <script>
 
-    function partage_sondage(username,post_id){
+  function partage_sondage(owner_id,post_id){
 
-      navigator.clipboard.writeText(window.location.hostname+"/partage?username="+username+"&post_id="+post_id);
+    navigator.clipboard.writeText(window.location.hostname+"/partage?owner_id="+owner_id+"&post_id="+post_id);
 
-      alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
-    }
+    alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
+  }
 
 </script>
 

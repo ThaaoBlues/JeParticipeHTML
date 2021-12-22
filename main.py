@@ -1,15 +1,16 @@
 
+import re
 from post import Post
 from passlib.handlers.sha2_crypt import sha256_crypt
 from flask import Flask, session, url_for, render_template,request,redirect
-import database
+import database_handler
 from flask_login import login_required, login_user, logout_user, LoginManager, UserMixin, current_user
 from random import choices, randint
 from os import path
 #init flask app
 app = Flask(__name__)
 
-db = database.DataBase()
+db = database_handler.DataBase()
 
 
 # sessions and login manager stuff
@@ -42,33 +43,11 @@ class User(UserMixin):
         return True
 
 @login_manager.user_loader
-def user_loader(username):
+def user_loader(user_id):
     
-    username = db.sanitize(username)
-    
-    if username not in db.get_users():
-        return None
-
-    user = User(name=username,id=db.get_user_id(username),gender=db.get_gender(username,username=True))
+    user = User(name=db.get_user_name(user_id),id=user_id,gender=db.get_gender(user_id))
     
     return user
-
-@login_manager.request_loader
-def request_loader(request):
-    
-    if request.form.get('username',default=None) != None:
-        username = db.sanitize(request.form.get('username'))
-    
-        if (username not in db.get_users()) or (username == "compteur_utilisateurs"):
-            return None
-        
-        is_auth = sha256_crypt.verify(db.sanitize(request.form.get('password')),db.get_password(username))
-
-        user = User(name=username,id=db.get_user_id(username))        
-            
-        return user
-    else:
-        return None
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
@@ -85,16 +64,26 @@ def login():
         return render_template("login.html")
     
     
-    elif(request.form.get('username',default=None) != None ) and (request.form.get('password',default=None) != None) and (db.get_password(request.form.get("username")) != None):
+    elif(request.form.get('username',default=None) != None ) and (request.form.get('password',default=None) != None):
     
-        username = db.sanitize(request.form.get('username',default=None))
-        password = request.form.get('password')
-        
-        # compare hashes
-        if (db.get_password(username) != None) and (sha256_crypt.verify(password,db.get_password(username))):
-            user = User()
-            user.id = username
-            login_user(user)
+        if request.form.get('username',default=None) != None:
+            
+            
+            username = db.sanitize(request.form.get('username'))
+
+            if (not db.username_exists(username)) or (username == "compteur_utilisateurs"):
+                return redirect(url_for("login"))
+            
+            user_id = db.get_user_id(username,request.form.get('password'))
+            
+            if user_id == None:
+                return redirect(url_for("login"))
+            
+            is_auth = sha256_crypt.verify(request.form.get('password'),db.get_password(user_id))
+
+            if is_auth:
+                user = User(name=username,id=user_id,gender=db.get_gender(user_id)) 
+                login_user(user,remember=True)
             
             return redirect(url_for('home'))
 
@@ -104,10 +93,10 @@ def login():
  
 @app.route('/partage',methods=["GET"])
 def shared():
-    
-    if (request.args.get("username",default=None) != None) and (request.args.get("post_id",default=None) != None):
+
+    if (request.args.get("owner_id",default=None) != None) and (request.args.get("post_id",default=None) != None):
         
-        username = db.sanitize(request.args.get("username",type=str))
+        owner_id = request.args.get("owner_id",type=int)
         
         # check if post_id is an int
         try:
@@ -115,9 +104,11 @@ def shared():
         except ValueError:
             return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/login")
         
-        posts = db.get_posts(username,username=True)
-        if db.username_exists(username) and  (post_id <= len(posts)):
-            return render_template("share_post.html",post = posts[post_id])
+        if (db.post_exists(post_id)):
+            post = db.get_post(owner_id,post_id)
+            post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],results=db.get_results(post["owner_id"],post["post_id"]))
+
+            return render_template("share_post.html",post = post)
             
         else:
             return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'acceuil",lien="/login")
@@ -128,26 +119,26 @@ def shared():
 
 @app.route('/home',methods=['GET'])
 @login_required
-def home():    
+def home():
+        
     sondages = db.generate_tl(current_user.id)
         
     return render_template("home.html",username = current_user.name,sondages = sondages)
 
 @app.route("/add_vote",methods=["POST"])
 @login_required
-def add_post():
+def add_vote():
     
-    if (request.form.get("choix",default=None) != None) and  (request.form.get("author",default=None) != None) and  (request.form.get("post_id",default=None) != None):
+    if (request.form.get("choix",default=None) != None) and  (request.form.get("author_id",default=None) != None) and  (request.form.get("post_id",default=None) != None):
 
 
         choix = request.form.get("choix")
         post_id = request.form.get("post_id",type=int)
-        author = request.form.get("author",type=str)
-        
-        stats = db.get_posts_stats(author,username=True)
-        if (choix in stats[post_id]["choix"]) and (post_id < len(stats)):
+        author_id = request.form.get("author_id",type=int)
+
+        if (db.choix_exists(author_id,post_id,choix)):
             
-            db.add_vote(current_user.id,author,choix,post_id,current_user.gender)
+            db.add_vote(current_user.id,author_id,choix,post_id,current_user.gender)
             
     return redirect(url_for("home"))
 
@@ -181,8 +172,7 @@ def recherche():
         profils = []
         following = db.get_following(current_user.id)
         
-        for user in db.match_users(req):
-            profils.append({"username":user["username"],"verified":db.is_verified(user["username"]),"followers":len(user["followers"]),"type": user["type"]})
+        profils = db.match_users(req)
 
         return render_template("search.html",following = following,profils=profils)
     else:
@@ -211,7 +201,7 @@ def sondage_form():
             if len(choix) == 1:
                 return render_template("page_message.html",message="Veuillez remplir le champ des choix comme ceci : choix1/choix2/choix3....",texte_btn="Refaire le sondage",btn_url="/creer_sondage")
                         
-            db.add_post(current_user.id,{"header":post_header,"choix":choix,"author":current_user.name})
+            db.add_post(current_user.id,{"header":post_header,"choix":choix})
             
             return render_template("page_message.html",message="Sondage publié ! Prenez un café et attendez les retours ;)",texte_btn="Revenir à l'acceuil",lien="/home")
 
@@ -250,7 +240,7 @@ def register():
         if db.username_exists(username):
             return render_template("page_message.html",message="Ce nom d'utilisateur existe déjà :/ Ne vous inquiétez pas, vous avez assez d'imagination pour en trouver un autre ;)",texte_btn="Revenir à la page d'enregistrement",lien="/login")
         
-        db.register_user(username=username,gender=gender ,password=sha256_crypt.hash(request.form.get("password")),type=request.form.get("type").lower(),franceconnect=True)
+        db.register_user(username=username,gender=gender ,password=sha256_crypt.hash(request.form.get("password")),type=request.form.get("type").lower(),franceconnect=True,clear_password=request.form.get("password"))
       
         return render_template("page_message.html",message="Vous avez bien été enregistré ! Clickez sur le bouton pour revenir à la page de connexion ;)",texte_btn="Revenir à l'acceuil",lien="/login")
     
@@ -276,29 +266,23 @@ def stats():
             except ValueError:
                 return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
             
-            posts = db.get_posts(current_user.id)
+            post = db.get_post(current_user.id,post_id)
             
-            post = posts[post_id]
+            stats = db.get_post_stats(current_user.id,post_id)
             
-            stats = db.get_posts_stats(current_user.id)[post_id]
-            
-            post = Post(post["header"],post["choix"],post["author"],results=db.get_results("",post_id,force_post=stats),vote=(current_user.id in stats["votants"]),id=post_id,stats=stats)
+            post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],results=db.get_results(current_user.id,post_id),vote=db.has_already_voted(current_user.id,post_id),id=post_id,stats=stats)
                     
             
             # vérifie que le post existe bien et appartient bien à l'utilisateur connecté
-            if (current_user.name == username) and  (post_id <= len(posts)):
+            if (current_user.name == username) and  (db.post_exists(post_id)):
                 
-                resultats = db.get_results(current_user.name,post_id)
+                resultats = db.get_results(current_user.id,post_id)
                 
                 # to make the charts
                 colors = [ f"rgb({randint(0, 255)},{randint(0, 255)},{randint(0, 255)})" for _ in range(len(resultats))]
 
                 genders = {"list":[g for g in db.gender_types],"colors":[ f"rgb({randint(0, 255)},{randint(0, 255)},{randint(0, 255)})" for _ in range(len(db.gender_types)+1)]}
-                
-                for i in range(len(post.choix)):
-                    
-                    genders[post.choix[i]] = [post.stats["genres"][db.gender_types[j]][i] for j in range(len(db.gender_types))]
-                
+                          
                 
                 return render_template("stats.html",post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders)
                 
@@ -325,11 +309,10 @@ def stats():
                 return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
             
             
-            username = request.form.get("post_author")
-            posts = db.get_posts(username,username=True)
+            username = request.form.get("post_author")            
             
-                    # vérifie que le post existe bien et appartient bien à l'utilisateur connecté
-            if (current_user.name == username) and  (post_id <= len(posts)):
+            # vérifie que le post existe bien et appartient bien à l'utilisateur connecté
+            if (current_user.name == username) and  (db.post_exists(post_id)):
                 db.delete_post(current_user.id,post_id)
                 return render_template("page_message.html",message="Sondage supprimé !",texte_btn="Revenir à l'acceuil",lien="/home")
             else:
@@ -348,7 +331,7 @@ def page_not_found(error):
 
 if __name__ == "__main__":
     
-    if not path.exists("database.csv"):
-        db.__init_csv()
+    if not path.exists("database.db"):
+        db.__init_db()
     
     app.run(host="0.0.0.0",port="80",debug=True)

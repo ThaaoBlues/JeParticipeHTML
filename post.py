@@ -3,7 +3,7 @@ from base64 import b64decode
 class Post:
     
     
-    def __init__(self,header:bytes,choix:list,author:str,results={},vote=False,id=0,stats="") -> None:
+    def __init__(self,header:bytes,choix:list,author:str,author_id:int,results={},vote=False,id=0,stats="") -> None:
         """[summary]
 
         Args:
@@ -11,10 +11,11 @@ class Post:
             choix (list): [description]
         """
         
-        self.header = self.unsanitize(header)
+        self.header = header
         
-        self.choix = [self.unsanitize(c) for c in choix] 
+        self.choix = choix
         
+        self.author_id = author_id
         self.author = author
         
         self.vote = vote

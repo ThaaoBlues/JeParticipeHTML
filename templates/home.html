@@ -50,7 +50,7 @@
 
         <div name="post" class="card mt-4 mx-3" style="width: auto; min-width: 350px;">
           <div class="card-header">
-              <a class="bi bi-share-fill mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author}}',{{post.id}});"></a>
+              <a class="bi bi-share-fill mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author_id}}',{{post.id}});"></a>
             Publié par {{post.author}}
             {%if post.author == username%}
                 <button class="btn btn-blue mx-2 btn-sm float-end" onclick="window.location.href='/stats?username={{username}}&post_id={{post.id}}'" style="width:fit-content">Stats</button>
@@ -73,7 +73,7 @@
                   {%else%}
                   <form action="add_vote" method="POST">
                     <div class="row">
-                      <input name="author" class="d-none" value="{{post.author}}"  hidden>
+                      <input name="author_id" class="d-none" value="{{post.author_id}}"  hidden>
                       <input name="post_id" class="d-none" value="{{post.id}}"  hidden>
                       <input name="choix" class="d-none" value="{{choix}}"  hidden>
                     </div>
@@ -100,9 +100,9 @@
 
 <script>
 
-    function partage_sondage(username,post_id){
+    function partage_sondage(owner_id,post_id){
 
-      navigator.clipboard.writeText(window.location.hostname+"/partage?username="+username+"&post_id="+post_id);
+      navigator.clipboard.writeText(window.location.hostname+"/partage?owner_id="+owner_id+"&post_id="+post_id);
 
       alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
     }
