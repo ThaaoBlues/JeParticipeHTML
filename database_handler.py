@@ -230,15 +230,22 @@ class DataBase:
    
     def match_users(self,query:str)->list:
         query = self.sanitize(query)
-        # dict {"username":user,"followers":self.get_followers(user),"type":self.get_type(user)}
-        users = self.cursor.execute("SELECT username,user_id,type,is_verified FROM USERS WHERE username=?",(query,)).fetchall()
+        users = self.cursor.execute("SELECT username,user_id,type,is_verified FROM USERS").fetchall()
         
         #fetchall to dict
         users = [dict(row) for row in users]
         
-        for user in users:
-            user["followers"] = len(self.get_followers(user["user_id"]))
-        print(users)
+        i = 0        
+        while i<len(users):
+            
+            if SequenceMatcher(None,query,users[i]["username"]).ratio() >= 0.6:
+                users[i]["followers"] = len(self.get_followers(users[i]["user_id"]))
+            else:
+                users.pop(i)
+                
+            i += 1
+                       
+        
         return users     
     
     def get_type(self,user_id:int)->str:
@@ -248,7 +255,8 @@ class DataBase:
         return self.cursor.execute("SELECT is_verified FROM USERS WHERE user_id=?",(user_id,)).fetchone()[0]
     
     def username_exists(self,username:str)->bool:
-        return self.match_users(username) != []
+        return self.cursor.execute("SELECT username FROM USERS WHERE username=?",(username,)).fetchall() != []
+
     
     def choix_exists(self,owner_id:int,post_id:int,choix:str):
         choix = self.sanitize(choix,text=True)
