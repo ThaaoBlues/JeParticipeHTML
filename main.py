@@ -204,12 +204,10 @@ def recherche():
             if request.form.get("action") == "unfollow":
                 
                 db.unfollow(current_user.id,user)
-                db.del_follower(db.get_user_id(user),current_user.name)
                 
             elif request.form.get("action") == "follow":
                 
                 db.follow(current_user.id,user)
-                db.add_follower(db.get_user_id(user),current_user.name)
             
         return redirect(f"/recherche?req={req}")
     

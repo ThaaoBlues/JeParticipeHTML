@@ -206,9 +206,6 @@ class DataBase:
     def get_votants(self,post_author:str,post_id:int)->list:
         
         return self.get_posts_stats(post_author)[post_id]["votants"]
-                 
-    def del_follower(self,user_id:str,username:str):
-        self.__remove_from("user_id",user_id,"followers",username)
        
     def generate_tl(self,user_id:int)->list:
         
@@ -257,7 +254,6 @@ class DataBase:
     def username_exists(self,username:str)->bool:
         return self.cursor.execute("SELECT username FROM USERS WHERE username=?",(username,)).fetchall() != []
 
-    
     def choix_exists(self,owner_id:int,post_id:int,choix:str):
         choix = self.sanitize(choix,text=True)
         return self.cursor.execute("SELECT * FROM CHOIX WHERE choix=? AND owner_id=? AND post_id=?",(choix,owner_id,post_id)).fetchall() != []
