@@ -369,10 +369,10 @@ def parametres_sondage():
             post_id = request.args.get("post_id",type=int,default=None)
             owner_id = request.args.get("owner_id",type=int,default=None)
         except ValueError:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
 
         if (post_id == None) or (owner_id == None):
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
         
         #check if post exists and belongs to the current user
         if db.post_exists(post_id) and (owner_id == current_user.id):
@@ -384,7 +384,7 @@ def parametres_sondage():
         # else throw an error message
         else:
             
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible pour vous ou n'a jamais existé",texte_btn="Revenir à l'acceuil",lien="/home")
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible pour vous ou n'a jamais existé",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
 
 
             
@@ -400,7 +400,7 @@ def parametres_sondage():
             post_id = request.form.get("post_id",default=None,type=int)
             choix_ids = [ele[0] for ele in request.form.getlist("choix_ids",type=list)]
         except ValueError:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
 
         
         # check if every params are not None, if post belongs to the current user, if each choice belongs to the right post and if post exists
@@ -410,7 +410,7 @@ def parametres_sondage():
             choix = list(filter(None, choix.split("/")))              
             
             if len(choix) == 1:
-                return render_template("page_message.html",message="Veuillez remplir le champ des choix comme ceci : choix1/choix2/choix3....",texte_btn="Refaire le sondage",btn_url="/creer_sondage")
+                return render_template("page_message.html",message="Veuillez remplir le champ des choix comme ceci : choix1/choix2/choix3....",texte_btn="Refaire le sondage",btn_url=request.url)
 
             #everything is okay
             else:
