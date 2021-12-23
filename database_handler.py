@@ -207,13 +207,16 @@ class DataBase:
         
         return self.get_posts_stats(post_author)[post_id]["votants"]
        
-    def generate_tl(self,user_id:int)->list:
+    def generate_tl(self,user_id:int,self_only=False)->list:
         
         
         # get posts general info as dict
         posts = []
         
-        for id in self.get_following(user_id):
+        following = self.get_following(user_id) if self_only else [user_id]
+        
+        
+        for id in following :
             
             for post in self.get_all_posts(id):
                 posts.append(post)

@@ -65,7 +65,7 @@
         <div name="post" class="card mt-4 mx-3" style="width: auto; min-width: 350px;">
           <div class="card-header">
             <a class="bi bi-share-fill mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author_id}}',{{post.id}});"></a>
-            <a class="bi bi-gear-fill" style="color: black;"></a>
+            <a class="bi bi-gear-fill mx-2" style="color: black;" href="/parametres_sondage?post_id={{post.id}}"></a>
             <button class="btn btn-blue mx-2 btn-sm float-end" onclick="window.location.href='/stats?username={{username}}&post_id={{post.id}}'" style="width:fit-content">Stats</button>
             
         </div>

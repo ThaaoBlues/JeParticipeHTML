@@ -270,14 +270,6 @@ def logout():
     return redirect("/")
 
 
-@app.route("/post",methods=["GET"])
-@login_required
-def post():
-    
-    if request.method == "GET":
-        return render_template("post.html")
-
-
 @app.route('/register',methods=["POST"])
 def register():
     
@@ -301,7 +293,7 @@ def register():
         return render_template("page_message.html",message="Un problème est survenu lors de votre enregistrement :/",texte_btn="Revenir à l'acceuil",lien="/")
     
 
-@app.route("/stats",methods=["GET","POST"])
+@app.route("/stats",methods=["GET"])
 @login_required
 def stats():
     
@@ -349,13 +341,24 @@ def stats():
         else:
             return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'acceuil",lien="/home")
     
-    
+@app.route("/mes_sondages",methods=["GET","POST"])
+@login_required
+def mes_sondages():
+    sondages = db.generate_tl(current_user.id,self_only=True)
+        
+    return render_template("my_posts.html",username = current_user.name,sondages = sondages)
+
+@app.route("/parametres_sondage",methods=["GET","POST"])
+@login_required
+def parametres_sondage():
+    pass
+
+
+@app.route("/supprimer_sondage",methods=["POST"])
+@login_required
+def supprimer_sondage():
     # post pour supprimer le sondage
-    elif request.method == "POST":
-        
-        
-        
-        
+    if request.method == "POST":
         
         if (request.form.get("post_author",default=None) != None) and (request.form.get("post_id",default=None) != None):
 
@@ -378,6 +381,8 @@ def stats():
         else:
             return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'acceuil",lien="/home")
     
+
+
 @app.errorhandler(404)
 def page_not_found(error):
     return redirect(url_for("home"))
