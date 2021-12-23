@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,32 +47,52 @@
             </form>
           </div>
         </div>
-    </nav>
+      </nav>
 
     <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
 
-        <div>
-        <!--anonymous votes-->
 
-            <form action="post_settings" method="post">
+    {%if sondages == []%}
+      <div class="mt-4">
+          <h2 class="mt-4 text-center text-break">Votre fil est vide ! Recherchez des utilisateurs dans la barre en haut ou allez faire une petite pause ;)</h2>
+      </div>  
+    {%endif%}
 
-            </form>
+      <div class="card-columns">
+        
+        {%for post in sondages%}
 
+        <div name="post" class="card mt-4 mx-3" style="width: auto; min-width: 350px;">
+          <div class="card-header">
+            <a class="bi bi-share-fill mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author_id}}',{{post.id}});"></a>
+            <a class="bi bi-gear-fill" style="color: black;"></a>
+            <button class="btn btn-blue mx-2 btn-sm float-end" onclick="window.location.href='/stats?username={{username}}&post_id={{post.id}}'" style="width:fit-content">Stats</button>
+            
         </div>
-        <div>
-            <!--disable all votes (imply to make the post disappear from timelines except his)-->
-            <form action="post_settings" method="post">
 
-            </form>
+          <div class="row mx-3 mb-3 justify-content-md-center">
 
-        </div>
-        <div>
-            <!--suppress post-->
-            <form action="post_settings" method="post">
+            <div clas="card-body">
 
-            </form>
+              <p class="text-break text-center mt-2">{{post.header}}</p>
 
-        </div>
+              <hr>
+              <ul class="list-group list-group-flush">
+
+                {%for choix in post.choix%}
+                    <a class="btn btn-primary mt-2" style="width:100%;">{{choix}} : {{post.resultats[choix]}}% des votes.</a>
+                {%endfor%}
+              </ul>
+            </div>
+          </div>
+        </div> 
+        {%endfor%}
+      </div>
+              
+
+
+      </div>
+
 
     </div>
     
