@@ -183,7 +183,9 @@ class DataBase:
         return post
         
     def post_exists(self,post_id:int):
-        return self.cursor.execute("SELECT * FROM POSTS WHERE post_id = ?",(post_id,)).fetchall() != []
+        print(post_id)
+        print(self.cursor.execute("SELECT * FROM POSTS WHERE post_id=?",(post_id,)).fetchall())
+        return self.cursor.execute("SELECT * FROM POSTS WHERE post_id=?",(post_id,)).fetchall() != []
         
     def get_results(self,owner_id:int,post_id:int)->list:
 

@@ -367,7 +367,7 @@ def parametres_sondage():
         # check request args
         try:
             post_id = request.args.get("post_id",type=int,default=None)
-            owner_id = post_id = request.args.get("owner_id",type=int,default=None)
+            owner_id = request.args.get("owner_id",type=int,default=None)
         except ValueError:
             return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
 
@@ -375,7 +375,7 @@ def parametres_sondage():
             return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
         
         #check if post exists and belongs to the current user
-        if db.post_exists(post_id) and (owner_id == int(current_user.id)):
+        if db.post_exists(post_id) and (owner_id == current_user.id):
             post = db.get_post(owner_id,post_id)
             post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],anon_votes=post["anon_votes"],choix_ids=db.get_choix_ids(post["post_id"]))
             
