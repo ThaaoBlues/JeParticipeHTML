@@ -11,26 +11,26 @@
 </head>
 <body>
 
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
-        <a class="navbar-brand mb-2" href="/home">JeParticipe</a>
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <button class="btn btn-primary active mb-2" onclick="window.location.href='/logout'">Déconnection</Button>
-          </li>
-        </ul>
-       <button class="btn btn-success btn-primary me-2 mb-2" onclick="window.location.href='/creer_sondage'">Créer un sondage</button>
-        <form class="d-flex" action="recherche" method="GET">
-          <input class="form-control me-2 mb-2" type="search" placeholder="Rechercher" aria-label="Search" name="req">
-          <button class="btn btn-outline-success mb-2" type="submit">Rechercher</button>
-        </form>
-      </div>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+      <a class="navbar-brand mb-2" href="/home">JeParticipe</a>
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <button class="btn btn-primary active mb-2" onclick="window.location.href='/logout'">Déconnection</Button>
+        </li>
+      </ul>
+      <button class="btn btn-success btn-primary me-2 mb-2" onclick="window.location.href='/creer_sondage'">Créer un sondage</button>
+      <form class="d-flex" action="recherche" method="GET">
+        <input class="form-control me-2" type="search" placeholder="Rechercher" aria-label="Search" name="req">
+        <button class="btn btn-outline-success" type="submit">Rechercher</button>
+      </form>
     </div>
-  </nav>
+  </div>
+</nav>
 
 
 
@@ -55,13 +55,13 @@
                         {%endif%}
                          ( suivi par {{profil["followers"]}} personne(s) )
                     </div>
-                    {%if not profil["username"] in following%}
+                    {%if not profil["user_id"] in following%}
                         <button class="btn btn-success mt-2" type="submit">S'abonner</button>
-                        <input hidden value="{{profil['username']}}" name="username"/>
+                        <input hidden value="{{profil['user_id']}}" name="user_id"/>
                         <input hidden value="follow" name="action"/>
                     {%else%}
                         <button class="btn btn-danger mt-2" type="submit">Se désabonner</button>
-                        <input hidden value="{{profil['username']}}" name="username"/>
+                        <input hidden value="{{profil['user_id']}}" name="user_id"/>
                         <input hidden value="unfollow" name="action"/>
                     {%endif%}
                 </div>

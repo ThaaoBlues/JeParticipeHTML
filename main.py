@@ -196,18 +196,23 @@ def recherche():
     req = db.sanitize(request.args.get("req"))
 
     if request.method == "POST":
-        if (request.form.get("username",default=None) != None) and (request.form.get("action",default=None) != None):
+        if (request.form.get("user_id",default=None) != None) and (request.form.get("action",default=None) != None):
            
-            # don't forget to remove all spacial chars
-            user = db.sanitize(request.form.get("username"))
-            
+            # don't forget to check if the parameter is of the right type
+            try:
+                user_id = request.form.get("user_id",type=int)
+            except ValueError:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+
+                
+                
             if request.form.get("action") == "unfollow":
                 
-                db.unfollow(current_user.id,user)
+                db.unfollow(current_user.id,user_id)
                 
             elif request.form.get("action") == "follow":
                 
-                db.follow(current_user.id,user)
+                db.follow(current_user.id,user_id)
             
         return redirect(f"/recherche?req={req}")
     
