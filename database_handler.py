@@ -257,10 +257,15 @@ class DataBase:
     def username_exists(self,username:str)->bool:
         return self.cursor.execute("SELECT username FROM USERS WHERE username=?",(username,)).fetchall() != []
 
-    def choix_exists(self,owner_id:int,post_id:int,choix:str):
-        choix = self.sanitize(choix,text=True)
-        return self.cursor.execute("SELECT * FROM CHOIX WHERE choix=? AND owner_id=? AND post_id=?",(choix,owner_id,post_id)).fetchall() != []
-    
+    def choix_exists(self,owner_id:int,post_id:int,choix,check_id=False):
+        
+        if check_id:
+            return self.cursor.execute("SELECT * FROM CHOIX WHERE choix_id=? AND owner_id=? AND post_id=?",(choix,owner_id,post_id)).fetchall() != []
+
+        else:
+            choix = self.sanitize(choix,text=True)
+            return self.cursor.execute("SELECT * FROM CHOIX WHERE choix=? AND owner_id=? AND post_id=?",(choix,owner_id,post_id)).fetchall() != []
+        
     def get_user_id(self,username:str,password:str)->str:
         """get user id from username and password by
         checking if passwords match
@@ -406,3 +411,57 @@ class DataBase:
     def unsanitize(self,string:bytes)->str:
         
         return b64decode(string).decode("utf-8")
+    
+    def update_choix(self,post_id:int,choix_id:int,new_text:str):
+        """change le texte d'un choix
+        (l'assainissement est fait dans la méthode)
+
+        Args:
+            post_id (int): [description]
+            choix_id (int): [description]
+            new_text (str): [description]
+        """
+        
+        new_text = self.sanitize(new_text,text=True)
+        
+        self.cursor.execute("UPDATE CHOIX SET choix=? WHERE post_id=? AND choix_id=?",(new_text,post_id,choix_id))
+        self.connector.commit()
+        
+    def update_anon_votes(self,post_id:int,switch:bool):
+        """change le fait qu'on autorise les votes anonymes ou non
+
+        Args:
+            post_id (int): [description]
+            switch (bool): True si oui False sinon
+        """
+        self.cursor.execute("UPDATE POSTS SET anon_votes=? WHERE post_id=?",(switch,post_id))
+        self.connector.commit()
+        
+    def update_post_header(self,post_id:int,new_header:bool):
+        """
+        change le texte de tête du sondage
+        (l'assainissement est fait dans la méthode)
+
+        """
+        
+        new_header = self.sanitize(new_header,text=True)
+        
+        self.cursor.execute("UPDATE POSTS SET header=? WHERE post_id=?",(new_header,post_id))
+        self.connector.commit()
+        
+        
+    def get_choix_ids(self,post_id:int)->list:
+        """retourne une liste de toutes les ids des choix d'un post
+
+        Args:
+            post_id (int): [description]
+            choix (list): [description]
+
+        Returns:
+            list: [description]
+        """
+        
+        choix_ids = [dict(r) for r in self.cursor.execute("SELECT choix_id FROM CHOIX WHERE post_id=?",(post_id,)).fetchall()]
+        choix_ids = [c_id["choix_id"] for c_id in choix_ids]
+        
+        return choix_ids

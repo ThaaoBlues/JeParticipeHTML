@@ -27,7 +27,7 @@ class User(UserMixin):
     
     def __init__(self, name="", id=0, active=True,gender="autre"):
         self.name = name
-        self.id = id
+        self.id = int(id)
         self.active = active
         self.gender = gender
 
@@ -202,7 +202,7 @@ def recherche():
             try:
                 user_id = request.form.get("user_id",type=int)
             except ValueError:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
 
                 
                 
@@ -237,19 +237,28 @@ def sondage_form():
     
     
     if request.method == "GET":
-        return render_template("create_post.html")
+        return render_template("create_post.html",username=current_user.name)
     
     
     elif request.method == "POST":
         
         post_header = request.form.get("post_header",default=None)
         choix = request.form.get("choix",default=None)
-        anon_votes = request.form.get("anon_votes",default=False,type=bool)
+        
+        try:
+            anon_votes = request.form.get("anon_votes",default=False,type=bool)
+        except ValueError:
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+
+        
         
         if (choix != None) and (post_header != None) and (anon_votes != None):
-                        
+            
+            #remove any empty string
+            choix = list(filter(None, choix.split("/")))
             # tries to not transmit XSS
-            choix = [db.sanitize(c,text=True) for c in choix.split("/")]
+            choix = [db.sanitize(c,text=True) for c in choix]
+            
             
             if len(choix) == 1:
                 return render_template("page_message.html",message="Veuillez remplir le champ des choix comme ceci : choix1/choix2/choix3....",texte_btn="Refaire le sondage",btn_url="/creer_sondage")
@@ -333,7 +342,7 @@ def stats():
                 for c in post_dict["choix"]:
                     sanitized_choix[c] = db.sanitize(c)
                 
-                return render_template("stats.html",post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders,sanitized_choix=sanitized_choix)
+                return render_template("stats.html",username=current_user.name,post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders,sanitized_choix=sanitized_choix)
                 
             else:
                 return render_template("page_message.html",message="Vous demandez les statistiques d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'acceuil",lien="/home")
@@ -351,8 +360,68 @@ def mes_sondages():
 @app.route("/parametres_sondage",methods=["GET","POST"])
 @login_required
 def parametres_sondage():
-    pass
+    
+    
+    if request.method == "GET":
+        
+        # check request args
+        try:
+            post_id = request.args.get("post_id",type=int,default=None)
+            owner_id = post_id = request.args.get("owner_id",type=int,default=None)
+        except ValueError:
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
 
+        if (post_id == None) or (owner_id == None):
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+        
+        #check if post exists and belongs to the current user
+        if db.post_exists(post_id) and (owner_id == int(current_user.id)):
+            post = db.get_post(owner_id,post_id)
+            post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],anon_votes=post["anon_votes"],choix_ids=db.get_choix_ids(post["post_id"]))
+            
+            return render_template("post_settings.html",post=post,username=current_user.name)
+        
+        # else throw an error message
+        else:
+            
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible pour vous ou n'a jamais existé",texte_btn="Revenir à l'acceuil",lien="/home")
+
+
+            
+    
+    elif request.method == "POST":
+        
+        post_header = request.form.get("post_header",default=None)
+        choix = request.form.get("choix",default=None)
+        # check if everything is from the right type
+        try:
+            anon_votes = request.form.get("anon_votes",default=False,type=bool)
+            owner_id = request.form.get("owner_id",default=None,type=int)
+            post_id = request.form.get("post_id",default=None,type=int)
+            choix_ids = [ele[0] for ele in request.form.getlist("choix_ids",type=list)]
+        except ValueError:
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+
+        
+        # check if every params are not None, if post belongs to the current user, if each choice belongs to the right post and if post exists
+        if (choix != None) and (post_header != None) and (anon_votes != None) and (choix_ids != []) and (not False in [db.choix_exists(owner_id,post_id,c,check_id=True) for c in choix_ids]) and (db.post_exists(post_id)) and (owner_id == current_user.id):
+            
+            #remove any empty string
+            choix = list(filter(None, choix.split("/")))              
+            
+            if len(choix) == 1:
+                return render_template("page_message.html",message="Veuillez remplir le champ des choix comme ceci : choix1/choix2/choix3....",texte_btn="Refaire le sondage",btn_url="/creer_sondage")
+
+            #everything is okay
+            else:
+                db.update_anon_votes(post_id,anon_votes)
+                
+                for c_id,c_text in zip(choix_ids,choix):
+                    db.update_choix(post_id,c_id,c_text)
+                
+                db.update_post_header(post_id,post_header)
+        
+                return redirect("/mes_sondages")
 
 @app.route("/supprimer_sondage",methods=["POST"])
 @login_required
