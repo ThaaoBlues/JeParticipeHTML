@@ -36,40 +36,28 @@
 
     <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
 
-      {%if error%}
-      <h3>Aucun utilisateur correspondant à la recherche n'a été trouvé</h3>
-  {%endif%}
-  <div class="card-columns">
-      {%for profil in profils%}
+        <div>
+        <!--anonymous votes-->
 
-      <form method="POST">
-          <div name="carte_profil" class="card text-center mt-2" style="width: 400px;">
-              <div class="card-title mxy-auto mb-2 ">{{profil["username"]}}
-                  {%if profil["is_verified"]%}
-                      <i class="bi bi-person-check ml-2" style = "color:blue;"></i>
-                  {%endif%}
-                  {%if profil["type"] == "entreprise"%}
-                      <i class="bi bi-building ml-2" style = "color:blue;"></i>
-                  {%elif profil["type"] == "institution publique"%}
-                      <i class="bi bi-flag-fill ml-2" style = "color:blue;"></i>
-                  {%endif%}
-                   ( suivi par {{profil["followers"]}} personne(s) )
-              </div>
-              {%if not profil["user_id"] in following%}
-                  <button class="btn btn-success mt-2" type="submit">S'abonner</button>
-                  <input hidden value="{{profil['user_id']}}" name="user_id"/>
-                  <input hidden value="follow" name="action"/>
-              {%else%}
-                  <button class="btn btn-danger mt-2" type="submit">Se désabonner</button>
-                  <input hidden value="{{profil['user_id']}}" name="user_id"/>
-                  <input hidden value="unfollow" name="action"/>
-              {%endif%}
-          </div>
-          <input name="req" value="{{req}}" hidden/>
-      </form>
-      
-      {%endfor%}
-  </div>
+            <form action="post_settings" method="post">
+
+            </form>
+
+        </div>
+        <div>
+            <!--disable all votes (imply to make the post disappear from timelines except his)-->
+            <form action="post_settings" method="post">
+
+            </form>
+
+        </div>
+        <div>
+            <!--suppress post-->
+            <form action="post_settings" method="post">
+
+            </form>
+
+        </div>
 
     </div>
     
