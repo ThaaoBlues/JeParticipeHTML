@@ -44,9 +44,9 @@
 
             <div class="card-group">
 
-                <div class="col-sm-3 m-auto">
+                <div class="col-sm-3 mx-5">
 
-                    <div name="post" class="card mt-4 mx-3 w-80" style="width: auto; min-width: 350px;">
+                    <div name="post" class="card mt-4 mx-3 w-60" style="width: auto; min-width: 100px;">
                         
                         <div class="card-header">
                             <a class="bi bi-share-fill mt-2 mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author_id}}',{{post.id}});"></a>
@@ -217,6 +217,12 @@
         column-count: 3;
       }
   }
+
+
+  html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
 
 </style>
 
