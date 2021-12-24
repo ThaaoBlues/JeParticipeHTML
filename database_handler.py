@@ -1,9 +1,5 @@
-from re import sub, escape
-from shutil import move
-from json import dumps, loads
-from sqlite3.dbapi2 import Cursor
-from sqlite3 import ProgrammingError
-from passlib.handlers.sha2_crypt import sha256_crypt, sha512_crypt
+from re import sub
+from passlib.handlers.sha2_crypt import sha256_crypt
 from post import Post
 from difflib import SequenceMatcher
 from os import path
