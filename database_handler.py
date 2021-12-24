@@ -324,7 +324,7 @@ class DataBase:
             
             # init profile md file
             with open(f"static/users_profile_md/{user_id}.md","w") as f:
-                f.write("# Bonjour ! Je suis nouveau ici ;)\n___##une seconde partie ?\n- eh oui !\- pour plus d'infos sur le markdown, n'hésitez pas à consulter : [ce site](https://www.markdownguide.org/cheat-sheet/)")
+                f.write("# Bonjour ! Je suis nouveau ici ;)\n ___ \n## une seconde partie ?\n- eh oui !\n- pour plus d'infos sur le markdown, n'hésitez pas à consulter : [ce site](https://www.markdownguide.org/cheat-sheet/)")
                 f.close()
             # add user to followers counter
             self.follow(int(user_id),1)
