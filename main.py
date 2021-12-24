@@ -12,7 +12,6 @@ from time import sleep
 
 #init flask app
 app = Flask(__name__)
-#app.config["UPLOAD_FOLDER"] = "static/users_profile.md"
 
 db = database_handler.DataBase()
 
@@ -327,7 +326,7 @@ def register():
             return render_template("page_message.html",message="Ce nom d'utilisateur existe déjà :/ Ne vous inquiétez pas, vous avez assez d'imagination pour en trouver un autre ;)",texte_btn="Revenir à la page d'enregistrement",lien="/login")
         
         db.register_user(username=username,gender=gender ,password=sha256_crypt.hash(request.form.get("password")),type=request.form.get("type").lower(),franceconnect=True,clear_password=request.form.get("password"))
-      
+        
         return render_template("page_message.html",message="Vous avez bien été enregistré ! Clickez sur le bouton pour revenir à la page de connexion ;)",texte_btn="Revenir à l'acceuil",lien="/login")
     
     else:
@@ -538,10 +537,11 @@ def page_not_found(error):
 
 
 
-
+"""
 if __name__ == "__main__":
     
     if not path.exists("database.db"):
         db.__init_db()
     
     app.run(host="0.0.0.0",port="80",debug=True)
+"""
