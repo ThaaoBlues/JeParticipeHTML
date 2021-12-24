@@ -9,6 +9,7 @@ from difflib import SequenceMatcher
 from os import path
 from base64 import b64decode, b64encode
 import sqlite3 as sql
+from os import mkdir
 
 class DataBase:
     
@@ -397,6 +398,9 @@ class DataBase:
         c.execute("CREATE TABLE VOTANTS (vote_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix_id INTEGER,username TEXT,voter_id INTEGER,gender TEXT)")
         
         c.close()
+        
+        mkdir("static")
+        mkdir("users_profile.md")
                         
     def sanitize(self,string:str,text=False)->str:
         """sanitize and remove all special chars from a string
