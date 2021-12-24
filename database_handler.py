@@ -2,7 +2,7 @@ from re import sub, escape
 from shutil import move
 from json import dumps, loads
 from sqlite3.dbapi2 import Cursor
-
+from sqlite3 import ProgrammingError
 from passlib.handlers.sha2_crypt import sha256_crypt, sha512_crypt
 from post import Post
 from difflib import SequenceMatcher
@@ -88,8 +88,12 @@ class DataBase:
         Returns:
             str: [description]
         """
-        return dict(self.cursor.execute(f"SELECT username FROM USERS WHERE user_id = ?",(user_id,)).fetchall()[0])["username"]
-              
+        try:
+            return dict(self.cursor.execute(f"SELECT username FROM USERS WHERE user_id = ?",(user_id,)).fetchall()[0])["username"]
+        except:
+            # page is being reloaded to many times
+            return ""
+             
     def get_all_posts_stats(self,owner_id:int)->list:
         
         ret = []
@@ -450,8 +454,7 @@ class DataBase:
         
         self.cursor.execute("UPDATE POSTS SET header=? WHERE post_id=?",(new_header,post_id))
         self.connector.commit()
-        
-        
+         
     def get_choix_ids(self,post_id:int)->list:
         """retourne une liste de toutes les ids des choix d'un post
 
@@ -467,3 +470,7 @@ class DataBase:
         choix_ids = [c_id["choix_id"] for c_id in choix_ids]
         
         return choix_ids
+    
+    
+    def user_exists(self,user_id:int)->bool:
+        return self.cursor.execute("SELECT username FROM USERS WHERE user_id=?",(user_id,)).fetchall() != []

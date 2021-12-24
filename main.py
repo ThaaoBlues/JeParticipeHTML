@@ -1,5 +1,4 @@
 
-import re
 from post import Post
 from passlib.handlers.sha2_crypt import sha256_crypt
 from flask import Flask, session, url_for, render_template,request,redirect
@@ -7,10 +6,16 @@ import database_handler
 from flask_login import login_required, login_user, logout_user, LoginManager, UserMixin, current_user
 from random import choices, randint
 from os import path
+from markdown import markdown
+from html_sanitizer import Sanitizer
+from time import sleep
+
 #init flask app
 app = Flask(__name__)
+#app.config["UPLOAD_FOLDER"] = "static/users_profile.md"
 
 db = database_handler.DataBase()
+
 
 
 # sessions and login manager stuff
@@ -45,10 +50,18 @@ class User(UserMixin):
 @login_manager.user_loader
 def user_loader(user_id):
     
-    user = User(name=db.get_user_name(user_id),id=user_id,gender=db.get_gender(user_id))
-    
-    return user
+    # prevent multiples refresh from one ip to make server crash
+    while True:
+        try:
+            user = User(name=db.get_user_name(user_id),id=user_id,gender=db.get_gender(user_id))
+            return user
+        except:
+            print("exception")
+            sleep(2)
 
+
+        
+        
 @login_manager.unauthorized_handler
 def unauthorized_handler():
     return redirect(url_for("login"))
@@ -107,7 +120,7 @@ def shared():
                 owner_id = request.args.get("owner_id",type=int)
                 vote = True if request.args.get("results") == "True" else False
             except ValueError:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
             
                         
             if (db.post_exists(post_id)):
@@ -118,10 +131,10 @@ def shared():
                 return render_template("share_post.html",post = post)
                 
             else:
-                return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'acceuil",lien="/login")
+                return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'acceuil",lien="/home")
 
         else:
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé ou un paramètre de votre requète a été mal-formé :/ :/",texte_btn="Revenir à l'acceuil",lien="/login")
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé ou un paramètre de votre requète a été mal-formé :/ :/",texte_btn="Revenir à l'acceuil",lien="/home")
     
     
     elif request.method == "POST":
@@ -157,9 +170,16 @@ def shared():
 @app.route('/home',methods=['GET'])
 @login_required
 def home():
-        
-    sondages = db.generate_tl(current_user.id)
-        
+    
+    # prevent user from spam requests
+    while True:
+        try:
+            sondages = db.generate_tl(current_user.id)
+            break
+        except:
+            logout_user()
+            return redirect("/")
+            
     return render_template("home.html",username = current_user.name,sondages = sondages)
 
 @app.route("/add_vote",methods=["POST"])
@@ -193,10 +213,14 @@ def add_vote():
 @login_required
 def recherche():
 
-    req = db.sanitize(request.args.get("req"))
 
+
+    
     if request.method == "POST":
         if (request.form.get("user_id",default=None) != None) and (request.form.get("action",default=None) != None):
+           
+            from_profile = True if request.form.get("from_profile",default=None) else False
+
            
             # don't forget to check if the parameter is of the right type
             try:
@@ -214,11 +238,19 @@ def recherche():
                 
                 db.follow(current_user.id,user_id)
             
-        return redirect(f"/recherche?req={req}")
+            if from_profile:
+                return redirect(f"/profil?user_id={user_id}")
+            else:
+                return redirect(request.url)
+        
+        else:
+            return render_template("page_messae.html")
     
     
     
     elif request.args.get("req",default=None) != None:
+        req = db.sanitize(request.args.get("req"))
+
         profils = []
         following = db.get_following(current_user.id)
         
@@ -228,7 +260,7 @@ def recherche():
 
         return render_template("search.html",following = following,profils=profils,error=error)
     else:
-        return render_template("search.html",profils=[],req=req)
+        return render_template("search.html",profils=[],req="")
 
 
 @app.route("/creer_sondage",methods=["GET","POST"])
@@ -451,6 +483,53 @@ def supprimer_sondage():
             return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'acceuil",lien="/home")
     
 
+@app.route("/profil",methods=["GET"])
+@login_required
+def profil():
+    
+    try:
+        user_id = request.args.get("user_id",default=None,type=int)
+    except ValueError:
+        return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+    
+    
+    
+    if (user_id != None) and (db.user_exists(user_id)):
+        # generate html from markdown
+        with open(f"static/users_profile_md/{user_id}.md","r") as f:
+            
+            md = markdown(f.read(),output_format="html")
+            f.close()
+        # sanitize generated html
+        md = Sanitizer().sanitize(md)
+
+        
+        return render_template("profile.html",md=md,username=current_user.name,user_id=user_id,is_following=(user_id in db.get_following(current_user.id)))
+    else:
+        return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'acceuil",lien="/login")
+
+@app.route("/edit_profil",methods=["GET","POST"])
+@login_required
+def edit_profil():
+    
+    
+        if request.method == "GET":
+            # generate html from markdown
+            with open(f"static/users_profile_md/{current_user.id}.md","r") as f:
+                md = f.read()
+                f.close()
+            
+            return render_template("profile_settings.html",md=md,username=current_user.name,user_id=current_user.id)
+        
+        elif request.method == "POST":
+            
+            # generate html from markdown
+            with open(f"static/users_profile_md/{current_user.id}.md","w") as f:
+                md = request.form.get("profile_desc",default="",type=str)
+                f.write(md.replace("\n",""))
+                f.close()
+            
+            return redirect("edit_profil")
 
 @app.errorhandler(404)
 def page_not_found(error):

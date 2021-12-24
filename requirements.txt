@@ -2,3 +2,5 @@ flask
 gunicorn
 passlib
 flask_login
+markdown
+html_sanitizer

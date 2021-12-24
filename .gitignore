@@ -1,6 +1,7 @@
 *.csv
 */test.py
 *.db
+static/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
