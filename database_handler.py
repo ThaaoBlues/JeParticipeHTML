@@ -13,6 +13,13 @@ class DataBase:
         self.users_types = ["entreprise","institution publique","utilisateur"]
         self.gender_types = ["homme","femme","genre_fluide","non_genre","autre"]
         
+        
+               
+        if not path.exists("static"):
+            mkdir("static")
+            mkdir("static/users_profile_md")
+        
+        
         if not path.exists("database.db"):
             self.__init_db()
             # init database writer
@@ -23,7 +30,6 @@ class DataBase:
         
             
             self.register_user(username="compteur_utilisateurs",gender="autre",type="compteur",franceconnect=True,init=True)
-        
         
         # init database writer
         self.connector = sql.connect("database.db",check_same_thread=False)
@@ -398,9 +404,6 @@ class DataBase:
         c.execute("CREATE TABLE VOTANTS (vote_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix_id INTEGER,username TEXT,voter_id INTEGER,gender TEXT)")
         
         c.close()
-        
-        mkdir("static")
-        mkdir("users_profile.md")
                         
     def sanitize(self,string:str,text=False)->str:
         """sanitize and remove all special chars from a string
