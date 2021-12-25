@@ -11,7 +11,7 @@ class DataBase:
     
     def __init__(self) -> None:
         self.users_types = ["entreprise","institution publique","utilisateur"]
-        self.gender_types = ["homme","femme","genre_fluide","non_genre","autre"]
+        self.gender_types = ["homme","femme","genre_fluide","non_genre","autre","personne_morale"]
         
         
                
