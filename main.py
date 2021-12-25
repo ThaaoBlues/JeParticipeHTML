@@ -408,7 +408,7 @@ def parametres_sondage():
         #check if post exists and belongs to the current user
         if db.post_exists(post_id) and (owner_id == current_user.id):
             post = db.get_post(owner_id,post_id)
-            post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],anon_votes=post["anon_votes"],choix_ids=db.get_choix_ids(post["post_id"]))
+            post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],anon_votes=post["anon_votes"],choix_ids=db.get_choix_ids(post["post_id"]),archive=post["archived"])
             
             return render_template("post_settings.html",post=post,username=current_user.name)
         
@@ -421,7 +421,8 @@ def parametres_sondage():
             
     
     elif request.method == "POST":
-        
+        print(request.form)
+
         post_header = request.form.get("post_header",default=None)
         choix = request.form.get("choix",default=None)
         # check if everything is from the right type
@@ -430,12 +431,14 @@ def parametres_sondage():
             owner_id = request.form.get("owner_id",default=None,type=int)
             post_id = request.form.get("post_id",default=None,type=int)
             choix_ids = [ele[0] for ele in request.form.getlist("choix_ids",type=list)]
+            archive = request.form.get("archive",default=False,type=bool)
         except ValueError:
             return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
 
         
+        
         # check if every params are not None, if post belongs to the current user, if each choice belongs to the right post and if post exists
-        if (choix != None) and (post_header != None) and (anon_votes != None) and (choix_ids != []) and (not False in [db.choix_exists(owner_id,post_id,c,check_id=True) for c in choix_ids]) and (db.post_exists(post_id)) and (owner_id == current_user.id):
+        if (choix != None) and (post_header != None) and (anon_votes != None) and (choix_ids != []) and (archive != None) and (not False in [db.choix_exists(owner_id,post_id,c,check_id=True) for c in choix_ids]) and (db.post_exists(post_id)) and (owner_id == current_user.id):
             
             #remove any empty string
             choix = list(filter(None, choix.split("/")))              
@@ -451,8 +454,14 @@ def parametres_sondage():
                     db.update_choix(post_id,c_id,c_text)
                 
                 db.update_post_header(post_id,post_header)
+                db.update_post_archive_state(post_id,archive)
         
                 return redirect("/mes_sondages")
+        
+        # manque un paramètre de form 
+        else:
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
+
 
 @app.route("/supprimer_sondage",methods=["POST"])
 @login_required

@@ -188,8 +188,6 @@ class DataBase:
         return post
         
     def post_exists(self,post_id:int):
-        print(post_id)
-        print(self.cursor.execute("SELECT * FROM POSTS WHERE post_id=?",(post_id,)).fetchall())
         return self.cursor.execute("SELECT * FROM POSTS WHERE post_id=?",(post_id,)).fetchall() != []
         
     def get_results(self,owner_id:int,post_id:int)->list:
@@ -226,12 +224,15 @@ class DataBase:
         for id in following :
             
             for post in self.get_all_posts(id):
-                posts.append(post)
+                
+                # don't put archived posts if not if "my posts" Tabz
+                if (not post["archived"]) or self_only:
+                    posts.append(post)
         
         
         # make Post objects and gather all missing data
         for i in range(len(posts)):
-            posts[i] = Post(self.unsanitize(posts[i]["header"]),posts[i]["choix"],self.get_user_name(posts[i]["owner_id"]),posts[i]["owner_id"],results=self.get_results(posts[i]["owner_id"],posts[i]["post_id"]),vote=self.has_already_voted(user_id,posts[i]["post_id"]),id=posts[i]["post_id"],stats=self.get_post_stats(posts[i]["owner_id"],posts[i]["post_id"]))
+            posts[i] = Post(self.unsanitize(posts[i]["header"]),posts[i]["choix"],self.get_user_name(posts[i]["owner_id"]),posts[i]["owner_id"],results=self.get_results(posts[i]["owner_id"],posts[i]["post_id"]),vote=self.has_already_voted(user_id,posts[i]["post_id"]),id=posts[i]["post_id"],stats=self.get_post_stats(posts[i]["owner_id"],posts[i]["post_id"]),archive=posts[i]["archived"])
             
         return posts
    
@@ -396,7 +397,7 @@ class DataBase:
                 
         c = sql.connect("database.db").cursor()
         c.execute("CREATE TABLE USERS (user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,username TEXT,password TEXT,age INTEGER,gender TEXT,type TEXT,is_verified BOOL)")
-        c.execute("CREATE TABLE POSTS (post_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,header TEXT,anon_votes BOOL,achived BOOL)")
+        c.execute("CREATE TABLE POSTS (post_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,header TEXT,anon_votes BOOL,archived BOOL)")
         c.execute("CREATE TABLE FOLLOWERS (link_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,user_id INTEGER,follower_id INTEGER)")
         c.execute("CREATE TABLE CHOIX (choix_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix TEXT,votes INTEGER)")
         c.execute("CREATE TABLE VOTANTS (vote_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix_id INTEGER,username TEXT,voter_id INTEGER,gender TEXT)")
@@ -476,14 +477,14 @@ class DataBase:
         
         return choix_ids
     
-    def archive_post(self,post_id:int):
+    def update_post_archive_state(self,post_id:int,archive:bool):
         """set archived to True so the post will not 
         appear in peaple timeline
 
         Args:
             post_id (int): [description]
         """
-        self.cursor.execute("UPDATE POSTS set archived=? WHERE post_id = ?",(post_id,))
+        self.cursor.execute("UPDATE POSTS SET archived=? WHERE post_id = ?",(archive,post_id))
         self.connector.commit()
         
     def user_exists(self,user_id:int)->bool:
