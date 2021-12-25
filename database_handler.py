@@ -36,14 +36,12 @@ class DataBase:
         self.connector.row_factory = sql.Row
         self.cursor = self.connector.cursor()
         
-        
-            
     def add_post(self,user_id:int,post:dict):
         
         # sanitize entries
         post["header"] = self.sanitize(post["header"],text=True)        
         
-        self.cursor.execute("INSERT INTO POSTS (owner_id,header,anon_votes) values(?,?,?)",(user_id,post["header"],post["anon_votes"]))
+        self.cursor.execute("INSERT INTO POSTS (owner_id,header,anon_votes,archived) values(?,?,?,?)",(user_id,post["header"],post["anon_votes"],False))
         post_id = self.cursor.lastrowid
         for choix in post["choix"]:
             self.cursor.execute("INSERT INTO CHOIX (post_id,choix,owner_id,votes) values(?,?,?,?)",(post_id,choix,user_id,0))
@@ -398,7 +396,7 @@ class DataBase:
                 
         c = sql.connect("database.db").cursor()
         c.execute("CREATE TABLE USERS (user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,username TEXT,password TEXT,age INTEGER,gender TEXT,type TEXT,is_verified BOOL)")
-        c.execute("CREATE TABLE POSTS (post_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,header TEXT,anon_votes BOOL)")
+        c.execute("CREATE TABLE POSTS (post_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,header TEXT,anon_votes BOOL,achived BOOL)")
         c.execute("CREATE TABLE FOLLOWERS (link_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,user_id INTEGER,follower_id INTEGER)")
         c.execute("CREATE TABLE CHOIX (choix_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix TEXT,votes INTEGER)")
         c.execute("CREATE TABLE VOTANTS (vote_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix_id INTEGER,username TEXT,voter_id INTEGER,gender TEXT)")
@@ -478,6 +476,15 @@ class DataBase:
         
         return choix_ids
     
-    
+    def archive_post(self,post_id:int):
+        """set archived to True so the post will not 
+        appear in peaple timeline
+
+        Args:
+            post_id (int): [description]
+        """
+        self.cursor.execute("UPDATE POSTS set archived=? WHERE post_id = ?",(post_id,))
+        self.connector.commit()
+        
     def user_exists(self,user_id:int)->bool:
         return self.cursor.execute("SELECT username FROM USERS WHERE user_id=?",(user_id,)).fetchall() != []
