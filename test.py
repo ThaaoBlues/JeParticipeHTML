@@ -16,7 +16,7 @@ from os import path
 #print(db.get_post(2,1))
 #db.register_user(username="test",gender="non_genre",password="prout")
 #db.add_post(1,{"header":"post_header","choix":["choix1","choix2"]})
-#print(db.get_post_stats(1,3))
+print(db.get_post(1))
 #print(db.has_already_voted(1,1))
 #print(db.unsanitize("dGVzdA=="))
 #db.get_choix_ids(2)

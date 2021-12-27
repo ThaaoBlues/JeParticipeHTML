@@ -6,8 +6,11 @@ from difflib import SequenceMatcher
 from os import path
 from base64 import b64decode, b64encode
 import sqlite3 as sql
-from os import mkdir
+from os import mkdir,remove
 from csv import DictWriter
+from zipfile import ZipFile
+from time import sleep
+
 
 class DataBase:
     
@@ -185,7 +188,7 @@ class DataBase:
 
         post["header"] = self.unsanitize(post["header"])
         choix = [dict(row)["choix"] for row in self.cursor.execute("SELECT choix FROM CHOIX WHERE post_id=?",(post["post_id"],))]
-        
+
         post["choix"] = [self.unsanitize(c) for c in choix]
         
         return post
@@ -504,13 +507,14 @@ class DataBase:
         """
         
         stats = self.get_post_stats(post_id)
-        
-        filename = str(randint(0,1234567896)) + ".csv"
+        filename = str(randint(0,1234567896))
+        filename_zip = filename + ".zip"
+        filename_csv = filename + ".csv"
         
         id = 0
         
-        
-        with open(f"static/downloads/{filename}","w") as f:
+        # one user per line
+        with open(f"static/downloads/users_{filename_csv}","w") as f:
             
             csv_writer = DictWriter(f,["id","genre","choix"])
             csv_writer.writeheader()
@@ -527,7 +531,61 @@ class DataBase:
                         id += 1
                         
             f.close()
+            
+        # a line per choice
+        with open(f"static/downloads/choix_{filename_csv}","w") as f:
+            csv_writer = DictWriter(f,["choix","votes"])
+            csv_writer.writeheader()
+            
+            for choix in stats["choix"].keys():
+                row = {"choix":choix,"votes":stats["choix"][choix]}
+                csv_writer.writerow(row)
+                
+            f.close()
+            
+
+        # a line per choice genders split
+        with open(f"static/downloads/choix_et_genres_{filename_csv}","w") as f:
+            fieldnames = ["choix","votes"]
+            fieldnames.extend(self.gender_types) 
+            csv_writer = DictWriter(f,fieldnames)
+            csv_writer.writeheader()
+            
+            # iter throught each choice
+            for choix in stats["choix"].keys():
+                row = {"choix":choix,"votes":stats["choix"][choix]}
+                print(stats["genders"].keys())
+                
+                # get votes count for each gender in one particular choix
+                for g in self.gender_types:
+                    row[g] = stats["genders"][choix][g]
+                    
+                csv_writer.writerow(row)
+            
+            f.close()
+            
+            
+        zipper = ZipFile("static/downloads/"+filename_zip,"w")
+        zipper.write(f"static/downloads/users_{filename_csv}")
+        zipper.write(f"static/downloads/choix_{filename_csv}")
+        zipper.write(f"static/downloads/choix_et_genres_{filename_csv}")
+        zipper.close()
         
-                    
-                    
-        return filename
+        
+        # delete files except zip
+        remove(f"static/downloads/users_{filename_csv}")
+        remove(f"static/downloads/choix_{filename_csv}")
+        remove(f"static/downloads/choix_et_genres_{filename_csv}")
+        
+        return filename_zip
+    
+    
+    def remove_zip(self,filename):
+        """to remove zip file after being sent to user
+
+        Args:
+            filename ([type]): [description]
+        """
+        sleep(60)
+        
+        remove(f"static/downloads/{filename}")

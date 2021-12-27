@@ -10,13 +10,14 @@ from os import path
 from markdown import markdown
 from html_sanitizer import Sanitizer
 from time import sleep
+from multiprocessing import Process, freeze_support
 
 #init flask app
 app = Flask(__name__)
 
 db = database_handler.DataBase()
 
-
+app.config["DOWNLOAD_FOLDER"] = "./static/downloads"
 
 # sessions and login manager stuff
 
@@ -405,8 +406,10 @@ def stats():
                 
                 filename = db.generate_csv(post_id)
                 
-                return send_file(directory="./static/downloads/",path=filename,as_attachement=True,environ=app,download_name="resultats_sondage.csv")
+                #Process(target=db.remove_zip,args=(filename,)).start()
                 
+                return send_from_directory(app.config["DOWNLOAD_FOLDER"],filename,environ=request.environ,download_name="resultats_sondage.zip")
+
             else:
                 return render_template("page_message.html",message="Le sondage demandé ne vous appartiens pas :/",texte_btn="Revenir à l'acceuil",lien="/home")
         else:
@@ -582,6 +585,8 @@ def page_not_found(error):
 
 
 if __name__ == "__main__":
+    
+    freeze_support()
     
     if not path.exists("database.db"):
         db.__init_db()

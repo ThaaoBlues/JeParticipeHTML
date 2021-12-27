@@ -24,7 +24,7 @@
             
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
       
-              <li class="nav-item dropdown">
+              <li class="nav-item dropdown mt-2">
                 <a class="nav-link dropdown-toggle btn btn-primary" style="color: white;" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   Mon compte
                 </a>
@@ -37,12 +37,12 @@
                 </ul>      
               </li>
       
-                <form action="stats" method="POST">
+                <form action="stats" method="POST" class="mt-2">
                     <input name="post_id" value="{{post.id}}" hidden/>
                     <button class="btn btn-success mx-3">Télécharger en csv</button>
                 </form>
 
-                <li class="nav-item dropdown">
+                <li class="nav-item dropdown mt-2">
                     <a class="nav-link dropdown-toggle btn btn-primary" style="color: white;" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                       Type de graph
                     </a>
@@ -57,7 +57,7 @@
 
       
             </ul>
-            <form class="d-flex" action="recherche" method="GET">
+            <form class="d-flex mt-2" action="recherche" method="GET">
               <input class="form-control me-2 mb-2" type="search" placeholder="Rechercher" aria-label="Search" name="req">
               <button class="btn btn-outline-success mb-2" type="submit">Rechercher</button>
             </form>
