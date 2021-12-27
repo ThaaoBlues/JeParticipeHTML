@@ -11,3 +11,16 @@ The goal is to make a very attractive platform where you can scroll between shor
 
 
 ### a demo is available on [heroku](https://www.je-participe.herokuapp.com)
+
+
+## General intro:
+
+- the app works like any oter social network, on a principle of timeline, profiles and followers
+- an user verification process is implemented
+- each user has a profile where he can put whatever he want by completing a markdown file
+- statistics are even made by genders
+- surveys results are displayed after vote to not interfere with personnal opinions
+- you can access many stats and beautiful graph about your posts
+- you can download your posts data into csv files
+- you can share your posts and allow unregistered users to answer it
+- you can archive your posts to still access it but don't display it into timelines
