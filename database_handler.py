@@ -554,7 +554,6 @@ class DataBase:
             # iter throught each choice
             for choix in stats["choix"].keys():
                 row = {"choix":choix,"votes":stats["choix"][choix]}
-                print(stats["genders"].keys())
                 
                 # get votes count for each gender in one particular choix
                 for g in self.gender_types:
@@ -580,12 +579,3 @@ class DataBase:
         return filename_zip
     
     
-    def remove_zip(self,filename):
-        """to remove zip file after being sent to user
-
-        Args:
-            filename ([type]): [description]
-        """
-        sleep(60)
-        
-        remove(f"static/downloads/{filename}")

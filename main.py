@@ -11,6 +11,7 @@ from markdown import markdown
 from html_sanitizer import Sanitizer
 from time import sleep
 from multiprocessing import Process, freeze_support
+from os import remove
 
 #init flask app
 app = Flask(__name__)
@@ -406,7 +407,7 @@ def stats():
                 
                 filename = db.generate_csv(post_id)
                 
-                #Process(target=db.remove_zip,args=(filename,)).start()
+                Process(target=remove_zip,args=(filename,)).start()
                 
                 return send_from_directory(app.config["DOWNLOAD_FOLDER"],filename,environ=request.environ,download_name="resultats_sondage.zip")
 
@@ -580,7 +581,15 @@ def edit_profil():
 def page_not_found(error):
     return redirect(url_for("home"))
 
+def remove_zip(filename):
+    """to remove zip file after being sent to user
 
+    Args:
+        filename ([type]): [description]
+    """
+    sleep(60)
+    
+    remove(f"static/downloads/{filename}")
 
 
 
