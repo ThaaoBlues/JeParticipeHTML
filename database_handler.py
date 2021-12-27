@@ -1,3 +1,4 @@
+from random import randint
 from re import sub
 from passlib.handlers.sha2_crypt import sha256_crypt
 from post import Post
@@ -6,6 +7,7 @@ from os import path
 from base64 import b64decode, b64encode
 import sqlite3 as sql
 from os import mkdir
+from csv import DictWriter
 
 class DataBase:
     
@@ -18,6 +20,7 @@ class DataBase:
         if not path.exists("static"):
             mkdir("static")
             mkdir("static/users_profile_md")
+            mkdir("static/downloads")
         
         
         if not path.exists("database.db"):
@@ -100,11 +103,11 @@ class DataBase:
         ret = []
         
         for post in self.get_all_posts(owner_id):
-            ret.append(self.get_post_stats(owner_id,post["post_id"]))
+            ret.append(self.get_post_stats(post["post_id"]))
         
         return ret
     
-    def get_post_stats(self,owner_id:int,post_id:int)->dict:
+    def get_post_stats(self,post_id:int)->dict:
         
         """retourne un dict de forme:
         {'total_votants': 1, 'choix': {'choix1': 1, 'choix2': 0}, 'genders': {'choix1': {'homme': 0, 'femme': 0, 'genre_fluide': 0, 'non_genre': 0, 'autre': 1}, 'choix2': {'homme': 0, 'femme': 0, 'genre_fluide': 0, 'non_genre': 0, 'autre': 0}}, 'genders_ftolist': {'choix1': [0, 0, 0, 0, 1], 'choix2': [0, 0, 0, 0, 0]}}
@@ -113,7 +116,7 @@ class DataBase:
             [type]: [description]
         """
         
-        tmp = self.cursor.execute("SELECT * FROM VOTANTS WHERE owner_id=? AND post_id=?",(owner_id,post_id)).fetchall()
+        tmp = self.cursor.execute("SELECT * FROM VOTANTS WHERE post_id=?",(post_id,)).fetchall()
         
         votants = []
         
@@ -131,7 +134,7 @@ class DataBase:
         # init les compteurs de vote pour chaque choix
         ret["choix"] = {}
         
-        choix_possibles = self.get_post(owner_id,post_id)["choix"]
+        choix_possibles = self.get_post(post_id)["choix"]
         for c in choix_possibles:
             ret["choix"][c] = 0
             
@@ -176,12 +179,12 @@ class DataBase:
         
         return self.unsanitize(dict(self.cursor.execute("SELECT choix FROM CHOIX WHERE choix_id=?",(choix_id,)).fetchall()[0])["choix"])
         
-    def get_post(self,owner_id:int,post_id:int):
+    def get_post(self,post_id:int):
         
-        post = dict(self.cursor.execute("SELECT * FROM POSTS WHERE owner_id=? AND post_id=?",(owner_id,post_id)).fetchone())
+        post = dict(self.cursor.execute("SELECT * FROM POSTS WHERE post_id=?",(post_id,)).fetchone())
 
         post["header"] = self.unsanitize(post["header"])
-        choix = [dict(row)["choix"] for row in self.cursor.execute("SELECT choix FROM CHOIX WHERE post_id=? AND owner_id=?",(post["post_id"],owner_id))]
+        choix = [dict(row)["choix"] for row in self.cursor.execute("SELECT choix FROM CHOIX WHERE post_id=?",(post["post_id"],))]
         
         post["choix"] = [self.unsanitize(c) for c in choix]
         
@@ -190,10 +193,10 @@ class DataBase:
     def post_exists(self,post_id:int):
         return self.cursor.execute("SELECT * FROM POSTS WHERE post_id=?",(post_id,)).fetchall() != []
         
-    def get_results(self,owner_id:int,post_id:int)->list:
+    def get_results(self,post_id:int)->list:
 
         
-        stats = self.get_post_stats(owner_id,post_id)
+        stats = self.get_post_stats(post_id)
         
                 
         ret = {}
@@ -208,9 +211,9 @@ class DataBase:
         
         return ret
          
-    def get_votants(self,post_author:str,post_id:int)->list:
+    def get_votants(self,post_id:int)->list:
         
-        return self.get_posts_stats(post_author)[post_id]["votants"]
+        return self.get_post_stats(post_id)["votants"]
        
     def generate_tl(self,user_id:int,self_only=False)->list:
         
@@ -232,7 +235,7 @@ class DataBase:
         
         # make Post objects and gather all missing data
         for i in range(len(posts)):
-            posts[i] = Post(self.unsanitize(posts[i]["header"]),posts[i]["choix"],self.get_user_name(posts[i]["owner_id"]),posts[i]["owner_id"],results=self.get_results(posts[i]["owner_id"],posts[i]["post_id"]),vote=self.has_already_voted(user_id,posts[i]["post_id"]),id=posts[i]["post_id"],stats=self.get_post_stats(posts[i]["owner_id"],posts[i]["post_id"]),archive=posts[i]["archived"])
+            posts[i] = Post(self.unsanitize(posts[i]["header"]),posts[i]["choix"],self.get_user_name(posts[i]["owner_id"]),posts[i]["owner_id"],results=self.get_results(posts[i]["post_id"]),vote=self.has_already_voted(user_id,posts[i]["post_id"]),id=posts[i]["post_id"],stats=self.get_post_stats(posts[i]["post_id"]),archive=posts[i]["archived"])
             
         return posts
    
@@ -489,3 +492,42 @@ class DataBase:
         
     def user_exists(self,user_id:int)->bool:
         return self.cursor.execute("SELECT username FROM USERS WHERE user_id=?",(user_id,)).fetchall() != []
+
+    def generate_csv(self,post_id:int)->str:
+        """generate a csv file with votes data from the post 
+
+        Args:
+            post_id (int): [description]
+
+        Returns:
+            str: csv file name
+        """
+        
+        stats = self.get_post_stats(post_id)
+        
+        filename = str(randint(0,1234567896)) + ".csv"
+        
+        id = 0
+        
+        
+        with open(f"static/downloads/{filename}","w") as f:
+            
+            csv_writer = DictWriter(f,["id","genre","choix"])
+            csv_writer.writeheader()
+            
+            # enum choices {'choix' ...}
+            for c in stats["choix"].keys():
+                # enum genders and their numbers
+                for genre,count in list(stats["genders"][c].items()):
+                    # write in cv n persones with the gender y that voted on x choice
+                    for _ in range(count):
+                        row = {"id":id,"genre":genre,"choix":c}
+                        csv_writer.writerow(row)
+                
+                        id += 1
+                        
+            f.close()
+        
+                    
+                    
+        return filename

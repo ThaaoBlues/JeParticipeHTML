@@ -70,7 +70,7 @@
               <a class="bi bi-share-fill mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author_id}}',{{post.id}});"></a>
             Publié par {{post.author}}
             {%if post.author == username%}
-                <button class="btn btn-blue mx-2 btn-sm float-end" onclick="window.location.href='/stats?username={{username}}&post_id={{post.id}}'" style="width:fit-content">Stats</button>
+                <button class="btn btn-blue mx-2 btn-sm float-end" onclick="window.location.href='/stats?post_id={{post.id}}'" style="width:fit-content">Stats</button>
             {%endif%}
           </div>
 

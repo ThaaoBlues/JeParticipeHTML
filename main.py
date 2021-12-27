@@ -1,4 +1,5 @@
 
+from werkzeug.utils import send_file, send_from_directory
 from post import Post
 from passlib.handlers.sha2_crypt import sha256_crypt
 from flask import Flask, session, url_for, render_template,request,redirect
@@ -123,9 +124,9 @@ def shared():
             
                         
             if (db.post_exists(post_id)):
-                post = db.get_post(owner_id,post_id)
+                post = db.get_post(post_id)
 
-                post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],results=db.get_results(post["owner_id"],post["post_id"]),anon_votes=post["anon_votes"],vote=vote)
+                post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],results=db.get_results(post["post_id"]),anon_votes=post["anon_votes"],vote=vote)
 
                 return render_template("share_post.html",post = post)
                 
@@ -333,7 +334,7 @@ def register():
         return render_template("page_message.html",message="Un problème est survenu lors de votre enregistrement :/",texte_btn="Revenir à l'acceuil",lien="/")
     
 
-@app.route("/stats",methods=["GET"])
+@app.route("/stats",methods=["GET","POST"])
 @login_required
 def stats():
     
@@ -341,27 +342,31 @@ def stats():
     
     if request.method == "GET":
     
-        if (request.args.get("username",default=None) != None) and (request.args.get("post_id",default=None) != None):
+        if (request.args.get("post_id",default=None) != None):
             
-            username = db.sanitize(request.args.get("username",type=str))
-            
+                 
             # check if post_id is an int
             try:
                 post_id = request.args.get("post_id",type=int)
             except ValueError:
                 return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
             
-            post_dict = db.get_post(current_user.id,post_id)
+            chart_type = request.args.get("chart_type",default="pie",type=str)
             
-            stats = db.get_post_stats(current_user.id,post_id)
+            if not chart_type in ["bar","pie","doughnut","polarArea"]:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
             
-            post = Post(post_dict["header"],post_dict["choix"],db.get_user_name(post_dict["owner_id"]),post_dict["owner_id"],results=db.get_results(current_user.id,post_id),vote=db.has_already_voted(current_user.id,post_id),id=post_id,stats=stats)
+            
+            post_dict = db.get_post(post_id)
+            
+            stats = db.get_post_stats(post_id)
+            
+            post = Post(post_dict["header"],post_dict["choix"],db.get_user_name(post_dict["owner_id"]),post_dict["owner_id"],results=db.get_results(post_id),vote=db.has_already_voted(current_user.id,post_id),id=post_id,stats=stats)
                     
-            
             # vérifie que le post existe bien et appartient bien à l'utilisateur connecté
-            if (current_user.name == username) and  (db.post_exists(post_id)):
+            if  (post.author_id == current_user.id) and  (db.post_exists(post_id)):
                 
-                resultats = db.get_results(current_user.id,post_id)
+                resultats = db.get_results(post_id)
                 
                 # to make the charts
                 colors = [ f"rgb({randint(0, 255)},{randint(0, 255)},{randint(0, 255)})" for _ in range(len(resultats))]
@@ -373,13 +378,41 @@ def stats():
                 for c in post_dict["choix"]:
                     sanitized_choix[c] = db.sanitize(c)
                 
-                return render_template("stats.html",username=current_user.name,post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders,sanitized_choix=sanitized_choix)
+                return render_template("stats.html",username=current_user.name,post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders,sanitized_choix=sanitized_choix,chart_type=chart_type)
                 
             else:
                 return render_template("page_message.html",message="Vous demandez les statistiques d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'acceuil",lien="/home")
 
         else:
             return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'acceuil",lien="/home")
+    
+    elif request.method == "POST":
+        
+        
+        try:    
+            post_id = request.form.get("post_id",default=None,type=int)
+        except ValueError:
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+            
+    
+        # post exists ?
+        if (post_id != None) and (db.post_exists(post_id)):
+            
+            
+            # post belongs to the connected user ?
+            
+            if (db.get_post(post_id)["owner_id"] == current_user.id):
+                
+                filename = db.generate_csv(post_id)
+                
+                return send_file(directory="./static/downloads/",path=filename,as_attachement=True,environ=app,download_name="resultats_sondage.csv")
+                
+            else:
+                return render_template("page_message.html",message="Le sondage demandé ne vous appartiens pas :/",texte_btn="Revenir à l'acceuil",lien="/home")
+        else:
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'acceuil",lien="/home")
+
+    
     
 @app.route("/mes_sondages",methods=["GET","POST"])
 @login_required
@@ -405,9 +438,10 @@ def parametres_sondage():
         if (post_id == None) or (owner_id == None):
             return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
         
+        post = db.get_post(post_id)
+
         #check if post exists and belongs to the current user
-        if db.post_exists(post_id) and (owner_id == current_user.id):
-            post = db.get_post(owner_id,post_id)
+        if db.post_exists(post_id) and (owner_id == current_user.id) and (post["owner_id"] == current_user.id):
             post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],anon_votes=post["anon_votes"],choix_ids=db.get_choix_ids(post["post_id"]),archive=post["archived"])
             
             return render_template("post_settings.html",post=post,username=current_user.name)

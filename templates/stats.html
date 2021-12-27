@@ -34,11 +34,27 @@
                   <li><a class="dropdown-item" href="/mes_sondages">Mes sondages</a></li>
                   <li><a class="dropdown-item" href="/edit_profil">Editer mon profil</a></li>
                   <li><a class="dropdown-item" href="/logout">Déconnection ( {{username}} )</a></li>
-                </ul>
-      
+                </ul>      
               </li>
       
-              
+                <form action="stats" method="POST">
+                    <input name="post_id" value="{{post.id}}" hidden/>
+                    <button class="btn btn-success mx-3">Télécharger en csv</button>
+                </form>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle btn btn-primary" style="color: white;" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      Type de graph
+                    </a>
+                    
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                      <li><a class="dropdown-item" href="/stats?post_id={{post.id}}&chart_type=pie">Camembert</a></li>
+                      <li><a class="dropdown-item" href="/stats?post_id={{post.id}}&chart_type=doughnut">doughnut</a></li>
+                      <li><a class="dropdown-item" href="/stats?post_id={{post.id}}&chart_type=polarArea">Aire polaire</a></li>
+                      <li><a class="dropdown-item" href="/stats?post_id={{post.id}}&chart_type=bar">Barres</a></li>
+                    </ul>      
+                </li>
+
       
             </ul>
             <form class="d-flex" action="recherche" method="GET">
@@ -103,12 +119,15 @@
                 <div class="col-sm-3 mx-5">
                     
                     <div name="chart" class="card mt-4 mx-3" style="width: auto; min-width: 350px;">
-                        <div class="card-header">Statistiques générales de votes</div>
+                        <div class="card-header">
+                            <a class="bi bi-download mx-2" style="color:black;" href="javascript:download_chart(graph_global,'graph_global.png');" ></a>
+
+                            Statistiques générales de votes</div>
                         <div class="row mx-3 mb-3 justify-content-md-center">
             
                             <div clas="card-body">
 
-                                <canvas id="PieChart" width="10" height="10"></canvas>
+                                <canvas id="graph_global" width="10" height="10"></canvas>
                             </div>
 
                         </div>
@@ -119,7 +138,9 @@
                 {% for choix in post.choix%}
                 <div class="col-sm-3 mx-5">
                     <div name="chart" class="card mt-4 mx-3" style="width: auto; min-width: 350px;">
-                        <div class="card-header">Statistiques de votes du choix : {{choix}}</div>
+                        <div class="card-header">
+                            <a class="bi bi-download mx-2" style="color:black;" href="javascript:download_chart(gender_chart_{{sanitized_choix[choix]}},'{{choix}}.png');" ></a>
+                            Statistiques de votes du choix : {{choix}}</div>
                         <div class="row mx-3 mb-3 justify-content-md-center">
             
                             <div clas="card-body">
@@ -145,7 +166,7 @@
 <script>
 
 
-    const ctx = document.getElementById('PieChart').getContext('2d');
+    const ctx = document.getElementById('graph_global').getContext('2d');
 
     const data = {
         labels: {{post.choix | safe}},
@@ -159,8 +180,8 @@
         }]
     };
 
-    const myChart = new Chart(ctx, {
-        type: 'pie',
+    const graph_global= new Chart(ctx, {
+        type: '{{chart_type}}',
         data: data});
 
 
@@ -181,12 +202,22 @@
         };
     
         const gender_chart_{{sanitized_choix[choix]}} = new Chart(ctx_{{sanitized_choix[choix]}}, {
-            type: 'pie',
+            type: '{{chart_type}}',
             data: data_{{sanitized_choix[choix]}}});
 
 
     {%endfor%}
 
+
+    function download_chart(chart,filename){
+
+        var a = document.createElement('a');
+        a.href = chart.toBase64Image();
+        a.download = filename;
+
+        // Trigger the download
+        a.click();
+    }
 
 
 
