@@ -1,8 +1,7 @@
 
-from werkzeug.utils import send_file, send_from_directory
 from post import Post
 from passlib.handlers.sha2_crypt import sha256_crypt
-from flask import Flask, session, url_for, render_template,request,redirect
+from flask import Flask, session, url_for, render_template,request,redirect,send_from_directory
 import database_handler
 from flask_login import login_required, login_user, logout_user, LoginManager, UserMixin, current_user
 from random import choices, randint
