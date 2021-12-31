@@ -11,65 +11,79 @@
 
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+  
+          <a class="navbar-brand mb-2" href="/home">JeParticipe</a>
           
-          <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
-    
-            <a class="navbar-brand mb-2" href="/home">JeParticipe</a>
-            
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-    
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle btn btn-primary" style="color: white;" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Mon compte
-                </a>
-                
-                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                  <li><a class="dropdown-item" href="/creer_sondage">Créer un sondage</a></li>
-                  <li><a class="dropdown-item" href="/mes_sondages">Mes sondages</a></li>
-                  <li><a class="dropdown-item" href="/edit_profil">Editer mon profil</a></li>
-                  <li><a class="dropdown-item" href="/logout">Déconnection ( {{username}} )</a></li>
-                </ul>
-    
-              </li>
-    
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+  
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle btn btn-primary" style="color: white;" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Mon compte
+              </a>
               
-    
-            </ul>
-            <form class="d-flex" action="recherche" method="GET">
-              <input class="form-control me-2 mb-2" type="search" placeholder="Rechercher" aria-label="Search" name="req">
-              <button class="btn btn-outline-success mb-2" type="submit">Rechercher</button>
-            </form>
-          </div>
-        </div>
-    </nav>
-    
-    
-        <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <li><a class="dropdown-item" href="/creer_sondage">Créer un sondage</a></li>
+                <li><a class="dropdown-item" href="/mes_sondages">Mes sondages</a></li>
+                <li><a class="dropdown-item" href="/edit_profil">Editer mon profil</a></li>
+                <li><a class="dropdown-item" href="/mes_abonnes">Gérer mes abonnés</a></li>
+                <li><a class="dropdown-item" href="/mes_demandes_dabonnement">Mes demandes d'abonnement</a></li>
+                <li><a class="dropdown-item" href="/logout">Déconnection ( {{username}} )</a></li>
+              </ul>
+  
+            </li>
+  
             
-            <div class="container">
-                <div class="row">
-                    <div class="col">
-                        <a href="/profil?user_id={{user_id}}" class="btn btn-primary float-end">Prévisualiser mon profil</a>
-                    </div>
-                    <h4 id="edit_desc_title">Editez la description de votre profil !</h4>
-                    <label for="edit_desc_title">Langage MARKDOWN et balises HTML basiques supportées</label>
-                </div>
-                <div class="row mt-3">
-                    <form action="/edit_profil" method="POST">
-                        <textarea name="profile_desc" class="form-control textarea-autosize">{{ md }}</textarea>
-                        <div class="row mt-3 mx-3 justify-content-center">
-                            <input type="submit" class="btn btn-success w-10" value="Mettre à jour le profil">
-                        </div>
-                    </form>
-                </div>
-            </div>
+  
+          </ul>
+          <form class="d-flex" action="recherche" method="GET">
+            <input class="form-control me-2 mb-2" type="search" placeholder="Rechercher" aria-label="Search" name="req">
+            <button class="btn btn-outline-success mb-2" type="submit">Rechercher</button>
+          </form>
+        </div>
+      </div>
+  </nav>
+    
+    
+  <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
+      
+    <div class="container">
+      <form action="/edit_profil" method="POST">
+
+        <div class="row">
+
+          <div class="form-check mt-3">
+            <input name="is_private" type="checkbox" class="form-check-input" id="is_private" {%if is_private%}checked{%endif%}/>
+            <label class="form-check-label" for="is_private">Profil privé (Vous aurez à accepter/refuser les demandes d'abonnement)</label>
+          </div>
 
         </div>
+
+
+        <div class="row">
+          <div class="col">
+            <a href="/profil?user_id={{user_id}}" class="btn btn-primary float-end">Prévisualiser mon profil</a>
+          </div>
+            <h4 id="edit_desc_title">Editez la description de votre profil !</h4>
+            <label for="edit_desc_title">Langage MARKDOWN et balises HTML basiques supportées</label>
+        </div>
+
+        <div class="row mt-3">
+          <textarea name="profile_desc" class="form-control textarea-autosize">{{ md }}</textarea>
+          <div class="row mt-3 mx-3 justify-content-center">
+              <input type="submit" class="btn btn-success w-10" value="Mettre à jour le profil">
+          </div>
+        </div>
+      </form>
+    </div>
+
+  </div>
     
 </body>
 

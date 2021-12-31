@@ -104,7 +104,7 @@ def login():
     else:
         return redirect(url_for("login"))
 
- 
+
 @app.route('/partage',methods=["GET","POST"])
 def shared():
     
@@ -210,46 +210,12 @@ def add_vote():
             
     return redirect(url_for("home"))
 
-@app.route("/recherche",methods=["GET","POST"])
+@app.route("/recherche",methods=["GET"])
 @login_required
-def recherche():
-
-
-
+def recherche():    
     
-    if request.method == "POST":
-        if (request.form.get("user_id",default=None) != None) and (request.form.get("action",default=None) != None):
-           
-            from_profile = True if request.form.get("from_profile",default=None) else False
-
-           
-            # don't forget to check if the parameter is of the right type
-            try:
-                user_id = request.form.get("user_id",type=int)
-            except ValueError:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
-
-                
-                
-            if request.form.get("action") == "unfollow":
-                
-                db.unfollow(current_user.id,user_id)
-                
-            elif request.form.get("action") == "follow":
-                
-                db.follow(current_user.id,user_id)
-            
-            if from_profile:
-                return redirect(f"/profil?user_id={user_id}")
-            else:
-                return redirect(request.url)
-        
-        else:
-            return render_template("page_messae.html")
-    
-    
-    
-    elif request.args.get("req",default=None) != None:
+    # get request
+    if request.args.get("req",default=None) != None:
         req = db.sanitize(request.args.get("req"))
 
         profils = []
@@ -564,17 +530,139 @@ def edit_profil():
                 md = f.read()
                 f.close()
             
-            return render_template("profile_settings.html",md=md,username=current_user.name,user_id=current_user.id)
+            return render_template("profile_settings.html",md=md,username=current_user.name,user_id=current_user.id,is_private=db.is_private(current_user.id))
         
         elif request.method == "POST":
-            
+                            
+                
             # generate html from markdown
             with open(f"static/users_profile_md/{current_user.id}.md","w") as f:
                 md = request.form.get("profile_desc",default="",type=str)
                 f.write(md.replace("\n",""))
                 f.close()
+        
             
+            # change is an user is private or not, a private user have a followers section and follow request section
+            print(request.form)
+            try:
+                status = request.form.get("is_private",default=True,type=bool)
+            except ValueError:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
+
+            db.set_private_status(current_user.id,status)
+            
+        
             return redirect("edit_profil")
+
+
+@app.route("/mes_abonnes",methods=["GET","POST"])
+@login_required
+def mes_abonnes():
+    """page où une timeline de tout ses abonnées apparaît avec la possibilité de les retirer
+
+    Returns:
+        [type]: [description]
+    """
+    profils = [db.get_user_info(user_id) for user_id in db.get_followers(current_user.id)]
+    
+    return render_template("followers.html",profils=profils)
+
+
+@app.route("/mes_demandes_dabonnement",methods=["GET","POST"])
+@login_required
+def mes_demandes():
+    """page où une timeline apparait avec les profils ayant demandés à s'abonner,
+    possibilité d'accepter ou de rejeter
+
+    Returns:
+        [type]: [description]
+    """
+    if not db.is_private(current_user.id):
+        return render_template("page_message.html",message="Votre compte n'est pas en mode privé, cette section ne vous sert à rien ;)",text_btn="revenir à l'acceuil",lien="/home")
+    else:
+        return render_template("follow_requests.html",profils=db.generate_requests_tl(current_user.id),following=db.get_following(current_user.id))
+
+@app.route("/action/<action>",methods=["POST","GET"])
+@login_required
+def action(action):
+    
+    redirect_url = request.form.get("redirect_url",default=None,type=str)
+    
+    match action:
+        
+        case "follow":
+            if (request.form.get("user_id",default=None) != None):
+           
+           
+                # don't forget to check if the parameter is of the right type
+                try:
+                    user_id = request.form.get("user_id",type=int)
+                except ValueError:
+                    return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+                
+                db.follow(current_user.id,user_id,is_request=db.is_private(user_id))
+                
+            else:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+
+            
+        case "unfollow":
+            if (request.form.get("user_id",default=None) != None):
+           
+           
+                # don't forget to check if the parameter is of the right type
+                try:
+                    user_id = request.form.get("user_id",type=int)
+                except ValueError:
+                    return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+                
+                db.unfollow(current_user.id,user_id)
+                
+            else:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+
+        case "deny_follow_request":
+            try:
+                link_id = request.form.get("link_id",default=None,type=int)
+            except:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+
+            if db.is_link_related_to(current_user.id,link_id):
+                db.deny_follow_request(link_id)
+            else:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+
+        case "accept_follow_request":
+            try:
+                link_id = request.form.get("link_id",default=None,type=int)
+            except:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+
+            if db.is_link_related_to(current_user.id,link_id):
+                db.accept_follow_request(link_id)
+            else:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+
+        case "kick_follower":
+            try:
+                user_id = request.form.get("user_id",default=None,type=int)
+            except:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+
+            if(db.user_exists(user_id) and (user_id in db.get_followers(current_user.id))):
+                db.unfollow(user_id,current_user.id)
+
+        
+        case _:
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+
+
+    # normal case of redirect
+    if redirect_url != None:
+        return redirect(redirect_url)
+    else:
+        return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+
 
 @app.errorhandler(404)
 def page_not_found(error):
@@ -589,7 +677,6 @@ def remove_zip(filename):
     sleep(60)
     
     remove(f"static/downloads/{filename}")
-
 
 
 if __name__ == "__main__":

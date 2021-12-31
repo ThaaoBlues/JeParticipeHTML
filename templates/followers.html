@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,11 +19,11 @@
       </button>
       
       <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
-
+  
         <a class="navbar-brand mb-2" href="/home">JeParticipe</a>
         
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
+  
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle btn btn-primary" style="color: white;" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Mon compte
@@ -37,13 +36,12 @@
               <li><a class="dropdown-item" href="/mes_abonnes">Gérer mes abonnés</a></li>
               <li><a class="dropdown-item" href="/mes_demandes_dabonnement">Mes demandes d'abonnement</a></li>
               <li><a class="dropdown-item" href="/logout">Déconnection ( {{username}} )</a></li>
-              
             </ul>
-
+  
           </li>
-
+  
           
-
+  
         </ul>
         <form class="d-flex" action="recherche" method="GET">
           <input class="form-control me-2 mb-2" type="search" placeholder="Rechercher" aria-label="Search" name="req">
@@ -53,66 +51,52 @@
     </div>
   </nav>
 
-
     <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
 
+      {%if error%}
+      <h3>Aucun utilisateur ne vous suit encore. Allez faire de la pub !</h3>
+  {%endif%}
+  <div class="card-columns">
+    {%for profil in profils%}
 
-    {%if sondages == []%}
-      <div class="mt-4">
-          <h2 class="mt-4 text-center text-break">Votre fil est vide ! Recherchez des utilisateurs dans la barre en haut ou allez faire une petite pause ;)</h2>
-      </div>  
-    {%endif%}
-
-      <div class="card-columns">
+    <div name="carte_profil" class="card text-center mt-2 mx-3" style="min-width: 350px;" onclick="window.location.href='/profil?user_id={{profil["user_id"]}}'">
         
-        {%for post in sondages%}
+      <form method="POST" action="action/{%if not profil['user_id'] in following%}follow{%else%}unfollow{%endif%}">
 
-        <div name="post" class="card mt-4 mx-3" style="width: auto; min-width: 350px;">
-          <div class="card-header">
-              <a class="bi bi-share-fill mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author_id}}',{{post.id}});"></a>
-            Publié par {{post.author}}
-            {%if post.author == username%}
-                <button class="btn btn-blue mx-2 btn-sm float-end" onclick="window.location.href='/stats?post_id={{post.id}}'" style="width:fit-content">Stats</button>
+        <div class="card-title mxy-auto mb-2 ">{{profil["username"]}}
+            {%if profil["is_verified"]%}
+                <i class="bi bi-person-check ml-2" style = "color:blue;"></i>
             {%endif%}
-          </div>
+            {%if profil["type"] == "entreprise"%}
+                <i class="bi bi-building ml-2" style = "color:blue;"></i>
+            {%elif profil["type"] == "institution publique"%}
+                <i class="bi bi-flag-fill ml-2" style = "color:blue;"></i>
+            {%endif%}
+              ( suivi par {{profil["followers"]}} personne(s) )
+        </div>
+        {%if not profil["user_id"] in following%}
+            <button class="btn-sm btn-success mt-2" type="submit">S'abonner</button>
+            <input hidden value="{{profil['user_id']}}" name="user_id"/>
+        {%else%}
+            <button class="btn-sm btn-danger mt-2" type="submit">Se désabonner</button>
+            <input hidden value="{{profil['user_id']}}" name="user_id"/>
+        {%endif%}
 
-          <div class="row mx-3 mb-3 justify-content-md-center">
-
-            <div clas="card-body">
-
-              <p class="text-break text-center mt-2">{{post.header}}</p>
-
-              <hr>
-              <ul class="list-group list-group-flush">
-
-              {%for choix in post.choix%}
-                  {%if post.vote%}
-                    <a class="btn btn-primary mt-2" style="width:100%;">{{choix}} : {{post.resultats[choix]}}% des votes.</a>
-
-                  {%else%}
-                  <form action="add_vote" method="POST">
-                    <div class="row">
-                      <input name="author_id" class="d-none" value="{{post.author_id}}"  hidden>
-                      <input name="post_id" class="d-none" value="{{post.id}}"  hidden>
-                      <input name="choix" class="d-none" value="{{choix}}"  hidden>
-                    </div>
-                    <button class="btn btn-primary mt-2" style="width:100%;" type="submit">{{choix}}</button>
-                  </form>
-                  {%endif%}
-                {%endfor%}
-              </ul>
-            </div>
-          </div>
-        </div> 
-        {%endfor%}
+        <input hidden value="" name="redirect_url"/>
+      </form>    
+    
+      <div class="btn-group justify-content-center">
+        <form method="POST" action="/action/kick_follower">
+          <input hidden value="{{profil['user_id']}}" name="user_id"/>
+          <input hidden value="" name="redirect_url"/>
+          <button class="btn-lg btn-danger mt-2" type="submit">Retirer</button>
+        </form>
       </div>
-              
-
-
-      </div>
-
-
     </div>
+      {%endfor%}
+    </div>
+
+  </div>
     
 </body>
 
@@ -125,6 +109,10 @@
 
       alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
     }
+    for( var ele of document.getElementsByName("redirect_url")){
+      ele.value = window.location.href
+    }
+
 
 </script>
 
@@ -133,7 +121,6 @@
 .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited, .btn-outline-primary {
     background-color: blueviolet !important;
     border-color: blueviolet;
-    color: white;
 }
 
 .btn-blue, .btn-blue:hover, .btn-blue:active, .btn-blue:visited, .btn-outline-blue {

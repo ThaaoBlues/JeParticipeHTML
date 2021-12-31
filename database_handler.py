@@ -9,7 +9,6 @@ import sqlite3 as sql
 from os import mkdir,remove
 from csv import DictWriter
 from zipfile import ZipFile
-from time import sleep
 
 
 class DataBase:
@@ -323,7 +322,7 @@ class DataBase:
         
     def register_user(self,username="",gender="",password="",type="utilisateur",clear_password="",franceconnect=False,init=False):
         
-        self.cursor.execute("INSERT INTO USERS(username,password,age,gender,type,is_verified) values(?,?,?,?,?,?)",(username,password,0,gender,type,franceconnect))
+        self.cursor.execute("INSERT INTO USERS(username,password,age,gender,type,is_verified,is_private) values(?,?,?,?,?,?,?)",(username,password,0,gender,type,franceconnect,False))
         
         self.connector.commit()
         
@@ -354,12 +353,12 @@ class DataBase:
     
     def get_followers(self,user_id:str)->list:
         r = self.cursor.execute("SELECT follower_id FROM FOLLOWERS WHERE user_id=?",(user_id,)).fetchall()
-        r = [dict(row) for row in r]
+        r = [dict(row)["follower_id"] for row in r]
         return r
     
-    def follow(self,user_id:int,target_id:int):
+    def follow(self,user_id:int,target_id:int,is_request=False):
         
-        self.cursor.execute("INSERT INTO FOLLOWERS (user_id,follower_id) values(?,?)",(target_id,user_id))
+        self.cursor.execute("INSERT INTO FOLLOWERS (user_id,follower_id,is_request) values(?,?,?)",(target_id,user_id,is_request))
         self.connector.commit()
               
     def unfollow(self,user_id:str,target_id:int):
@@ -402,12 +401,11 @@ class DataBase:
     def __init_db(self,tmp=False):
                 
         c = sql.connect("database.db").cursor()
-        c.execute("CREATE TABLE USERS (user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,username TEXT,password TEXT,age INTEGER,gender TEXT,type TEXT,is_verified BOOL)")
+        c.execute("CREATE TABLE USERS (user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,username TEXT,password TEXT,age INTEGER,gender TEXT,type TEXT,is_verified BOOL,is_private Bool)")
         c.execute("CREATE TABLE POSTS (post_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,header TEXT,anon_votes BOOL,archived BOOL)")
-        c.execute("CREATE TABLE FOLLOWERS (link_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,user_id INTEGER,follower_id INTEGER)")
+        c.execute("CREATE TABLE FOLLOWERS (link_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,user_id INTEGER,follower_id INTEGER,is_request BOOL)")
         c.execute("CREATE TABLE CHOIX (choix_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix TEXT,votes INTEGER)")
         c.execute("CREATE TABLE VOTANTS (vote_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix_id INTEGER,username TEXT,voter_id INTEGER,gender TEXT)")
-        
         c.close()
                         
     def sanitize(self,string:str,text=False)->str:
@@ -578,4 +576,100 @@ class DataBase:
         
         return filename_zip
     
+    def is_private(self,user_id:int)->bool:
+        """check if an user is in private mode or not
+
+        Args:
+            user_id (int): [description]
+
+        Returns:
+            bool: [description]
+        """
+        
+        return dict(self.cursor.execute("SELECT is_private FROM USERS WHERE user_id=?",(user_id,)).fetchone())["is_private"]
     
+    def set_private_status(self,user_id:int,status:bool):
+        """set an user pin private mode/remove an user from private mode
+
+        Args:
+            status (bool): [description]
+        """
+        
+        self.cursor.execute("UPDATE USERS SET is_private=? WHERE user_id=?",(status,user_id))
+        self.connector.commit()
+        
+    def get_user_info(self,user_id:int)->dict:
+        """retrieve all data about an user
+
+        Args:
+            user_id (int): [description]
+
+        Returns:
+            dict: [description]
+        """
+        
+        return dict(self.cursor.execute("SELECT username,user_id,type,is_verified FROM USERS WHERE user_id=?",(user_id,)).fetchone())
+
+    def get_follow_requests(self,user_id:int)->list:
+        
+        """retrieve all follow request to one user
+        """
+        
+        return [dict(row) for row in self.cursor.execute("SELECT follower_id,link_id FROM FOLLOWERS WHERE user_id=? AND is_request=?",(user_id,True)).fetchall()]
+    
+    def accept_follow_request(self,link_id:int):
+        """update follow line and set is_request to false
+
+        Args:
+            link_id (int): [description]
+        """ 
+        self.cursor.execute("UPDATE FOLLOWERS SET is_request=? WHERE link_id=?",(False,link_id))
+        self.connector.commit()
+         
+    def deny_follow_request(self,link_id:int):
+        
+        """suppress follow line like unfollow but by link_id 
+
+        Args:
+            link_id (int): [description]
+        """
+        
+        
+        self.cursor.execute("DELETE FROM FOLLOWERS WHERE link_id=?",(link_id,))
+        self.connector.commit()
+        
+    def is_link_related_to(self,user_id:int,link_id:int)->bool:
+        
+        """check if a link_id is related to an user as followed person or not
+
+        Args:
+            user_id (int): [description]
+            link_id (int): [description]
+
+        Returns:
+            bool: [description]
+        """
+        
+        tmp = self.cursor.execute("SELECT user_id FROM FOLLOWERS WHERE link_id=? AND user_id=?",(link_id,user_id))
+        
+        return True if (tmp != [] and tmp != None) else False
+    
+    def generate_requests_tl(self,user_id:int)->list:
+        """génère la timeline des profils à accepter/refuser accompagné d'un link_id
+
+        Args:
+            user_id (int): [description]
+
+        Returns:
+            list: [description]
+        """
+        
+        tmp = self.cursor.execute("SELECT follower_id,link_id FROM FOLLOWERS WHERE user_id=? AND is_request=?",(user_id,True)).fetchall()
+        
+        tmp = [dict(row) for row in tmp]
+        
+        # concat user infos and link_id+follower_id (follower_id is useless here)
+        for user in tmp:
+            user.update(self.get_user_info(user["follower_id"]))
+            
+        return tmp
