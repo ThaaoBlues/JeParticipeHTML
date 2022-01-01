@@ -542,13 +542,11 @@ def edit_profil():
                 f.close()
         
             
-            # change is an user is private or not, a private user have a followers section and follow request section
-            print(request.form)
+            # change is an user is private or not, a private user have a follow request section
             try:
-                status = request.form.get("is_private",default=True,type=bool)
+                status = request.form.get("is_private",default=False,type=bool)
             except ValueError:
                 return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
-
             db.set_private_status(current_user.id,status)
             
         
