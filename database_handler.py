@@ -320,7 +320,7 @@ class DataBase:
         # to archive each 24h
         self.__write_to_all("post","")
         
-    def register_user(self,username="",gender="",password="",type="utilisateur",clear_password="",franceconnect=False,init=False):
+    def register_user(self,username="",gender="",password="",type="utilisateur",franceconnect=False,init=False):
         
         self.cursor.execute("INSERT INTO USERS(username,password,age,gender,type,is_verified,is_private) values(?,?,?,?,?,?,?)",(username,password,0,gender,type,franceconnect,False))
         
@@ -330,7 +330,7 @@ class DataBase:
         
         if not init:
             
-            user_id = self.get_user_id(username,clear_password)
+            user_id = self.cursor.lastrowid
             
             # init profile md file
             with open(f"static/users_profile_md/{user_id}.md","w") as f:
@@ -341,6 +341,8 @@ class DataBase:
             
             # follow himself to display his own posts
             self.follow(int(user_id),int(user_id))
+            
+            return user_id
             
     def delete_user(self,user_id:str):
         self.cursor.execute("DELETE FROM USERS WHERE user_id=?",(user_id))

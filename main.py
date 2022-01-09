@@ -293,10 +293,17 @@ def register():
         if db.username_exists(username):
             return render_template("page_message.html",message="Ce nom d'utilisateur existe déjà :/ Ne vous inquiétez pas, vous avez assez d'imagination pour en trouver un autre ;)",texte_btn="Revenir à la page d'enregistrement",lien="/login")
         
-        db.register_user(username=username,gender=gender ,password=sha256_crypt.hash(request.form.get("password")),type=request.form.get("type").lower(),franceconnect=True,clear_password=request.form.get("password"))
+        password=sha256_crypt.hash(request.form.get("password"))
         
-        return render_template("page_message.html",message="Vous avez bien été enregistré ! Clickez sur le bouton pour revenir à la page de connexion ;)",texte_btn="Revenir à l'acceuil",lien="/login")
-    
+        user_id = db.register_user(username=username,gender=gender ,password=password,type=request.form.get("type").lower(),franceconnect=True)
+        
+        # login user after registration
+        user = User(name=username,id=user_id,gender=db.get_gender(user_id)) 
+        login_user(user,remember=True)
+        
+        return redirect("/home")
+        
+        
     else:
         return render_template("page_message.html",message="Un problème est survenu lors de votre enregistrement :/",texte_btn="Revenir à l'acceuil",lien="/")
     
