@@ -109,9 +109,14 @@
 
       alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
     }
-    for( var ele of document.getElementsByName("redirect_url")){
-      ele.value = window.location.href
+
+    function add_redirect_values() {
+      let list = document.getElementsByName("redirect_url");
+      for(var i=0;i<list.length; i++ ){
+        list[i].setAttribute('value',window.location.href);
+      }
     }
+    add_redirect_values();
 
 
 </script>

@@ -351,6 +351,14 @@ class DataBase:
         self.connector.commit()
 
     def get_following(self,user_id:str)->list:
+        """renvoie une list des id utilisateurs suivis
+
+        Args:
+            user_id (str): [description]
+
+        Returns:
+            list: [description]
+        """
         return [dict(row)["user_id"] for row in self.cursor.execute("SELECT user_id FROM FOLLOWERS WHERE follower_id=?",(user_id,)).fetchall()]
     
     def get_followers(self,user_id:str)->list:

@@ -595,18 +595,22 @@ def action(action):
     
     match action:
         
+        
         case "follow":
+            
+                        
             if (request.form.get("user_id",default=None) != None):
            
-           
+                
                 # don't forget to check if the parameter is of the right type
                 try:
                     user_id = request.form.get("user_id",type=int)
                 except ValueError:
                     return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
                 
-                db.follow(current_user.id,user_id,is_request=db.is_private(user_id))
-                
+                if not current_user.id in db.get_following(user_id):
+                    db.follow(current_user.id,user_id,is_request=db.is_private(user_id))
+                                
             else:
                 return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
 
@@ -621,7 +625,9 @@ def action(action):
                 except ValueError:
                     return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
                 
-                db.unfollow(current_user.id,user_id)
+                if current_user.id in db.get_followers(user_id):
+
+                    db.unfollow(current_user.id,user_id)
                 
             else:
                 return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                

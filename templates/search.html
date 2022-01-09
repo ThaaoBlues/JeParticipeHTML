@@ -51,13 +51,13 @@
     </div>
   </nav>
 
-    <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
+  <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
 
-      {%if error%}
-      <h3>Aucun utilisateur correspondant à la recherche n'a été trouvé</h3>
-  {%endif%}
-  <div class="card-columns">
-      {%for profil in profils%}
+    {%if error%}
+    <h3>Aucun utilisateur correspondant à la recherche n'a été trouvé</h3>
+    {%endif%}
+    <div class="card-columns">
+    {%for profil in profils%}
 
       <form method="POST" action="action/{%if not profil['user_id'] in following%}follow{%else%}unfollow{%endif%}">
           <div name="carte_profil" class="card text-center mt-2 mx-3" style="min-width: 350px;" onclick="window.location.href='/profil?user_id={{profil["user_id"]}}'">
@@ -75,34 +75,46 @@
               {%if not profil["user_id"] in following%}
                   <button class="btn btn-success mt-2" type="submit">S'abonner</button>
                   <input hidden value="{{profil['user_id']}}" name="user_id"/>
+                  <input hidden value="" name="redirect_url"/>
+
               {%else%}
                   <button class="btn btn-danger mt-2" type="submit">Se désabonner</button>
-                  <input hidden value="{{profil['user_id']}}" name="user_id"/>
+                  <input hidden value="{{profil['user_id']}}" name="user_id"/>              
+                  
+                  <input value="" name="redirect_url" hidden/>
+
               {%endif%}
 
-              <input hidden value="" id="redirect_url" name="redirect_url"/>
 
           </div>
       </form>
       
       {%endfor%}
-  </div>
-
     </div>
+
+  </div>
     
 </body>
 
 
 <script>
 
-    function partage_sondage(owner_id,post_id){
-
-      navigator.clipboard.writeText(window.location.hostname+"/partage?owner_id="+owner_id+"&post_id="+post_id+"&results=False");
-
-      alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
+  function add_redirect_values() {
+    let list = document.getElementsByName("redirect_url");
+    for(var i=0;i<list.length; i++ ){
+      list[i].setAttribute('value',window.location.href);
     }
+  }
 
-    document.getElementById("redirect_url").value = window.location.href
+  function partage_sondage(owner_id,post_id){
+
+    navigator.clipboard.writeText(window.location.hostname+"/partage?owner_id="+owner_id+"&post_id="+post_id+"&results=False");
+
+    alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
+  }
+
+  add_redirect_values();
+
 
 </script>
 
