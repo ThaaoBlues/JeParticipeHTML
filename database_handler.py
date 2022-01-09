@@ -655,6 +655,7 @@ class DataBase:
         return True if (tmp != [] and tmp != None) else False
     
     def generate_requests_tl(self,user_id:int)->list:
+        
         """génère la timeline des profils à accepter/refuser accompagné d'un link_id
 
         Args:
@@ -673,3 +674,21 @@ class DataBase:
             user.update(self.get_user_info(user["follower_id"]))
             
         return tmp
+    
+    
+    def get_full_database(self):
+        """return all the database content
+        as a gigantic dict, one key for each table
+        each row is a list of dict {"key":value}
+        """
+        database = {}
+        
+        for row in self.cursor.execute("SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%'").fetchall():
+            database[dict(row)["name"]] = ""
+            
+        
+        for table in database.keys():
+            t_content = self.cursor.execute(f"SELECT * FROM {table}")
+            database[table] = [dict(row) for row in t_content]
+            
+        return database

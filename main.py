@@ -12,6 +12,7 @@ from time import sleep
 from multiprocessing import Process, freeze_support
 from os import remove
 
+
 #init flask app
 app = Flask(__name__)
 
@@ -26,7 +27,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 app.secret_key = "".join(choices("1234567890°+AZERTYUIOP¨£µQSDFGHJKLM%WXCVBN?./§<>azertyuiopqsdfghjklmwxcvbn",k=1024))
-
 
 class User(UserMixin):
     
@@ -576,7 +576,7 @@ def mes_demandes():
         [type]: [description]
     """
     if not db.is_private(current_user.id):
-        return render_template("page_message.html",message="Votre compte n'est pas en mode privé, cette section ne vous sert à rien ;)",text_btn="revenir à l'acceuil",lien="/home")
+        return render_template("page_message.html",message="Votre compte n'est pas en mode privé, cette section ne vous sert à rien ;)",texte_btn="revenir à l'acceuil",lien="/home")
     else:
         return render_template("follow_requests.html",profils=db.generate_requests_tl(current_user.id),following=db.get_following(current_user.id))
 
@@ -661,7 +661,6 @@ def action(action):
     else:
         return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
 
-
 @app.errorhandler(404)
 def page_not_found(error):
     return redirect(url_for("home"))
@@ -675,6 +674,9 @@ def remove_zip(filename):
     sleep(60)
     
     remove(f"static/downloads/{filename}")
+
+
+
 
 
 if __name__ == "__main__":
