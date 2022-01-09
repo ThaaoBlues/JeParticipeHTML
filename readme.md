@@ -2,7 +2,8 @@
 
 
 ## What is it ?
-JeParticipe is a web platform made with in python (flask) to create a answer short survey.
+JeParticipe is a web platform made with in python (flask) to create and answer short one-question surveys.
+This is basically a vote platform.
 Like any social media, Jeparticipe has it's own following/followers system, profiles and user verification process.
 
 ## What's the goal of this project
