@@ -1,7 +1,7 @@
 *.csv
 */test.py
-*.db
 static/
+*.db
 *.sh
 *.php
 

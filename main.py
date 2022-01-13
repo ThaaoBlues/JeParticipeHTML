@@ -16,8 +16,6 @@ from os import remove
 #init flask app
 app = Flask(__name__)
 
-app.add_url_rule('/favicon.ico',
-                 redirect_to=url_for('logo', filename='favicon.ico'))
 
 db = database_handler.DataBase()
 
@@ -676,6 +674,11 @@ def action(action):
         return redirect(redirect_url)
     else:
         return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(path.join(app.root_path,"logo"),'favicon.png', mimetype='image/vnd.microsoft.icon')
 
 @app.errorhandler(404)
 def page_not_found(error):
