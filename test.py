@@ -20,5 +20,5 @@ from os import path
 #print(db.has_already_voted(1,1))
 #print(db.unsanitize("dGVzdA=="))
 #db.get_choix_ids(2)
-#print(path.dirname(__file__))
-print(db.get_full_database())
+#print(path.dirname(__file__)
+#print(db.get_full_database())
