@@ -16,6 +16,9 @@ from os import remove
 #init flask app
 app = Flask(__name__)
 
+app.add_url_rule('/favicon.ico',
+                 redirect_to=url_for('logo', filename='favicon.ico'))
+
 db = database_handler.DataBase()
 
 app.config["DOWNLOAD_FOLDER"] = "./static/downloads"
