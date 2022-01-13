@@ -2,6 +2,8 @@
 */test.py
 *.db
 static/
+*.sh
+*.php
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
