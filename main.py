@@ -20,6 +20,7 @@ app = Flask(__name__)
 db = database_handler.DataBase()
 
 app.config["DOWNLOAD_FOLDER"] = "./static/downloads"
+app.config['CUSTOM_LOGO_PATH'] = "./logo"
 
 # sessions and login manager stuff
 
@@ -679,6 +680,11 @@ def action(action):
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(path.join(app.root_path,"logo"),'favicon.png', mimetype='image/vnd.microsoft.icon')
+
+# logo static data
+@app.route('/logo/<path:filename>')
+def custom_static(filename):
+    return send_from_directory(app.config['CUSTOM_LOGO_PATH'], filename)
 
 @app.errorhandler(404)
 def page_not_found(error):
