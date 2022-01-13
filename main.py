@@ -227,9 +227,9 @@ def recherche():
         
         error = profils == []
 
-        return render_template("search.html",following = following,profils=profils,error=error)
+        return render_template("search.html",following = following,profils=profils,error=error,username=current_user.name)
     else:
-        return render_template("search.html",profils=[],req="")
+        return render_template("search.html",profils=[],req="",username=current_user.name)
 
 
 @app.route("/creer_sondage",methods=["GET","POST"])
@@ -524,7 +524,7 @@ def profil():
         md = Sanitizer().sanitize(md)
 
         
-        return render_template("profile.html",md=md,username=current_user.name,user_id=user_id,is_following=(user_id in db.get_following(current_user.id)))
+        return render_template("profile.html",md=md,username=current_user.name,user_id=user_id,is_following=(user_id in db.get_following(current_user.id)),target_username=db.get_user_name(user_id))
     else:
         return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'acceuil",lien="/login")
 

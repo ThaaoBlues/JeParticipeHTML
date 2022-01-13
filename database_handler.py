@@ -367,6 +367,14 @@ class DataBase:
         return r
     
     def follow(self,user_id:int,target_id:int,is_request=False):
+        """user id is the user requesting to follow target_id
+        target_id will become user_id in the database and user_id will become follower_id
+        so as to get followers_id from an user_id
+        Args:
+            user_id (int): [description]
+            target_id (int): [description]
+            is_request (bool, optional): [description]. Defaults to False.
+        """
         
         self.cursor.execute("INSERT INTO FOLLOWERS (user_id,follower_id,is_request) values(?,?,?)",(target_id,user_id,is_request))
         self.connector.commit()
