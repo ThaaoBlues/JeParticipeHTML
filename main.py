@@ -70,7 +70,7 @@ def unauthorized_handler():
     return redirect(url_for("login"))
 
 @app.route("/")
-def acceuil():
+def accueil():
     
     return redirect(url_for("login"))
 
@@ -123,7 +123,7 @@ def shared():
                 owner_id = request.args.get("owner_id",type=int)
                 vote = True if request.args.get("results") == "True" else False
             except ValueError:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
             
                         
             if (db.post_exists(post_id)):
@@ -134,10 +134,10 @@ def shared():
                 return render_template("share_post.html",post = post)
                 
             else:
-                return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'acceuil",lien="/home")
+                return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'accueil",lien="/home")
 
         else:
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé ou un paramètre de votre requète a été mal-formé :/ :/",texte_btn="Revenir à l'acceuil",lien="/home")
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé ou un paramètre de votre requète a été mal-formé :/ :/",texte_btn="Revenir à l'accueil",lien="/home")
     
     
     elif request.method == "POST":
@@ -155,7 +155,7 @@ def shared():
                 author_id = request.form.get("author_id",type=int)
                 
             except ValueError:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/login")
             
             
             # makes sure post exists, selected choice exists and anon_votes is set to True
@@ -165,9 +165,9 @@ def shared():
         
                 return redirect(f"/partage?owner_id={author_id}&post_id={post_id}&results=True")
             else:
-                return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+                return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé :/",texte_btn="Revenir à l'accueil",lien="/login")
         else:
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé :/",texte_btn="Revenir à l'accueil",lien="/login")
 
                 
 @app.route('/home',methods=['GET'])
@@ -198,12 +198,12 @@ def add_vote():
         try:
             post_id = request.form.get("post_id",type=int)
         except ValueError:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/login")
         # check if author_id is an int
         try:
             author_id = request.form.get("author_id",type=int)
         except ValueError:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/login")
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/login")
             
 
         if (db.choix_exists(author_id,post_id,choix)):
@@ -249,7 +249,7 @@ def sondage_form():
         try:
             anon_votes = request.form.get("anon_votes",default=False,type=bool)
         except ValueError:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
 
         
         
@@ -266,7 +266,7 @@ def sondage_form():
                         
             db.add_post(current_user.id,{"header":post_header,"choix":choix,"anon_votes":anon_votes})
             
-            return render_template("page_message.html",message="Sondage publié ! Prenez un café et attendez les retours ;)",texte_btn="Revenir à l'acceuil",lien="/home")
+            return render_template("page_message.html",message="Sondage publié ! Prenez un café et attendez les retours ;)",texte_btn="Revenir à l'accueil",lien="/home")
 
             
         else:
@@ -307,7 +307,7 @@ def register():
         
         
     else:
-        return render_template("page_message.html",message="Un problème est survenu lors de votre enregistrement :/",texte_btn="Revenir à l'acceuil",lien="/")
+        return render_template("page_message.html",message="Un problème est survenu lors de votre enregistrement :/",texte_btn="Revenir à l'accueil",lien="/")
     
 
 @app.route("/stats",methods=["GET","POST"])
@@ -325,12 +325,12 @@ def stats():
             try:
                 post_id = request.args.get("post_id",type=int)
             except ValueError:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
             
             chart_type = request.args.get("chart_type",default="pie",type=str)
             
             if not chart_type in ["bar","pie","doughnut","polarArea"]:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
             
             
             post_dict = db.get_post(post_id)
@@ -357,10 +357,10 @@ def stats():
                 return render_template("stats.html",username=current_user.name,post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders,sanitized_choix=sanitized_choix,chart_type=chart_type)
                 
             else:
-                return render_template("page_message.html",message="Vous demandez les statistiques d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'acceuil",lien="/home")
+                return render_template("page_message.html",message="Vous demandez les statistiques d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'accueil",lien="/home")
 
         else:
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'acceuil",lien="/home")
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'accueil",lien="/home")
     
     elif request.method == "POST":
         
@@ -368,7 +368,7 @@ def stats():
         try:    
             post_id = request.form.get("post_id",default=None,type=int)
         except ValueError:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
             
     
         # post exists ?
@@ -386,9 +386,9 @@ def stats():
                 return send_from_directory(app.config["DOWNLOAD_FOLDER"],filename,environ=request.environ,download_name="resultats_sondage.zip")
 
             else:
-                return render_template("page_message.html",message="Le sondage demandé ne vous appartiens pas :/",texte_btn="Revenir à l'acceuil",lien="/home")
+                return render_template("page_message.html",message="Le sondage demandé ne vous appartiens pas :/",texte_btn="Revenir à l'accueil",lien="/home")
         else:
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'acceuil",lien="/home")
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'accueil",lien="/home")
 
     
     
@@ -411,10 +411,10 @@ def parametres_sondage():
             post_id = request.args.get("post_id",type=int,default=None)
             owner_id = request.args.get("owner_id",type=int,default=None)
         except ValueError:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/mes_sondages")
 
         if (post_id == None) or (owner_id == None):
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/mes_sondages")
         
         post = db.get_post(post_id)
 
@@ -427,7 +427,7 @@ def parametres_sondage():
         # else throw an error message
         else:
             
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible pour vous ou n'a jamais existé",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible pour vous ou n'a jamais existé",texte_btn="Revenir à l'accueil",lien="/mes_sondages")
 
 
             
@@ -445,7 +445,7 @@ def parametres_sondage():
             choix_ids = [ele[0] for ele in request.form.getlist("choix_ids",type=list)]
             archive = request.form.get("archive",default=False,type=bool)
         except ValueError:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/mes_sondages")
 
         
         
@@ -472,7 +472,7 @@ def parametres_sondage():
         
         # manque un paramètre de form 
         else:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/mes_sondages")
 
 
 @app.route("/supprimer_sondage",methods=["POST"])
@@ -487,7 +487,7 @@ def supprimer_sondage():
             try:
                 post_id = request.form.get("post_id",type=int)
             except ValueError:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
             
             
             username = request.form.get("post_author")            
@@ -495,12 +495,12 @@ def supprimer_sondage():
             # vérifie que le post existe bien et appartient bien à l'utilisateur connecté
             if (current_user.name == username) and  (db.post_exists(post_id)):
                 db.delete_post(current_user.id,post_id)
-                return render_template("page_message.html",message="Sondage supprimé !",texte_btn="Revenir à l'acceuil",lien="/home")
+                return render_template("page_message.html",message="Sondage supprimé !",texte_btn="Revenir à l'accueil",lien="/home")
             else:
-                return render_template("page_message.html",message="Vous demandez la suppression d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'acceuil",lien="/home")
+                return render_template("page_message.html",message="Vous demandez la suppression d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'accueil",lien="/home")
 
         else:
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'acceuil",lien="/home")
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'accueil",lien="/home")
     
 
 @app.route("/profil",methods=["GET"])
@@ -510,7 +510,7 @@ def profil():
     try:
         user_id = request.args.get("user_id",default=None,type=int)
     except ValueError:
-        return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")
+        return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
     
     
     
@@ -526,7 +526,7 @@ def profil():
         
         return render_template("profile.html",md=md,username=current_user.name,user_id=user_id,is_following=(user_id in db.get_following(current_user.id)),target_username=db.get_user_name(user_id))
     else:
-        return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'acceuil",lien="/login")
+        return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'accueil",lien="/login")
 
 @app.route("/edit_profil",methods=["GET","POST"])
 @login_required
@@ -555,7 +555,7 @@ def edit_profil():
             try:
                 status = request.form.get("is_private",default=False,type=bool)
             except ValueError:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/mes_sondages")
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/mes_sondages")
             db.set_private_status(current_user.id,status)
             
         
@@ -585,7 +585,7 @@ def mes_demandes():
         [type]: [description]
     """
     if not db.is_private(current_user.id):
-        return render_template("page_message.html",message="Votre compte n'est pas en mode privé, cette section ne vous sert à rien ;)",texte_btn="revenir à l'acceuil",lien="/home")
+        return render_template("page_message.html",message="Votre compte n'est pas en mode privé, cette section ne vous sert à rien ;)",texte_btn="revenir à l'accueil",lien="/home")
     else:
         return render_template("follow_requests.html",profils=db.generate_requests_tl(current_user.id),following=db.get_following(current_user.id))
 
@@ -608,13 +608,13 @@ def action(action):
                 try:
                     user_id = request.form.get("user_id",type=int)
                 except ValueError:
-                    return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+                    return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
                 
                 if not current_user.id in db.get_following(user_id):
                     db.follow(current_user.id,user_id,is_request=db.is_private(user_id))
                                 
             else:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
 
             
         case "unfollow":
@@ -625,56 +625,56 @@ def action(action):
                 try:
                     user_id = request.form.get("user_id",type=int)
                 except ValueError:
-                    return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+                    return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
                 
                 if current_user.id in db.get_followers(user_id):
 
                     db.unfollow(current_user.id,user_id)
                 
             else:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
 
         case "deny_follow_request":
             try:
                 link_id = request.form.get("link_id",default=None,type=int)
             except:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
 
             if db.is_link_related_to(current_user.id,link_id):
                 db.deny_follow_request(link_id)
             else:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
 
         case "accept_follow_request":
             try:
                 link_id = request.form.get("link_id",default=None,type=int)
             except:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
 
             if db.is_link_related_to(current_user.id,link_id):
                 db.accept_follow_request(link_id)
             else:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
 
         case "kick_follower":
             try:
                 user_id = request.form.get("user_id",default=None,type=int)
             except:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
 
             if(db.user_exists(user_id) and (user_id in db.get_followers(current_user.id))):
                 db.unfollow(user_id,current_user.id)
 
         
         case _:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
 
 
     # normal case of redirect
     if redirect_url != None:
         return redirect(redirect_url)
     else:
-        return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'acceuil",lien="/home")                
+        return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
 
 
 @app.route('/favicon.ico')
