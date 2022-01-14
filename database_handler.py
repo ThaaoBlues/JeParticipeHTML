@@ -223,7 +223,7 @@ class DataBase:
         # get posts general info as dict
         posts = []
         
-        following = self.get_following(user_id) if self_only else [user_id]
+        following = self.get_following(user_id) if not self_only else [user_id]
         
         
         for id in following :
