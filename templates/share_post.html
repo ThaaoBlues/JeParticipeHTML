@@ -70,7 +70,7 @@
                 {%endfor%}
               {%elif post.anon_votes%}
                   {%for choix in post.choix%}
-                  <form onSubmit="submit_form({author_id:{{post.author_id}},post_id:{{post.id}} ,choix:{{choix}}},'action/add_vote');return false">
+                  <form onSubmit="submit_form({author_id:{{post.author_id}},post_id:{{post.id}} ,choix:'{{choix}}'},'action/add_vote');return false">
                     <button class="btn btn-primary mt-2" style="width:100%;" type="submit">{{choix}}</button>
                   </form>
                   {%endfor%}
@@ -110,7 +110,7 @@
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send(JSON.stringify(dict));
     
-    setTimeout(function() {document.location.reload();},100);
+    setTimeout(function() {document.location.href = document.location.href.replace("False","True");},100);
   }
 
 </script>

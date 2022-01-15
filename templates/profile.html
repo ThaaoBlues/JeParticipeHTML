@@ -75,20 +75,16 @@
 
               <div class="row mx-3">
                 <div class="float-end">
-                  <form action="action/{%if not is_following%}follow{%else%}unfollow{%endif%}" method="POST">
+                  <form onSubmit="submit_form({user_id:{{user_id}}},'action/{%if not is_following%}follow{%else%}unfollow{%endif%}');return false">
                     {%if not is_following%}
-                      <input name="user_id" value="{{user_id}}" hidden>
                       <div class="float-end">
                         <input type="submit" value="S'abonner" class="btn btn-success">
                       </div>
                     {%else%}
-                      <input name="user_id" value="{{user_id}}" hidden>
                       <div class="float-end">
                         <input type="submit" value="Se désabonner" class="btn btn-danger">
                       </div>
                     {%endif%}
-
-                    <input hidden value="" id="redirect_url" name="redirect_url"/>
 
                   </form>
                 </div>
@@ -121,13 +117,14 @@
       alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
     }
 
-    function add_redirect_values() {
-      let list = document.getElementsByName("redirect_url");
-      for(var i=0;i<list.length; i++ ){
-        list[i].setAttribute('value',window.location.href);
-      }
+    function submit_form(dict,url){
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify(dict));
+      
+      setTimeout(function() {document.location.reload();},100);
     }
-    add_redirect_values();
 
 </script>
 

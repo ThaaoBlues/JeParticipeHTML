@@ -230,7 +230,6 @@ class DataBase:
         
         following = self.get_following(user_id) if not self_only else [user_id]
         
-        
         for id in following :
             
             for post in self.get_all_posts(id):

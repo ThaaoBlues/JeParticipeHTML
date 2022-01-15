@@ -1,4 +1,5 @@
 
+from asyncio.format_helpers import _format_callback_source
 from post import Post
 from passlib.handlers.sha2_crypt import sha256_crypt
 from flask import Flask,url_for, render_template,request,redirect,send_from_directory,jsonify
@@ -178,7 +179,7 @@ def shared():
 @login_required
 def home():
     
-    # prevent user from spam requests
+    # prevent user from spamming requests
     while True:
         try:
             sondages = db.generate_tl(current_user.id)
@@ -186,7 +187,6 @@ def home():
         except:
             logout_user()
             return redirect("/")
-            
     return render_template("home.html",username = current_user.name,sondages = sondages)
 
 @app.route("/recherche",methods=["GET"])
@@ -410,7 +410,6 @@ def parametres_sondage():
             
     
     elif request.method == "POST":
-        print(request.form)
 
         post_header = request.form.get("post_header",default=None)
         choix = request.form.get("choix",default=None)
@@ -574,6 +573,7 @@ def mes_demandes():
 def action(action):
             
     req = dict(request.get_json())
+    print(req)
     
     match action:
         
@@ -583,14 +583,15 @@ def action(action):
             if("choix" in req.keys()) and ("post_id" in req.keys()) and ("author_id" in req.keys()):
 
 
-                choix = req["choix"]
+                choix = str(req["choix"])
                 
                 # check if post_id is an int
                 try:
                     post_id = int(req["post_id"])
                     author_id = int(req["author_id"])
                 except ValueError:
-                   return jsonify({"erreur","requête mal formée"})
+                    print("ERREUR")
+                    return jsonify({"erreur","requête mal formée"})
                 
                 if (db.choix_exists(author_id,post_id,choix)):
                     
@@ -598,6 +599,7 @@ def action(action):
                     return jsonify({"succes":"requête validée"})
                 
                 else:
+                    print("ERREUR")
                     return jsonify({"erreur","requête mal formée"})
                       
             else:
