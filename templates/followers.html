@@ -91,7 +91,7 @@
               ( suivi par {{profil["followers"]}} personne(s) )
         </div>
         {%if not profil["user_id"] in following%}
-            <button class="btn-sm btn-success mt-2" type="submit">S'abonner</button>
+            <button class="btn-sm btn-success mt-2" type="submit">S'abonner en retour</button>
             <input hidden value="{{profil['user_id']}}" name="user_id"/>
         {%else%}
             <button class="btn-sm btn-danger mt-2" type="submit">Se désabonner</button>

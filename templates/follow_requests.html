@@ -75,11 +75,11 @@
   <div class="card-columns">
       {%for profil in profils%}
 
-        <div name="carte_profil" class="card text-center mt-2 mx-3" style="min-width: 350px;" onclick="window.location.href='/profil?user_id={{profil["user_id"]}}'">
+        <div name="carte_profil" class="card text-center mt-2 mx-3" style="min-width: 350px;" >
             
-          <form method="POST" action="action/{%if not profil['user_id'] in following%}follow{%else%}unfollow{%endif%}">
+          <form onSubmit="submit_form({user_id:{{profil['user_id']}} },'action/{%if not profil['user_id'] in following%}follow{%else%}unfollow{%endif%}');return false">
 
-            <div class="card-title mxy-auto mb-2 ">{{profil["username"]}}
+            <div class="card-title mxy-auto mb-2 " onclick="window.location.href='/profil?user_id={{profil["user_id"]}}'">{{profil["username"]}}
                 {%if profil["is_verified"]%}
                     <i class="bi bi-person-check ml-2" style = "color:blue;"></i>
                 {%endif%}
@@ -91,11 +91,9 @@
                   ( suivi par {{profil["followers"]}} personne(s) )
             </div>
             {%if not profil["user_id"] in following%}
-                <button class="btn-sm btn-success mt-2" type="submit">S'abonner</button>
-                <input hidden value="{{profil['user_id']}}" name="user_id"/>
+                <button class="btn-sm btn-success mt-2" type="submit">S'abonner en retour</button>
             {%else%}
                 <button class="btn-sm btn-danger mt-2" type="submit">Se désabonner</button>
-                <input hidden value="{{profil['user_id']}}" name="user_id"/>
             {%endif%}
 
             <input hidden value="" name="redirect_url"/>
@@ -103,19 +101,14 @@
         
           <div class="btn-group justify-content-center">
 
-            <form method="POST" action="/action/accept_follow_request">
+            <form method="POST" action="submit_form({link_id:{{profil['link_id']}} },'action/accept_follow_request');return false">
 
               <button class="btn-lg btn-success mt-2" type="submit">Accepter</button>
-              <input hidden value="{{profil['link_id']}}" name="link_id"/>
-              <input hidden value="" name="redirect_url"/>
   
             </form>
-            <form method="POST" action="/action/deny_follow_request">
+            <form method="POST" action="submit_form({link_id:{{profil['link_id']}} },'action/deny_follow_request');return false">
   
               <button class="btn-lg btn-danger mt-2 ms-2" type="submit">Refuser</button>
-              <input hidden value="{{profil['link_id']}}" name="link_id"/>
-              <input hidden value="" name="redirect_url"/>
-  
             </form>
           </div>
 
@@ -145,6 +138,15 @@
       }
     }
     add_redirect_values();
+
+    function submit_form(dict,url){
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify(dict));
+      
+      setTimeout(function() {document.location.reload();},100);
+    }
 
 
 </script>

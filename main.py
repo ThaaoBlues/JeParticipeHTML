@@ -1,7 +1,7 @@
 
 from post import Post
 from passlib.handlers.sha2_crypt import sha256_crypt
-from flask import Flask, session, url_for, render_template,request,redirect,send_from_directory
+from flask import Flask,url_for, render_template,request,redirect,send_from_directory,jsonify
 import database_handler
 from flask_login import login_required, login_user, logout_user, LoginManager, UserMixin, current_user
 from random import choices, randint
@@ -49,6 +49,9 @@ class User(UserMixin):
 
     def is_authenticated(self):
         return True
+    
+    def get_id(self):
+        return self.id
 
 @login_manager.user_loader
 def user_loader(user_id):
@@ -58,8 +61,9 @@ def user_loader(user_id):
         try:
             user = User(name=db.get_user_name(user_id),id=user_id,gender=db.get_gender(user_id))
             return user
-        except:
-            print("exception")
+        except Exception as e:
+            print("exception",e)
+            
             sleep(2)
 
 
@@ -562,7 +566,7 @@ def edit_profil():
             return redirect("edit_profil")
 
 
-@app.route("/mes_abonnes",methods=["GET","POST"])
+@app.route("/mes_abonnes",methods=["GET"])
 @login_required
 def mes_abonnes():
     """page où une timeline de tout ses abonnées apparaît avec la possibilité de les retirer
@@ -584,97 +588,130 @@ def mes_demandes():
     Returns:
         [type]: [description]
     """
+    
+
+    
     if not db.is_private(current_user.id):
         return render_template("page_message.html",message="Votre compte n'est pas en mode privé, cette section ne vous sert à rien ;)",texte_btn="revenir à l'accueil",lien="/home")
     else:
         return render_template("follow_requests.html",profils=db.generate_requests_tl(current_user.id),following=db.get_following(current_user.id))
 
-@app.route("/action/<action>",methods=["POST","GET"])
+@app.route("/action/<action>",methods=["POST"])
 @login_required
 def action(action):
-    
-    redirect_url = request.form.get("redirect_url",default=None,type=str)
+            
+    req = dict(request.get_json())
     
     match action:
         
         
         case "follow":
             
-                        
-            if (request.form.get("user_id",default=None) != None):
+        
+            if ("user_id" in req.keys()):
            
                 
                 # don't forget to check if the parameter is of the right type
                 try:
-                    user_id = request.form.get("user_id",type=int)
+                    user_id = int(req["user_id"])
                 except ValueError:
                     return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
                 
-                if not current_user.id in db.get_following(user_id):
+                if not (current_user.id in db.get_followers(user_id)):
                     db.follow(current_user.id,user_id,is_request=db.is_private(user_id))
-                                
+
+                    return jsonify({"succes":"requête validée"})
+                
+                else:
+                    print(current_user.id)
+                    print(db.get_followers(user_id))
+                    return jsonify({"erreur":"utilisateur déjà ajouté à vos abonnements"})
+
             else:
                 return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
 
             
         case "unfollow":
-            if (request.form.get("user_id",default=None) != None):
+            if ("user_id" in req.keys()):
            
            
                 # don't forget to check if the parameter is of the right type
                 try:
-                    user_id = request.form.get("user_id",type=int)
+                    user_id = int(req["user_id"])
                 except ValueError:
-                    return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
-                
-                if current_user.id in db.get_followers(user_id):
+                    return jsonify({"erreur","requête mal formée"})
+                                                   
+                if (current_user.id in db.get_followers(user_id)) and (db.user_exists(user_id)):
 
                     db.unfollow(current_user.id,user_id)
+                    return jsonify({"succes":"requête validée"})
                 
+                else:
+                    return jsonify({"erreur":"utilisateur non dans vos abonnements"})
+            
             else:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
+                return jsonify({"erreur","requête mal formée"})                
 
         case "deny_follow_request":
-            try:
-                link_id = request.form.get("link_id",default=None,type=int)
-            except:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
+            
+            if ("link_id" in req.keys()):
+                try:
+                    link_id = int(req["link_id"])
+                except:
+                    return jsonify({"erreur","requête mal formée"})
+                
+                
+                if db.is_link_related_to(current_user.id,link_id):
+                    db.deny_follow_request(link_id)
+                    return jsonify({"succes":"requête validée"})
 
-            if db.is_link_related_to(current_user.id,link_id):
-                db.deny_follow_request(link_id)
+                else:
+                    return jsonify({"erreur","requête mal formée"})
+                
             else:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
+                return jsonify({"erreur","requête mal formée"})
 
         case "accept_follow_request":
-            try:
-                link_id = request.form.get("link_id",default=None,type=int)
-            except:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
+            if ("link_id" in req.keys()):
+                try:
+                    link_id = int(req["link_id"])
+                except:
+                    return jsonify({"erreur","requête mal formée"})
+                
+                if db.is_link_related_to(current_user.id,link_id):
+                    db.accept_follow_request(link_id)
+                    return jsonify({"succes":"requête validée"})
 
-            if db.is_link_related_to(current_user.id,link_id):
-                db.accept_follow_request(link_id)
+                else:
+                    return jsonify({"erreur","requête mal formée"})
+                
+                
             else:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
+                return jsonify({"erreur","requête mal formée"})
+                    
 
         case "kick_follower":
-            try:
-                user_id = request.form.get("user_id",default=None,type=int)
-            except:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
-
-            if(db.user_exists(user_id) and (user_id in db.get_followers(current_user.id))):
-                db.unfollow(user_id,current_user.id)
-
+            if ("user_id" in req.keys()):
+           
+                # don't forget to check if the parameter is of the right type
+                try:
+                    user_id = int(req["user_id"])
+                except ValueError:
+                    return jsonify({"erreur","requête mal formée"})
+                
+                 
+                if(db.user_exists(user_id) and (user_id in db.get_followers(current_user.id))):
+                    db.unfollow(user_id,current_user.id)
+                    return jsonify({"succes":"requête validée"})
+                
+                else:
+                    return jsonify({"erreur":"utilisateur non dans vos abonnements"})
+            
+            else:
+                return jsonify({"erreur","requête mal formée"})       
         
         case _:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
-
-
-    # normal case of redirect
-    if redirect_url != None:
-        return redirect(redirect_url)
-    else:
-        return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
+            return jsonify({"erreur","requête mal formée"})
 
 
 @app.route('/favicon.ico')

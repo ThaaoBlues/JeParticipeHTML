@@ -9,6 +9,7 @@ import sqlite3 as sql
 from os import mkdir,remove
 from csv import DictWriter
 from zipfile import ZipFile
+from contextlib import closing
 
 
 class DataBase:
@@ -17,7 +18,7 @@ class DataBase:
         self.users_types = ["entreprise","institution publique","utilisateur"]
         self.gender_types = ["homme","femme","genre_fluide","non_genre","autre","personne_morale"]
         
-        
+
                
         if not path.exists("static"):
             mkdir("static")
@@ -30,60 +31,57 @@ class DataBase:
             # init database writer
             self.connector = sql.connect("database.db",check_same_thread=False)
             self.connector.row_factory = sql.Row
-
-            self.cursor = self.connector.cursor()
-        
             
             self.register_user(username="compteur_utilisateurs",gender="autre",type="compteur",franceconnect=True,init=True)
         
         # init database writer
         self.connector = sql.connect("database.db",check_same_thread=False)
         self.connector.row_factory = sql.Row
-        self.cursor = self.connector.cursor()
         
     def add_post(self,user_id:int,post:dict):
-        
-        # sanitize entries
-        post["header"] = self.sanitize(post["header"],text=True)        
-        
-        self.cursor.execute("INSERT INTO POSTS (owner_id,header,anon_votes,archived) values(?,?,?,?)",(user_id,post["header"],post["anon_votes"],False))
-        post_id = self.cursor.lastrowid
-        for choix in post["choix"]:
-            self.cursor.execute("INSERT INTO CHOIX (post_id,choix,owner_id,votes) values(?,?,?,?)",(post_id,choix,user_id,0))
+        with closing(self.connector.cursor()) as cursor:
+            # sanitize entries
+            post["header"] = self.sanitize(post["header"],text=True)        
+            
+            cursor.execute("INSERT INTO POSTS (owner_id,header,anon_votes,archived) values(?,?,?,?)",(user_id,post["header"],post["anon_votes"],False))
+            post_id = cursor.lastrowid
+            for choix in post["choix"]:
+                cursor.execute("INSERT INTO CHOIX (post_id,choix,owner_id,votes) values(?,?,?,?)",(post_id,choix,user_id,0))
 
-        self.connector.commit()
+            self.connector.commit()
         
     def add_vote(self,user_id:int,owner_id:int,choix:str,post_id:int,user_gender:str,anon_vote=False):
         
-        # to compare with saitized text
-        choix = self.sanitize(choix,text=True)
-        
-        if anon_vote:
-                
-            self.cursor.execute(f"UPDATE CHOIX SET votes = votes + 1 WHERE owner_id=? AND post_id=? AND choix=?",(owner_id,post_id,choix))
-            
-            
-            choix_id = dict(self.cursor.execute(f"SELECT choix_id FROM CHOIX WHERE owner_id = ? AND post_id = ? AND choix = ?",(owner_id,post_id,choix)).fetchall()[0])["choix_id"]
-            
-            username = "anonymous"
-            self.cursor.execute(f"INSERT INTO VOTANTS (owner_id,post_id,choix_id,username,voter_id,gender) values(?,?,?,?,?,?)",(owner_id,post_id,choix_id,username,user_id,user_gender))
-            
-            self.connector.commit()
-        else:
-            
-            # make sure the user hasn't already voted
-            if self.has_already_voted(user_id,post_id):
-                return
-            
-            self.cursor.execute(f"UPDATE CHOIX SET votes = votes + 1 WHERE owner_id=? AND post_id=? AND choix=?",(owner_id,post_id,choix))
-            
-            
-            choix_id = dict(self.cursor.execute(f"SELECT choix_id FROM CHOIX WHERE owner_id = ? AND post_id = ? AND choix = ?",(owner_id,post_id,choix)).fetchall()[0])["choix_id"]
-            
-            username = self.get_user_name(user_id)
-            self.cursor.execute(f"INSERT INTO VOTANTS (owner_id,post_id,choix_id,username,voter_id,gender) values(?,?,?,?,?,?)",(owner_id,post_id,choix_id,username,user_id,user_gender))
-            
-            self.connector.commit()
+        with closing(self.connector.cursor()) as cursor:
+            # to compare with saitized text
+            choix = self.sanitize(choix,text=True)
+
+            if anon_vote:
+
+                cursor.execute(f"UPDATE CHOIX SET votes = votes + 1 WHERE owner_id=? AND post_id=? AND choix=?",(owner_id,post_id,choix))
+
+
+                choix_id = dict(cursor.execute(f"SELECT choix_id FROM CHOIX WHERE owner_id = ? AND post_id = ? AND choix = ?",(owner_id,post_id,choix)).fetchall()[0])["choix_id"]
+
+                username = "anonymous"
+                cursor.execute(f"INSERT INTO VOTANTS (owner_id,post_id,choix_id,username,voter_id,gender) values(?,?,?,?,?,?)",(owner_id,post_id,choix_id,username,user_id,user_gender))
+
+                self.connector.commit()
+            else:
+
+                # make sure the user hasn't already voted
+                if self.has_already_voted(user_id,post_id):
+                    return
+
+                cursor.execute(f"UPDATE CHOIX SET votes = votes + 1 WHERE owner_id=? AND post_id=? AND choix=?",(owner_id,post_id,choix))
+
+
+                choix_id = dict(cursor.execute(f"SELECT choix_id FROM CHOIX WHERE owner_id = ? AND post_id = ? AND choix = ?",(owner_id,post_id,choix)).fetchall()[0])["choix_id"]
+
+                username = self.get_user_name(user_id)
+                cursor.execute(f"INSERT INTO VOTANTS (owner_id,post_id,choix_id,username,voter_id,gender) values(?,?,?,?,?,?)",(owner_id,post_id,choix_id,username,user_id,user_gender))
+
+                self.connector.commit()
                   
     def get_user_name(self,user_id:int)->str:
         """get username from user id
@@ -94,11 +92,14 @@ class DataBase:
         Returns:
             str: [description]
         """
-        try:
-            return dict(self.cursor.execute(f"SELECT username FROM USERS WHERE user_id = ?",(user_id,)).fetchall()[0])["username"]
-        except:
-            # page is being reloaded to many times
-            return ""
+        
+        
+        with closing(self.connector.cursor()) as cursor:
+            try:
+                return dict(cursor.execute(f"SELECT username FROM USERS WHERE user_id = ?",(user_id,)).fetchall()[0])["username"]
+            except:
+                # page is being reloaded to many times
+                return ""
              
     def get_all_posts_stats(self,owner_id:int)->list:
         
@@ -118,7 +119,10 @@ class DataBase:
             [type]: [description]
         """
         
-        tmp = self.cursor.execute("SELECT * FROM VOTANTS WHERE post_id=?",(post_id,)).fetchall()
+        
+        with closing(self.connector.cursor()) as cursor:
+        
+            tmp = cursor.execute("SELECT * FROM VOTANTS WHERE post_id=?",(post_id,)).fetchall()
         
         votants = []
         
@@ -178,22 +182,23 @@ class DataBase:
             [type]: [description]
         """
         
-        
-        return self.unsanitize(dict(self.cursor.execute("SELECT choix FROM CHOIX WHERE choix_id=?",(choix_id,)).fetchall()[0])["choix"])
+        with closing(self.connector.cursor()) as cursor:
+            return self.unsanitize(dict(cursor.execute("SELECT choix FROM CHOIX WHERE choix_id=?",(choix_id,)).fetchall()[0])["choix"])
         
     def get_post(self,post_id:int):
-        
-        post = dict(self.cursor.execute("SELECT * FROM POSTS WHERE post_id=?",(post_id,)).fetchone())
+        with closing(self.connector.cursor()) as cursor:
+            post = dict(cursor.execute("SELECT * FROM POSTS WHERE post_id=?",(post_id,)).fetchone())
 
-        post["header"] = self.unsanitize(post["header"])
-        choix = [dict(row)["choix"] for row in self.cursor.execute("SELECT choix FROM CHOIX WHERE post_id=?",(post["post_id"],))]
+            post["header"] = self.unsanitize(post["header"])
+            choix = [dict(row)["choix"] for row in cursor.execute("SELECT choix FROM CHOIX WHERE post_id=?",(post["post_id"],))]
 
-        post["choix"] = [self.unsanitize(c) for c in choix]
-        
-        return post
+            post["choix"] = [self.unsanitize(c) for c in choix]
+            
+            return post
         
     def post_exists(self,post_id:int):
-        return self.cursor.execute("SELECT * FROM POSTS WHERE post_id=?",(post_id,)).fetchall() != []
+        with closing(self.connector.cursor()) as cursor:
+            return cursor.execute("SELECT * FROM POSTS WHERE post_id=?",(post_id,)).fetchall() != []
         
     def get_results(self,post_id:int)->list:
 
@@ -238,47 +243,55 @@ class DataBase:
         # make Post objects and gather all missing data
         for i in range(len(posts)):
             posts[i] = Post(self.unsanitize(posts[i]["header"]),posts[i]["choix"],self.get_user_name(posts[i]["owner_id"]),posts[i]["owner_id"],results=self.get_results(posts[i]["post_id"]),vote=self.has_already_voted(user_id,posts[i]["post_id"]),id=posts[i]["post_id"],stats=self.get_post_stats(posts[i]["post_id"]),archive=posts[i]["archived"])
-            
+        
+        
+        
         return posts
    
     def match_users(self,query:str)->list:
-        query = self.sanitize(query)
-        users = self.cursor.execute("SELECT username,user_id,type,is_verified FROM USERS").fetchall()
         
-        #fetchall to dict
-        users = [dict(row) for row in users]
         
-        i = 0        
-        while i<len(users):
+        with closing(self.connector.cursor()) as cursor:
+            query = self.sanitize(query)
+            users = cursor.execute("SELECT username,user_id,type,is_verified FROM USERS").fetchall()
             
-            if SequenceMatcher(None,query,users[i]["username"]).ratio() >= 0.6:
-                users[i]["followers"] = len(self.get_followers(users[i]["user_id"]))
-            else:
-                users.pop(i)
+            #fetchall to dict
+            users = [dict(row) for row in users]
+            
+            i = 0        
+            while i<len(users):
                 
-            i += 1
-                       
-        
-        return users     
+                if SequenceMatcher(None,query,users[i]["username"]).ratio() >= 0.6:
+                    users[i]["followers"] = len(self.get_followers(users[i]["user_id"]))
+                else:
+                    users.pop(i)
+                    
+                i += 1
+                        
+            
+            return users     
     
     def get_type(self,user_id:int)->str:
-        return self.cursor.execute("SELECT type FROM USERS WHERE user_id=?",(user_id)).fetchone()[0]
+        with closing(self.connector.cursor()) as cursor:
+            return cursor.execute("SELECT type FROM USERS WHERE user_id=?",(user_id)).fetchone()[0]
        
     def is_verified(self,user_id:int):
-        return self.cursor.execute("SELECT is_verified FROM USERS WHERE user_id=?",(user_id,)).fetchone()[0]
+        with closing(self.connector.cursor()) as cursor:
+            return cursor.execute("SELECT is_verified FROM USERS WHERE user_id=?",(user_id,)).fetchone()[0]
     
     def username_exists(self,username:str)->bool:
-        return self.cursor.execute("SELECT username FROM USERS WHERE username=?",(username,)).fetchall() != []
+        with closing(self.connector.cursor()) as cursor:
+            return cursor.execute("SELECT username FROM USERS WHERE username=?",(username,)).fetchall() != []
 
     def choix_exists(self,owner_id:int,post_id:int,choix,check_id=False):
-        
-        if check_id:
-            return self.cursor.execute("SELECT * FROM CHOIX WHERE choix_id=? AND owner_id=? AND post_id=?",(choix,owner_id,post_id)).fetchall() != []
+        with closing(self.connector.cursor()) as cursor:
+            if check_id:
+                return cursor.execute("SELECT * FROM CHOIX WHERE choix_id=? AND owner_id=? AND post_id=?",(choix,owner_id,post_id)).fetchall() != []
 
-        else:
-            choix = self.sanitize(choix,text=True)
-            return self.cursor.execute("SELECT * FROM CHOIX WHERE choix=? AND owner_id=? AND post_id=?",(choix,owner_id,post_id)).fetchall() != []
-        
+            else:
+                choix = self.sanitize(choix,text=True)
+                return cursor.execute("SELECT * FROM CHOIX WHERE choix=? AND owner_id=? AND post_id=?",(choix,owner_id,post_id)).fetchall() != []
+            
     def get_user_id(self,username:str,password:str)->str:
         """get user id from username and password by
         checking if passwords match
@@ -290,17 +303,18 @@ class DataBase:
         Returns:
             str: [description]
         """
-        
-        users = self.cursor.execute(f"SELECT user_id,password FROM USERS WHERE username=?",(username,)).fetchall()
-        
-        users = [dict(row) for row in users]
-        
-        for user in users:
-            if user["user_id"] != 1:
-                if sha256_crypt.verify(password,user["password"]):
-                    return user["user_id"]
-        
-        return None
+        with closing(self.connector.cursor()) as cursor:
+
+            users = cursor.execute(f"SELECT user_id,password FROM USERS WHERE username=?",(username,)).fetchall()
+            
+            users = [dict(row) for row in users]
+            
+            for user in users:
+                if user["user_id"] != 1:
+                    if sha256_crypt.verify(password,user["password"]):
+                        return user["user_id"]
+            
+            return None
                   
     def delete_post(self,user_id:str,post_id:str):
         """delete all data about a post
@@ -310,45 +324,43 @@ class DataBase:
             post_id (str): post id
         """
         
-        
-        self.cursor.execute("DELETE FROM POSTS WHERE post_id=? AND owner_id=?",(post_id,user_id))
-        self.cursor.execute("DELETE FROM VOTANTS WHERE post_id=? AND owner_id=?",(post_id,user_id))
-        self.cursor.execute("DELETE FROM CHOIX WHERE post_id=? AND owner_id=?",(post_id,user_id))
-        self.connector.commit()
-    
-    def archive_all(self):
-        # to archive each 24h
-        self.__write_to_all("post","")
+        with closing(self.connector.cursor()) as cursor:
+            cursor.execute("DELETE FROM POSTS WHERE post_id=? AND owner_id=?",(post_id,user_id))
+            cursor.execute("DELETE FROM VOTANTS WHERE post_id=? AND owner_id=?",(post_id,user_id))
+            cursor.execute("DELETE FROM CHOIX WHERE post_id=? AND owner_id=?",(post_id,user_id))
+            self.connector.commit()
         
     def register_user(self,username="",gender="",password="",type="utilisateur",franceconnect=False,init=False):
         
-        self.cursor.execute("INSERT INTO USERS(username,password,age,gender,type,is_verified,is_private) values(?,?,?,?,?,?,?)",(username,password,0,gender,type,franceconnect,False))
-        
-        self.connector.commit()
-        
-        
-        
-        if not init:
+        with closing(self.connector.cursor()) as cursor:
+            cursor.execute("INSERT INTO USERS(username,password,age,gender,type,is_verified,is_private) values(?,?,?,?,?,?,?)",(username,password,0,gender,type,franceconnect,False))
             
-            user_id = self.cursor.lastrowid
+            self.connector.commit()
             
-            # init profile md file
-            with open(f"static/users_profile_md/{user_id}.md","w") as f:
-                f.write("# Bonjour ! Je suis nouveau ici ;)\n ___ \n## une seconde partie ?\n- eh oui !\n- pour plus d'infos sur le markdown, n'hésitez pas à consulter : [ce site](https://www.markdownguide.org/cheat-sheet/)")
-                f.close()
-            # add user to followers counter
-            self.follow(int(user_id),1)
             
-            # follow himself to display his own posts
-            self.follow(int(user_id),int(user_id))
             
-            return user_id
+            if not init:
+                
+                user_id = cursor.lastrowid
+                
+                # init profile md file
+                with open(f"static/users_profile_md/{user_id}.md","w") as f:
+                    f.write("# Bonjour ! Je suis nouveau ici ;)\n ___ \n## une seconde partie ?\n- eh oui !\n- pour plus d'infos sur le markdown, n'hésitez pas à consulter : [ce site](https://www.markdownguide.org/cheat-sheet/)")
+                    f.close()
+                # add user to followers counter
+                self.follow(int(user_id),1)
+                
+                # follow himself to display his own posts
+                self.follow(int(user_id),int(user_id))
+                
+                return user_id
             
     def delete_user(self,user_id:str):
-        self.cursor.execute("DELETE FROM USERS WHERE user_id=?",(user_id))
-        self.cursor.execute("DELETE FROM POSTS WHERE owner_id=?",(user_id))
-        self.cursor.execute("DELETE FROM FOLLOWERS WHERE follower_id=? OR user_id=?",(user_id,user_id))
-        self.connector.commit()
+        with closing(self.connector.cursor()) as cursor:
+            cursor.execute("DELETE FROM USERS WHERE user_id=?",(user_id))
+            cursor.execute("DELETE FROM POSTS WHERE owner_id=?",(user_id))
+            cursor.execute("DELETE FROM FOLLOWERS WHERE follower_id=? OR user_id=?",(user_id,user_id))
+            self.connector.commit()
 
     def get_following(self,user_id:str)->list:
         """renvoie une list des id utilisateurs suivis
@@ -359,12 +371,15 @@ class DataBase:
         Returns:
             list: [description]
         """
-        return [dict(row)["user_id"] for row in self.cursor.execute("SELECT user_id FROM FOLLOWERS WHERE follower_id=?",(user_id,)).fetchall()]
+        with closing(self.connector.cursor()) as cursor:
+            return [dict(row)["user_id"] for row in cursor.execute("SELECT user_id FROM FOLLOWERS WHERE follower_id=?",(user_id,)).fetchall()]
     
     def get_followers(self,user_id:str)->list:
-        r = self.cursor.execute("SELECT follower_id FROM FOLLOWERS WHERE user_id=?",(user_id,)).fetchall()
-        r = [dict(row)["follower_id"] for row in r]
-        return r
+        
+        with closing(self.connector.cursor()) as cursor:
+            r = cursor.execute("SELECT follower_id FROM FOLLOWERS WHERE user_id=?",(user_id,)).fetchall()
+            r = [dict(row)["follower_id"] for row in r]
+            return r
     
     def follow(self,user_id:int,target_id:int,is_request=False):
         """user id is the user requesting to follow target_id
@@ -375,31 +390,33 @@ class DataBase:
             target_id (int): [description]
             is_request (bool, optional): [description]. Defaults to False.
         """
-        
-        self.cursor.execute("INSERT INTO FOLLOWERS (user_id,follower_id,is_request) values(?,?,?)",(target_id,user_id,is_request))
-        self.connector.commit()
+        with closing(self.connector.cursor()) as cursor:
+            cursor.execute("INSERT INTO FOLLOWERS (user_id,follower_id,is_request) values(?,?,?)",(target_id,user_id,is_request))
+            self.connector.commit()
               
     def unfollow(self,user_id:str,target_id:int):
-        self.cursor.execute(f"DELETE FROM FOLLOWERS where user_id=? AND follower_id=?",(target_id,user_id))
-        self.connector.commit()
+        with closing(self.connector.cursor()) as cursor:
+            cursor.execute(f"DELETE FROM FOLLOWERS where user_id=? AND follower_id=?",(target_id,user_id))
+            self.connector.commit()
     
     def get_all_posts(self,user_id:int)->list:
         
-        posts = [dict(row) for row in self.cursor.execute("SELECT * FROM POSTS WHERE owner_id=?",(user_id,)).fetchall()]
+        with closing(self.connector.cursor()) as cursor:
+            posts = [dict(row) for row in cursor.execute("SELECT * FROM POSTS WHERE owner_id=?",(user_id,)).fetchall()]
 
-        for post in posts:
-            choix = [dict(row)["choix"] for row in self.cursor.execute("SELECT choix FROM CHOIX WHERE post_id=? AND owner_id=?",(post["post_id"],user_id))]
-            post["choix"] = [self.unsanitize(c) for c in choix]
+            for post in posts:
+                choix = [dict(row)["choix"] for row in cursor.execute("SELECT choix FROM CHOIX WHERE post_id=? AND owner_id=?",(post["post_id"],user_id))]
+                post["choix"] = [self.unsanitize(c) for c in choix]
 
-        return posts
+            return posts
         
     def get_gender(self,user_id:str):
-
-        return dict(self.cursor.execute("SELECT gender FROM USERS WHERE user_id = ?",(user_id,)).fetchall()[0])["gender"]
+        with closing(self.connector.cursor()) as cursor:
+            return dict(cursor.execute("SELECT gender FROM USERS WHERE user_id = ?",(user_id,)).fetchall()[0])["gender"]
 
     def has_already_voted(self,user_id:int,post_id:int):
-        
-        return True if self.cursor.execute("SELECT 1 FROM VOTANTS WHERE post_id = ? and voter_id = ?",(post_id,user_id)).fetchall() != [] else False
+        with closing(self.connector.cursor()) as cursor:
+            return True if cursor.execute("SELECT 1 FROM VOTANTS WHERE post_id = ? and voter_id = ?",(post_id,user_id)).fetchall() != [] else False
       
     def anon_votes(self,post_id:int)->bool:
         """renvoie si le vote anonyme est autorisé pour un post ou non
@@ -410,11 +427,12 @@ class DataBase:
         Returns:
             bool: [description]
         """
-        return dict(self.cursor.execute("SELECT anon_votes FROM POSTS WHERE post_id=?",(post_id,)).fetchall()[0])["anon_votes"]
+        with closing(self.connector.cursor()) as cursor:
+            return dict(cursor.execute("SELECT anon_votes FROM POSTS WHERE post_id=?",(post_id,)).fetchall()[0])["anon_votes"]
       
     def get_password(self,user_id:int):
-        
-        return dict(self.cursor.execute("SELECT password FROM USERS WHERE user_id=?",(user_id,)).fetchall()[0])["password"]
+        with closing(self.connector.cursor()) as cursor:
+            return dict(cursor.execute("SELECT password FROM USERS WHERE user_id=?",(user_id,)).fetchall()[0])["password"]
     
     def __init_db(self,tmp=False):
                 
@@ -457,9 +475,9 @@ class DataBase:
         """
         
         new_text = self.sanitize(new_text,text=True)
-        
-        self.cursor.execute("UPDATE CHOIX SET choix=? WHERE post_id=? AND choix_id=?",(new_text,post_id,choix_id))
-        self.connector.commit()
+        with closing(self.connector.cursor()) as cursor:
+            cursor.execute("UPDATE CHOIX SET choix=? WHERE post_id=? AND choix_id=?",(new_text,post_id,choix_id))
+            self.connector.commit()
         
     def update_anon_votes(self,post_id:int,switch:bool):
         """change le fait qu'on autorise les votes anonymes ou non
@@ -468,8 +486,10 @@ class DataBase:
             post_id (int): [description]
             switch (bool): True si oui False sinon
         """
-        self.cursor.execute("UPDATE POSTS SET anon_votes=? WHERE post_id=?",(switch,post_id))
-        self.connector.commit()
+        
+        with closing(self.connector.cursor()) as cursor:
+            cursor.execute("UPDATE POSTS SET anon_votes=? WHERE post_id=?",(switch,post_id))
+            self.connector.commit()
         
     def update_post_header(self,post_id:int,new_header:bool):
         """
@@ -477,11 +497,11 @@ class DataBase:
         (l'assainissement est fait dans la méthode)
 
         """
-        
-        new_header = self.sanitize(new_header,text=True)
-        
-        self.cursor.execute("UPDATE POSTS SET header=? WHERE post_id=?",(new_header,post_id))
-        self.connector.commit()
+        with closing(self.connector.cursor()) as cursor:
+            new_header = self.sanitize(new_header,text=True)
+            
+            cursor.execute("UPDATE POSTS SET header=? WHERE post_id=?",(new_header,post_id))
+            self.connector.commit()
          
     def get_choix_ids(self,post_id:int)->list:
         """retourne une liste de toutes les ids des choix d'un post
@@ -493,11 +513,11 @@ class DataBase:
         Returns:
             list: [description]
         """
-        
-        choix_ids = [dict(r) for r in self.cursor.execute("SELECT choix_id FROM CHOIX WHERE post_id=?",(post_id,)).fetchall()]
-        choix_ids = [c_id["choix_id"] for c_id in choix_ids]
-        
-        return choix_ids
+        with closing(self.connector.cursor()) as cursor:
+            choix_ids = [dict(r) for r in cursor.execute("SELECT choix_id FROM CHOIX WHERE post_id=?",(post_id,)).fetchall()]
+            choix_ids = [c_id["choix_id"] for c_id in choix_ids]
+            
+            return choix_ids
     
     def update_post_archive_state(self,post_id:int,archive:bool):
         """set archived to True so the post will not 
@@ -506,11 +526,13 @@ class DataBase:
         Args:
             post_id (int): [description]
         """
-        self.cursor.execute("UPDATE POSTS SET archived=? WHERE post_id = ?",(archive,post_id))
-        self.connector.commit()
+        with closing(self.connector.cursor()) as cursor:
+            cursor.execute("UPDATE POSTS SET archived=? WHERE post_id = ?",(archive,post_id))
+            self.connector.commit()
         
     def user_exists(self,user_id:int)->bool:
-        return self.cursor.execute("SELECT username FROM USERS WHERE user_id=?",(user_id,)).fetchall() != []
+        with closing(self.connector.cursor()) as cursor:
+            return cursor.execute("SELECT username FROM USERS WHERE user_id=?",(user_id,)).fetchall() != []
 
     def generate_csv(self,post_id:int)->str:
         """generate a csv file with votes data from the post 
@@ -603,8 +625,11 @@ class DataBase:
         Returns:
             bool: [description]
         """
-        
-        return dict(self.cursor.execute("SELECT is_private FROM USERS WHERE user_id=?",(user_id,)).fetchone())["is_private"]
+                
+        with closing(self.connector.cursor()) as cursor:
+            ret = dict(cursor.execute("SELECT is_private FROM USERS WHERE user_id=?",(user_id,)).fetchone())["is_private"]
+                
+            return ret
     
     def set_private_status(self,user_id:int,status:bool):
         """set an user pin private mode/remove an user from private mode
@@ -612,9 +637,9 @@ class DataBase:
         Args:
             status (bool): [description]
         """
-        
-        self.cursor.execute("UPDATE USERS SET is_private=? WHERE user_id=?",(status,user_id))
-        self.connector.commit()
+        with closing(self.connector.cursor()) as cursor:
+            cursor.execute("UPDATE USERS SET is_private=? WHERE user_id=?",(status,user_id))
+            self.connector.commit()
         
     def get_user_info(self,user_id:int)->dict:
         """retrieve all data about an user
@@ -625,24 +650,27 @@ class DataBase:
         Returns:
             dict: [description]
         """
-        
-        return dict(self.cursor.execute("SELECT username,user_id,type,is_verified FROM USERS WHERE user_id=?",(user_id,)).fetchone())
+        with closing(self.connector.cursor()) as cursor:
+            return dict(cursor.execute("SELECT username,user_id,type,is_verified FROM USERS WHERE user_id=?",(user_id,)).fetchone())
 
     def get_follow_requests(self,user_id:int)->list:
         
         """retrieve all follow request to one user
         """
         
-        return [dict(row) for row in self.cursor.execute("SELECT follower_id,link_id FROM FOLLOWERS WHERE user_id=? AND is_request=?",(user_id,True)).fetchall()]
+        with closing(self.connector.cursor()) as cursor:
     
+            return [dict(row) for row in cursor.execute("SELECT follower_id,link_id FROM FOLLOWERS WHERE user_id=? AND is_request=?",(user_id,True)).fetchall()]
+
     def accept_follow_request(self,link_id:int):
         """update follow line and set is_request to false
 
         Args:
             link_id (int): [description]
-        """ 
-        self.cursor.execute("UPDATE FOLLOWERS SET is_request=? WHERE link_id=?",(False,link_id))
-        self.connector.commit()
+        """
+        with closing(self.connector.cursor()) as cursor:
+            cursor.execute("UPDATE FOLLOWERS SET is_request=? WHERE link_id=?",(False,link_id))
+            self.connector.commit()
          
     def deny_follow_request(self,link_id:int):
         
@@ -652,9 +680,9 @@ class DataBase:
             link_id (int): [description]
         """
         
-        
-        self.cursor.execute("DELETE FROM FOLLOWERS WHERE link_id=?",(link_id,))
-        self.connector.commit()
+        with closing(self.connector.cursor()) as cursor:
+            cursor.execute("DELETE FROM FOLLOWERS WHERE link_id=?",(link_id,))
+            self.connector.commit()
         
     def is_link_related_to(self,user_id:int,link_id:int)->bool:
         
@@ -667,10 +695,10 @@ class DataBase:
         Returns:
             bool: [description]
         """
-        
-        tmp = self.cursor.execute("SELECT user_id FROM FOLLOWERS WHERE link_id=? AND user_id=?",(link_id,user_id))
-        
-        return True if (tmp != [] and tmp != None) else False
+        with closing(self.connector.cursor()) as cursor:
+            tmp = cursor.execute("SELECT user_id FROM FOLLOWERS WHERE link_id=? AND user_id=?",(link_id,user_id))
+            
+            return True if (tmp != [] and tmp != None) else False
     
     def generate_requests_tl(self,user_id:int)->list:
         
@@ -683,15 +711,17 @@ class DataBase:
             list: [description]
         """
         
-        tmp = self.cursor.execute("SELECT follower_id,link_id FROM FOLLOWERS WHERE user_id=? AND is_request=?",(user_id,True)).fetchall()
-        
-        tmp = [dict(row) for row in tmp]
-        
-        # concat user infos and link_id+follower_id (follower_id is useless here)
-        for user in tmp:
-            user.update(self.get_user_info(user["follower_id"]))
+        with closing(self.connector.cursor()) as cursor:
+    
+            tmp = cursor.execute("SELECT follower_id,link_id FROM FOLLOWERS WHERE user_id=? AND is_request=?",(user_id,True)).fetchall()
             
-        return tmp
+            tmp = [dict(row) for row in tmp]
+            
+            # concat user infos and link_id+follower_id (follower_id is useless here)
+            for user in tmp:
+                user.update(self.get_user_info(user["follower_id"]))
+                
+            return tmp
     
     
     def get_full_database(self):
@@ -701,12 +731,13 @@ class DataBase:
         """
         database = {}
         
-        for row in self.cursor.execute("SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%'").fetchall():
-            database[dict(row)["name"]] = ""
+        with closing(self.connector.cursor()) as cursor:
+            for row in cursor.execute("SELECT name FROM sqlite_schema WHERE type ='table' AND name NOT LIKE 'sqlite_%'").fetchall():
+                database[dict(row)["name"]] = ""
+                
             
-        
-        for table in database.keys():
-            t_content = self.cursor.execute(f"SELECT * FROM {table}")
-            database[table] = [dict(row) for row in t_content]
-            
-        return database
+            for table in database.keys():
+                t_content = cursor.execute(f"SELECT * FROM {table}")
+                database[table] = [dict(row) for row in t_content]
+                
+            return database
