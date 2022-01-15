@@ -101,12 +101,12 @@
         
           <div class="btn-group justify-content-center">
 
-            <form action="submit_form({link_id:{{profil['link_id']}} },'action/accept_follow_request');return false">
+            <form onSubmit="submit_form({link_id:{{profil['link_id']}} },'action/accept_follow_request');return false">
 
               <button class="btn-lg btn-success mt-2" type="submit">Accepter</button>
   
             </form>
-            <form action="submit_form({link_id:{{profil['link_id']}} },'action/deny_follow_request');return false">
+            <form onSubmit="submit_form({link_id:{{profil['link_id']}} },'action/deny_follow_request');return false">
   
               <button class="btn-lg btn-danger mt-2 ms-2" type="submit">Refuser</button>
             </form>

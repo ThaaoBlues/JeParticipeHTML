@@ -549,7 +549,7 @@ def mes_abonnes():
     """
     profils = [db.get_user_info(user_id) for user_id in db.get_followers(current_user.id)]
     
-    return render_template("followers.html",profils=profils)
+    return render_template("followers.html",profils=profils,following=db.get_following(current_user.id))
 
 
 @app.route("/mes_demandes_dabonnement",methods=["GET","POST"])
