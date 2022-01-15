@@ -101,12 +101,12 @@
         
           <div class="btn-group justify-content-center">
 
-            <form method="POST" action="submit_form({link_id:{{profil['link_id']}} },'action/accept_follow_request');return false">
+            <form action="submit_form({link_id:{{profil['link_id']}} },'action/accept_follow_request');return false">
 
               <button class="btn-lg btn-success mt-2" type="submit">Accepter</button>
   
             </form>
-            <form method="POST" action="submit_form({link_id:{{profil['link_id']}} },'action/deny_follow_request');return false">
+            <form action="submit_form({link_id:{{profil['link_id']}} },'action/deny_follow_request');return false">
   
               <button class="btn-lg btn-danger mt-2 ms-2" type="submit">Refuser</button>
             </form>
@@ -131,13 +131,6 @@
       alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
     }
 
-    function add_redirect_values() {
-      let list = document.getElementsByName("redirect_url");
-      for(var i=0;i<list.length; i++ ){
-        list[i].setAttribute('value',window.location.href);
-      }
-    }
-    add_redirect_values();
 
     function submit_form(dict,url){
       var xhr = new XMLHttpRequest();

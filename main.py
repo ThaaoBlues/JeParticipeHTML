@@ -189,33 +189,6 @@ def home():
             
     return render_template("home.html",username = current_user.name,sondages = sondages)
 
-@app.route("/add_vote",methods=["POST"])
-@login_required
-def add_vote():
-    
-    if (request.form.get("choix",default=None) != None) and  (request.form.get("author_id",default=None) != None) and  (request.form.get("post_id",default=None) != None):
-
-
-        choix = request.form.get("choix")
-        
-         # check if post_id is an int
-        try:
-            post_id = request.form.get("post_id",type=int)
-        except ValueError:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/login")
-        # check if author_id is an int
-        try:
-            author_id = request.form.get("author_id",type=int)
-        except ValueError:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/login")
-            
-
-        if (db.choix_exists(author_id,post_id,choix)):
-            
-            db.add_vote(current_user.id,author_id,choix,post_id,current_user.gender)
-            
-    return redirect(url_for("home"))
-
 @app.route("/recherche",methods=["GET"])
 @login_required
 def recherche():    
@@ -605,6 +578,32 @@ def action(action):
     match action:
         
         
+        case "add_vote":
+            
+            if("choix" in req.keys()) and ("post_id" in req.keys()) and ("author_id" in req.keys()):
+
+
+                choix = req["choix"]
+                
+                # check if post_id is an int
+                try:
+                    post_id = int(req["post_id"])
+                    author_id = int(req["author_id"])
+                except ValueError:
+                   return jsonify({"erreur","requête mal formée"})
+                
+                if (db.choix_exists(author_id,post_id,choix)):
+                    
+                    db.add_vote(current_user.id,author_id,choix,post_id,current_user.gender)
+                    return jsonify({"succes":"requête validée"})
+                
+                else:
+                    return jsonify({"erreur","requête mal formée"})
+                      
+            else:
+                return jsonify({"erreur","requête mal formée"})
+        
+        
         case "follow":
             
         
@@ -615,7 +614,7 @@ def action(action):
                 try:
                     user_id = int(req["user_id"])
                 except ValueError:
-                    return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
+                    return jsonify({"erreur","requête mal formée"})                
                 
                 if not (current_user.id in db.get_followers(user_id)):
                     db.follow(current_user.id,user_id,is_request=db.is_private(user_id))
@@ -623,12 +622,10 @@ def action(action):
                     return jsonify({"succes":"requête validée"})
                 
                 else:
-                    print(current_user.id)
-                    print(db.get_followers(user_id))
                     return jsonify({"erreur":"utilisateur déjà ajouté à vos abonnements"})
 
             else:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")                
+                return jsonify({"erreur","requête mal formée"})
 
             
         case "unfollow":

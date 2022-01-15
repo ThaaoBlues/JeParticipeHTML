@@ -70,14 +70,9 @@
                 {%endfor%}
               {%elif post.anon_votes%}
                   {%for choix in post.choix%}
-                    <form action="partage" method="POST">
-                      <div class="row">
-                        <input name="author_id" class="d-none" value="{{post.author_id}}"  hidden>
-                        <input name="post_id" class="d-none" value="{{post.id}}"  hidden>
-                        <input name="choix" class="d-none" value="{{choix}}"  hidden>
-                      </div>
-                      <button class="btn btn-primary mt-2" style="width:100%;" type="submit">{{choix}}</button>
-                    </form>
+                  <form onSubmit="submit_form({author_id:{{post.author_id}},post_id:{{post.id}} ,choix:{{choix}}},'action/add_vote');return false">
+                    <button class="btn btn-primary mt-2" style="width:100%;" type="submit">{{choix}}</button>
+                  </form>
                   {%endfor%}
                 {%else%}
                   {%for choix in post.choix%}
@@ -107,6 +102,15 @@
     navigator.clipboard.writeText(window.location.hostname+"/partage?owner_id="+owner_id+"&post_id="+post_id+"&results=False");
 
     alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
+  }
+
+  function submit_form(dict,url){
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify(dict));
+    
+    setTimeout(function() {document.location.reload();},100);
   }
 
 </script>

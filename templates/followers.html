@@ -75,11 +75,11 @@
   <div class="card-columns">
     {%for profil in profils%}
 
-    <div name="carte_profil" class="card text-center mt-2 mx-3" style="min-width: 350px;" onclick="window.location.href='/profil?user_id={{profil["user_id"]}}'">
+    <div name="carte_profil" class="card text-center mt-2 mx-3" style="min-width: 350px;">
         
-      <form method="POST" action="action/{%if not profil['user_id'] in following%}follow{%else%}unfollow{%endif%}">
+      <form onSubmit="submit_form({user_id:{{profil['user_id']}} },'action/{%if not profil['user_id'] in following%}follow{%else%}unfollow{%endif%}');return false">
 
-        <div class="card-title mxy-auto mb-2 ">{{profil["username"]}}
+        <div class="card-title mxy-auto mb-2 " onclick="window.location.href='/profil?user_id={{profil["user_id"]}}'">{{profil["username"]}}
             {%if profil["is_verified"]%}
                 <i class="bi bi-person-check ml-2" style = "color:blue;"></i>
             {%endif%}
@@ -92,19 +92,13 @@
         </div>
         {%if not profil["user_id"] in following%}
             <button class="btn-sm btn-success mt-2" type="submit">S'abonner en retour</button>
-            <input hidden value="{{profil['user_id']}}" name="user_id"/>
         {%else%}
             <button class="btn-sm btn-danger mt-2" type="submit">Se désabonner</button>
-            <input hidden value="{{profil['user_id']}}" name="user_id"/>
         {%endif%}
-
-        <input hidden value="" name="redirect_url"/>
       </form>    
     
       <div class="btn-group justify-content-center">
-        <form method="POST" action="/action/kick_follower">
-          <input hidden value="{{profil['user_id']}}" name="user_id"/>
-          <input hidden value="" name="redirect_url"/>
+        <form onSubmit="submit_form({user_id:{{profil['user_id']}} },'action/kick_follower');return false">
           <button class="btn-lg btn-danger mt-2" type="submit">Retirer</button>
         </form>
       </div>
@@ -126,14 +120,15 @@
       alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
     }
 
-    function add_redirect_values() {
-      let list = document.getElementsByName("redirect_url");
-      for(var i=0;i<list.length; i++ ){
-        list[i].setAttribute('value',window.location.href);
-      }
+    
+    function submit_form(dict,url){
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify(dict));
+      
+      setTimeout(function() {document.location.reload();},100);
     }
-    add_redirect_values();
-
 
 </script>
 
