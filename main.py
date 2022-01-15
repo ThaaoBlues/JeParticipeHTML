@@ -573,7 +573,6 @@ def mes_demandes():
 def action(action):
             
     req = dict(request.get_json())
-    print(req)
     
     match action:
         
@@ -590,7 +589,6 @@ def action(action):
                     post_id = int(req["post_id"])
                     author_id = int(req["author_id"])
                 except ValueError:
-                    print("ERREUR")
                     return jsonify({"erreur","requête mal formée"})
                 
                 if (db.choix_exists(author_id,post_id,choix)):
@@ -599,7 +597,6 @@ def action(action):
                     return jsonify({"succes":"requête validée"})
                 
                 else:
-                    print("ERREUR")
                     return jsonify({"erreur","requête mal formée"})
                       
             else:
