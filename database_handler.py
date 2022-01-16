@@ -719,6 +719,10 @@ class DataBase:
                 
             return tmp
     
+    def get_posts_count(self,user_id:int):
+        with closing(self.connector.cursor()) as cursor:
+            return len(cursor.execute("SELECT * FROM POSTS WHERE owner_id=?",(user_id,)).fetchall())
+
     
     def get_full_database(self):
         """return all the database content
