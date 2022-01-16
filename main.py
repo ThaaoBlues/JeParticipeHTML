@@ -546,10 +546,35 @@ def mes_abonnes():
     Returns:
         [type]: [description]
     """
-    profils = [db.get_user_info(user_id) for user_id in db.get_followers(current_user.id)]
+    
+    followers_id = db.get_followers(current_user.id)
+    
+    # don't display the self-follow
+    followers_id.pop(followers_id.index(current_user.id))
+
+    profils = [db.get_user_info(user_id) for user_id in followers_id]
     
     return render_template("followers.html",profils=profils,following=db.get_following(current_user.id))
 
+
+@app.route("/mes_abonnements",methods=["GET"])
+@login_required
+def mes_abonnements():
+    """page avec une timeline de tout ses abonnements, pour pouvoir se désabonner facilement
+
+    Returns:
+        [type]: [description]
+    """
+    
+    following_id = db.get_following(current_user.id)
+    
+    # don't display the self-follow
+    following_id.pop(following_id.index(current_user.id))
+
+    profils = [db.get_user_info(user_id) for user_id in following_id]
+    
+    return render_template("following.html",profils=profils,following=db.get_following(current_user.id))
+    
 
 @app.route("/mes_demandes_dabonnement",methods=["GET","POST"])
 @login_required
