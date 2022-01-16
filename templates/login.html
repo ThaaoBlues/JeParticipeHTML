@@ -44,12 +44,12 @@
 
             <form action='login' method='POST' class="col-md-auto">                
                 <div class="row justify-content-md-center mt-3">
-                    <input type='text' name='username' id='username' placeholder="nom d'utilisateur" required/>
-                    <div id="emailHelp" class="form-text">On ne partagera vos données avec personne.</div>
+                    <input type='text' name='username' id='username' placeholder="Nom d'utilisateur" required/>
+                    <div id="emailHelp" class="form-text">Vos données ne seront pas partagées</div>
 
                 </div>
                 <div class="row justify-content-md-center mt-3">
-                    <input type='password' name='password' id='password' placeholder='mot de passe' required/>
+                    <input type='password' name='password' id='password' placeholder='Mot de passe' required/>
                 </div>
                 <div class="row justify-content-md-center">
                     <button type='submit'  class="text-center mt-4 btn btn-success" name='submit'>Connection</button>
@@ -61,15 +61,18 @@
 
         <div class="row mx-3 justify-content-md-center mt-5">
 
-            <form action='register' method='POST' class="col-md-auto">
+            <form action='register' method='POST' class="col-md-auto" oninput="password2.setCustomValidity(password2.value != password.value ? 'Les mots de passes ne sont pas les mêmes :/' : '')">
 
                 <div class="row justify-content-md-center mt-3">
-                    <input type='text' name='username' id='username' placeholder="nom d'utilisateur" required/>
-                    <div id="emailHelp" class="form-text">On ne partagera vos données avec personne.</div>
+                    <input type='text' name='username' id='username' placeholder="Nom d'utilisateur" required/>
+                    <div id="emailHelp" class="form-text">Vos données ne seront pas partagées.</div>
 
                 </div>
                 <div class="row justify-content-md-center mt-3">
-                    <input type='password' name='password' id='password' placeholder='mot de passe' required/>
+                    <input type='password' name='password' id='password' placeholder='Mot de passe' required/>
+                </div>
+                <div class="row justify-content-md-center mt-3">
+                    <input type='password' name='password2' id='password' placeholder='Confirmation du mot de passe' required/>
                 </div>
 
 
