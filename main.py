@@ -554,7 +554,7 @@ def mes_abonnes():
 
     profils = [db.get_user_info(user_id) for user_id in followers_id]
     
-    return render_template("followers.html",profils=profils,following=db.get_following(current_user.id))
+    return render_template("followers.html",profils=profils,following=db.get_following(current_user.id),username=current_user.name)
 
 
 @app.route("/mes_abonnements",methods=["GET"])
@@ -573,7 +573,7 @@ def mes_abonnements():
 
     profils = [db.get_user_info(user_id) for user_id in following_id]
     
-    return render_template("following.html",profils=profils,following=db.get_following(current_user.id))
+    return render_template("following.html",profils=profils,following=db.get_following(current_user.id),username=current_user.name)
     
 
 @app.route("/mes_demandes_dabonnement",methods=["GET","POST"])
@@ -591,7 +591,7 @@ def mes_demandes():
     if not db.is_private(current_user.id):
         return render_template("page_message.html",message="Votre compte n'est pas en mode privé, cette section ne vous sert à rien ;)",texte_btn="revenir à l'accueil",lien="/home")
     else:
-        return render_template("follow_requests.html",profils=db.generate_requests_tl(current_user.id),following=db.get_following(current_user.id))
+        return render_template("follow_requests.html",profils=db.generate_requests_tl(current_user.id),following=db.get_following(current_user.id),username=current_user.name)
 
 @app.route("/action/<action>",methods=["POST"])
 @login_required
