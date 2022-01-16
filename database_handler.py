@@ -31,9 +31,7 @@ class DataBase:
             # init database writer
             self.connector = sql.connect("database.db",check_same_thread=False)
             self.connector.row_factory = sql.Row
-            
-            self.register_user(username="compteur_utilisateurs",gender="autre",type="compteur",franceconnect=True,init=True)
-        
+                    
         # init database writer
         self.connector = sql.connect("database.db",check_same_thread=False)
         self.connector.row_factory = sql.Row
