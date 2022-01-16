@@ -94,11 +94,17 @@
           <textarea name="profile_desc" class="form-control textarea-autosize">{{ md }}</textarea>
           <div class="row mt-3">
             <div class="text-center">
-              <input type="submit" class="btn-lg btn-success h-20" value="Mettre à jour le profil">
+              <input type="submit" class="btn-lg btn-success ms-4 h-20" value="Mettre à jour le profil">
             </div>
           </div>
         </div>
       </form>
+
+      <div class="row mt-5 text-center">
+        <form onSubmit="submit_form({},'action/delete_account');return false">
+          <button class="btn btn-danger" type="submit">SUPPRIMER MON COMPTE</button>
+        </form>
+      </div>
     </div>
 
   </div>
@@ -116,18 +122,25 @@
       alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
     }
 
-
+    function submit_form(dict,url){
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify(dict));
+      
+      setTimeout(function() {alert("Votre compte et toutes ses données ont bien été supprimées");window.location.href = "/login" },100);
+    }
 
     const tx = document.getElementsByTagName("textarea");
-for (let i = 0; i < tx.length; i++) {
-  tx[i].setAttribute("style", "height:" + (tx[i].scrollHeight) + "px;overflow-y:hidden;");
-  tx[i].addEventListener("input", OnInput, false);
-}
+    for (let i = 0; i < tx.length; i++) {
+      tx[i].setAttribute("style", "height:" + (tx[i].scrollHeight) + "px;overflow-y:hidden;");
+      tx[i].addEventListener("input", OnInput, false);
+    }
 
-function OnInput() {
-  this.style.height = "auto";
-  this.style.height = (this.scrollHeight) + "px";
-}
+    function OnInput() {
+      this.style.height = "auto";
+      this.style.height = (this.scrollHeight) + "px";
+    }
 </script>
 
 <style>

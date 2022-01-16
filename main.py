@@ -586,8 +586,6 @@ def mes_demandes():
         [type]: [description]
     """
     
-
-    
     if not db.is_private(current_user.id):
         return render_template("page_message.html",message="Votre compte n'est pas en mode privé, cette section ne vous sert à rien ;)",texte_btn="revenir à l'accueil",lien="/home")
     else:
@@ -600,6 +598,13 @@ def action(action):
     req = dict(request.get_json())
     
     match action:
+        
+        case "delete_account":
+            user_id = current_user.id  
+            logout_user()
+            db.delete_user(user_id)
+            return jsonify({"succès":"opération effecutée"})
+
         
         
         case "add_vote":

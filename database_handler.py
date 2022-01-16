@@ -352,9 +352,10 @@ class DataBase:
             
     def delete_user(self,user_id:str):
         with closing(self.connector.cursor()) as cursor:
-            cursor.execute("DELETE FROM USERS WHERE user_id=?",(user_id))
-            cursor.execute("DELETE FROM POSTS WHERE owner_id=?",(user_id))
+            cursor.execute("DELETE FROM USERS WHERE user_id=?",(user_id,))
+            cursor.execute("DELETE FROM POSTS WHERE owner_id=?",(user_id,))
             cursor.execute("DELETE FROM FOLLOWERS WHERE follower_id=? OR user_id=?",(user_id,user_id))
+            cursor.execute("DELETE FROM CHOIX WHERE owner_id=?",(user_id,))
             self.connector.commit()
 
     def get_following(self,user_id:str)->list:
