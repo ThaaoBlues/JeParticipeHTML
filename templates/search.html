@@ -73,7 +73,7 @@
 
   <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
 
-    {%if error%}
+    {%if profils==[]%}
     <h3>Aucun utilisateur correspondant à la recherche n'a été trouvé</h3>
     {%endif%}
     <div class="card-columns">
@@ -85,7 +85,7 @@
       <div name="carte_profil" class="card text-center mt-2 mx-3" style="min-width: 350px;" >
               
             
-        <div class="card-title mxy-auto mb-2 " onclick="window.location.href='/profil?user_id={{profil["user_id"]}}'">{{profil["username"]}}
+        <div class="card-title mxy-auto mb-2" style="cursor:pointer;" onclick="window.location.href='/profil?user_id={{profil["user_id"]}}'">{{profil["username"]}}
           {%if profil["is_verified"]%}
               <i class="bi bi-person-check ml-2" style = "color:blue;"></i>
           {%endif%}

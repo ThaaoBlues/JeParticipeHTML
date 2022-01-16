@@ -70,16 +70,17 @@
 
     <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
 
-      {%if error%}
-      <h3>Aucun utilisateur ne vous suit encore. Allez faire de la pub !</h3>
-  {%endif%}
-  <div class="card-columns">
+        {%if profils == []%}
+            <h3>Vous ne suivez aucun utilisateur encore ! Allez en chercher dans la barre en haut à droite !</h3>
+        {%endif%}
+    
+    <div class="card-columns">
     {%for profil in profils%}
 
     <div name="carte_profil" class="card text-center mt-4 mx-3" style="min-width: 350px;">
         
         <div class="card-header">
-            <div class="card-title my-0"  onclick="window.location.href='/profil?user_id={{profil["user_id"]}}'">
+            <div class="card-title my-0" style="cursor:pointer;" onclick="window.location.href='/profil?user_id={{profil["user_id"]}}'">
                 
                 <h4 class="mx-2" onclick="window.location.href='/profil?user_id={{profil["user_id"]}}'">{{profil["username"]}}
                     {%if profil["is_verified"]%}

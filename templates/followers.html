@@ -70,9 +70,10 @@
 
     <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
 
-      {%if error%}
-      <h3>Aucun utilisateur ne vous suit encore. Allez faire de la pub !</h3>
-  {%endif%}
+      {%if profils == []%}
+        <h3>Aucun utilisateur ne vous suit encore. Allez faire de la pub !</h3>
+      {%endif%}
+
   <div class="card-columns">
     {%for profil in profils%}
 
@@ -80,7 +81,7 @@
         
       <form onSubmit="submit_form({user_id:{{profil['user_id']}} },'action/{%if not profil['user_id'] in following%}follow{%else%}unfollow{%endif%}');return false">
 
-        <div class="card-title mxy-auto mb-2 " onclick="window.location.href='/profil?user_id={{profil["user_id"]}}'">{{profil["username"]}}
+        <div class="card-title mxy-auto mb-2" style="cursor:pointer;" onclick="window.location.href='/profil?user_id={{profil["user_id"]}}'">{{profil["username"]}}
             {%if profil["is_verified"]%}
                 <i class="bi bi-person-check ml-2" style = "color:blue;"></i>
             {%endif%}
