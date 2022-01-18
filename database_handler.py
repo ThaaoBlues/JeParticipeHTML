@@ -239,7 +239,7 @@ class DataBase:
         
         # make Post objects and gather all missing data
         for i in range(len(posts)):
-            posts[i] = Post(self.unsanitize(posts[i]["header"]),posts[i]["choix"],self.get_user_name(posts[i]["owner_id"]),posts[i]["owner_id"],results=self.get_results(posts[i]["post_id"]),vote=self.has_already_voted(user_id,posts[i]["post_id"]),id=posts[i]["post_id"],stats=self.get_post_stats(posts[i]["post_id"]),archive=posts[i]["archived"])
+            posts[i] = Post(self.unsanitize(posts[i]["header"]),posts[i]["choix"],self.get_user_name(posts[i]["owner_id"]),posts[i]["owner_id"],results=self.get_results(posts[i]["post_id"]),vote=self.has_already_voted(user_id,posts[i]["post_id"]),id=posts[i]["post_id"],stats=self.get_post_stats(posts[i]["post_id"]),archive=posts[i]["archived"],post_type=posts[i]["publication_type"])
         
         
         
@@ -735,10 +735,15 @@ class DataBase:
         """
         
         with closing(self.connector.cursor()) as cursor:
-            ret = [dict(r) for r in cursor.execute("SELECT voter_id, username FROM VOTANTS WHERE post_id=?",(post_id,)).fetchall()]
+            tmp = [dict(r) for r in cursor.execute("SELECT voter_id, username FROM VOTANTS WHERE post_id=?",(post_id,)).fetchall()]
             
-            print(ret)
-            
+            ret = {}
+            ret["ids"] = []
+            ret["usernames"] = []
+            for ele in tmp:
+                ret["ids"].append(ele["voter_id"])
+                ret["usernames"].append(ele["username"])
+
             return ret
     
     

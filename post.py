@@ -4,7 +4,7 @@ from base64 import b64decode
 class Post:
     
     
-    def __init__(self,header:bytes,choix:list,author:str,author_id:int,results={},vote=False,id=0,stats="",anon_votes=False,choix_ids=[],archive=False) -> None:
+    def __init__(self,header:bytes,choix:list,author:str,author_id:int,results={},vote=False,id=0,stats="",anon_votes=False,choix_ids=[],archive=False,post_type="sondage") -> None:
         """[summary]
 
         Args:
@@ -23,6 +23,7 @@ class Post:
         self.anon_votes = anon_votes
         self.choix_ids = choix_ids
         self.archive = archive
+        self.type = post_type
         
         
     def unsanitize(self,header:bytes)->str:

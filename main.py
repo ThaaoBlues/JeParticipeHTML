@@ -191,7 +191,8 @@ def home():
         try:
             sondages = db.generate_tl(current_user.id)
             break
-        except:
+        except Exception as e:
+            print(e)
             logout_user()
             return redirect("/")
     return render_template("home.html",username = current_user.name,sondages = sondages)
@@ -356,7 +357,7 @@ def stats():
                     
                     participants = db.get_tirage_participants(post_id)
                     
-                    return render_template("tirage_stats.html",username=current_user.name,participants_ids = participants["id"])
+                    return render_template("tirage_stats.html",username=current_user.name,participants = participants)
                 
                 case _ :
                     return jsonify({"erreur":"type de publication non supporté."})
@@ -423,14 +424,14 @@ def parametres_sondage():
 
         #check if post exists and belongs to the current user
         if db.post_exists(post_id) and (owner_id == current_user.id) and (post["owner_id"] == current_user.id):
-            post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],anon_votes=post["anon_votes"],choix_ids=db.get_choix_ids(post["post_id"]),archive=post["archived"])
+            post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],anon_votes=post["anon_votes"],choix_ids=db.get_choix_ids(post["post_id"]),archive=post["archived"],post_type=post["publication_type"])
             
             return render_template("post_settings.html",post=post,username=current_user.name)
         
         # else throw an error message
         else:
             
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible pour vous ou n'a jamais existé",texte_btn="Revenir à l'accueil",lien="/mes_sondages")
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible pour vous ou n'a jamais existé",texte_btn="Revenir à l'accueil",lien=request.url)
 
 
             
@@ -439,6 +440,7 @@ def parametres_sondage():
 
         post_header = request.form.get("post_header",default=None)
         choix = request.form.get("choix",default=None)
+        post_type = request.form.get("publication_type",default=None)
         # check if everything is from the right type
         try:
             anon_votes = request.form.get("anon_votes",default=False,type=bool)
@@ -449,6 +451,9 @@ def parametres_sondage():
         except ValueError:
             return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/mes_sondages")
 
+        if not (post_type in db.publication_types):
+            return jsonify({"error":"wrong post type"})
+        
         
         
         # check if every params are not None, if post belongs to the current user, if each choice belongs to the right post and if post exists
@@ -457,7 +462,7 @@ def parametres_sondage():
             #remove any empty string
             choix = list(filter(None, choix.split("/")))              
             
-            if len(choix) == 1:
+            if (len(choix) == 1) and (post_type=="sondage"):
                 return render_template("page_message.html",message="Veuillez remplir le champ des choix comme ceci : choix1/choix2/choix3....",texte_btn="Refaire le sondage",btn_url=request.url)
 
             #everything is okay

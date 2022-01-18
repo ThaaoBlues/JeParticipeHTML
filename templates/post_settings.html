@@ -79,7 +79,7 @@
           <input name="owner_id" type="hidden" value="{{post.author_id}}"/>
         </div>
         <div class="row justify-content-md-center mt-3">
-          <input name="choix" type="text" placeholder="choix1/choix2/choix3...." value="{%for choix in post.choix%}{{choix}}/{%endfor%}" required/>
+          <input name="choix" type="text" placeholder={%if post.type == "tirage"%}"Texte du bouton participer au tirage au sort"{%else%}"choix1/choix2/choix3...."{%endif%} value="{%if post.type == "tirage"%}{{post.choix[0]}}{%else%}{%for choix in post.choix%}{{choix}}/{%endfor%}{%endif%}" required/>
           <ul name="choix_ids" hidden>
 
             {%for c_id in post.choix_ids%}
@@ -96,12 +96,14 @@
         
         <div class="form-group form-check mt-3">
           <input name="archive" type="checkbox" class="form-check-input" id="archive_input" {%if post.archive%}checked{%endif%}/>
-          <label class="form-check-label" for="archive_input">Archiver le sondage (reste disponible uniquement pour vous)</label>
+          <label class="form-check-label" for="archive_input">Archiver la publication (reste disponible uniquement pour vous)</label>
         </div>
         
         <div class="row justify-content-md-center mt-3">
-          <button type="submit" class="btn btn-primary">Mettre à jour le sondage</button>
+          <button type="submit" class="btn btn-primary">Mettre à jour la publication</button>
         </div>
+
+        <input name="publication_type" value="{{post.type}}" hidden>
   
 
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -112,7 +114,7 @@
         <form action="/supprimer_sondage" class="col-md-auto mt-2" method="POST">
           <div class="col"><input name="post_id" value="{{post.id}}" hidden></div>
           <div class="col"><input name="post_author" value="{{post.author}}"  hidden></div>
-          <div class="col"><button type="submit" class="btn btn-danger" style="width: auto;">Supprimer le sondage</button></div>
+          <div class="col"><button type="submit" class="btn btn-danger" style="width: auto;">Supprimer la publication</button></div>
         
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
