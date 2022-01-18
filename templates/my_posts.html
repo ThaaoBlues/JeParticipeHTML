@@ -99,9 +99,16 @@
               <hr>
               <ul class="list-group list-group-flush">
 
+                
+                  {%if post.type=="tirage"%}
+                  <a class="btn btn-primary mt-2" style="width:100%;">Vous avez déjà partitipé à ce tirage au sort !</a>
+
+                {%else%}
                 {%for choix in post.choix%}
                     <a class="btn btn-primary mt-2" style="width:100%;">{{choix}} : {{post.resultats[choix]}}% des votes.</a>
-                {%endfor%}
+                {%endfor%}                
+                {%endif%}
+
               </ul>
             </div>
           </div>
