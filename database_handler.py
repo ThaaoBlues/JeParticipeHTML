@@ -17,7 +17,7 @@ class DataBase:
     def __init__(self) -> None:
         self.users_types = ["entreprise","institution publique","utilisateur"]
         self.gender_types = ["homme","femme","genre_fluide","non_genre","autre","personne_morale"]
-        
+        self.publication_types = ["sondage","tirage"]
 
                
         if not path.exists("static"):
@@ -41,7 +41,7 @@ class DataBase:
             # sanitize entries
             post["header"] = self.sanitize(post["header"],text=True)        
             
-            cursor.execute("INSERT INTO POSTS (owner_id,header,anon_votes,archived) values(?,?,?,?)",(user_id,post["header"],post["anon_votes"],False))
+            cursor.execute("INSERT INTO POSTS (owner_id,header,anon_votes,archived,publication_type) values(?,?,?,?,?)",(user_id,post["header"],post["anon_votes"],False,post["publication_type"]))
             post_id = cursor.lastrowid
             for choix in post["choix"]:
                 cursor.execute("INSERT INTO CHOIX (post_id,choix,owner_id,votes) values(?,?,?,?)",(post_id,choix,user_id,0))
@@ -430,11 +430,11 @@ class DataBase:
         with closing(self.connector.cursor()) as cursor:
             return dict(cursor.execute("SELECT password FROM USERS WHERE user_id=?",(user_id,)).fetchall()[0])["password"]
     
-    def __init_db(self,tmp=False):
+    def __init_db(self):
                 
         c = sql.connect("database.db").cursor()
         c.execute("CREATE TABLE USERS (user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,username TEXT,password TEXT,age INTEGER,gender TEXT,type TEXT,is_verified BOOL,is_private Bool)")
-        c.execute("CREATE TABLE POSTS (post_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,header TEXT,anon_votes BOOL,archived BOOL)")
+        c.execute("CREATE TABLE POSTS (post_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,header TEXT,anon_votes BOOL,archived BOOL,publication_type TEXT)")
         c.execute("CREATE TABLE FOLLOWERS (link_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,user_id INTEGER,follower_id INTEGER,is_request BOOL)")
         c.execute("CREATE TABLE CHOIX (choix_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix TEXT,votes INTEGER)")
         c.execute("CREATE TABLE VOTANTS (vote_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix_id INTEGER,username TEXT,voter_id INTEGER,gender TEXT)")
@@ -723,6 +723,24 @@ class DataBase:
         with closing(self.connector.cursor()) as cursor:
             return len(cursor.execute("SELECT * FROM POSTS WHERE owner_id=?",(user_id,)).fetchall())
 
+    def get_tirage_participants(self,post_id:int) -> dict:
+        """renvoie un dictionnaire avec "ids" : list des ids de votants
+        "usernames": list username des votants
+
+        Args:
+            post_id (int): [description]
+
+        Returns:
+            dict: [description]
+        """
+        
+        with closing(self.connector.cursor()) as cursor:
+            ret = [dict(r) for r in cursor.execute("SELECT voter_id, username FROM VOTANTS WHERE post_id=?",(post_id,)).fetchall()]
+            
+            print(ret)
+            
+            return ret
+    
     
     def get_full_database(self):
         """return all the database content

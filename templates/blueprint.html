@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JeParticipe</title>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css">
-
+    <!-- Primary Meta Tags -->
+    <title>JeParticipe</title>
     <meta name="title" content="JeParticipe">
     <meta name="description" content="Demandez l'opinion des gens facilement !">
 
@@ -28,6 +28,7 @@
 
 </head>
 <body>
+    
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,11 +36,11 @@
           </button>
           
           <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
-    
+      
             <a class="navbar-brand mb-2" href="/home">JeParticipe</a>
             
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-    
+      
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle btn btn-primary" style="color: white;" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   Mon compte
@@ -55,11 +56,11 @@
                   <li><a class="dropdown-item" href="/mes_demandes_dabonnement">Gérer les demandes d'abonnement</a></li>
                   <li><a class="dropdown-item" href="/logout">Déconnection ( {{username}} )</a></li>
                 </ul>
-    
+      
               </li>
-    
+      
               
-    
+      
             </ul>
             <form class="d-flex" action="recherche" method="GET">
               <input class="form-control me-2 mb-2" type="search" placeholder="Rechercher" aria-label="Search" name="req">
@@ -67,90 +68,47 @@
             </form>
           </div>
         </div>
-    </nav>
+      </nav>
     
     
-        <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
-    
-            <div class="container">
+        <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4 container", style="border: 1px;">
+        
+          <form>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
-              <div class="row mx-3">
-                <div class="float-end">
-                  <form onSubmit="submit_form({user_id:{{user_id}}},'action/{%if not is_following%}follow{%else%}unfollow{%endif%}');return false">
-                    {%if not is_following%}
-                      <div class="float-end">
-                        <input type="submit" value="S'abonner" class="btn btn-success">
-                      </div>
-                    {%else%}
-                      <div class="float-end">
-                        <input type="submit" value="Se désabonner" class="btn btn-danger">
-                      </div>
-                    {%endif%}
-
-                  </form>
-                </div>
-                <div class="text-start">
-                  <h1>{{target_username}}</h1>
-                  <h4>{{posts_count}} publication(s).</h4>
-                </div>
-
-              </div>
-
-
-              <div class="row mt-4 mx-3">
-                <div class="border">
-                  <div class="mx-2 text-break mt-2">
-                    {{ md | safe }}
-                  </div>
-                </div>
-              </div>
-              
-            </div>
+          </form>
+            
         </div>
-</body>
 
+
+
+
+
+
+</body>
 
 <script>
 
-    function partage_sondage(owner_id,post_id){
+  function submit_form(dict,url){
 
-      navigator.clipboard.writeText(window.location.hostname+"/partage?owner_id="+owner_id+"&post_id="+post_id+"&results=False");
+    var csrf_token = "{{ csrf_token() }}";
 
-      alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
-    }
-
-    function submit_form(dict,url){
-
-      var csrf_token = "{{ csrf_token() }}";
-  
-      var xhr = new XMLHttpRequest();
-      xhr.open("POST", url, true);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.setRequestHeader("X-CSRFToken", csrf_token);
-      xhr.send(JSON.stringify(dict));
-      
-      setTimeout(function() {document.location.reload();},100);
-    }
-
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader("X-CSRFToken", csrf_token);
+    xhr.send(JSON.stringify(dict));
+    
+    setTimeout(function() {document.location.reload();},100);
+  }
 </script>
 
-<style>
 
-.btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited, .btn-outline-primary {
+<style>
+  .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited, .btn-outline-primary {
     background-color: blueviolet !important;
     border-color: blueviolet;
-    color: white;
 }
-
-.btn-blue, .btn-blue:hover, .btn-blue:active, .btn-blue:visited, .btn-outline-blue {
-  background-color: rgb(43, 107, 226) !important;
-  border-color: rgb(43, 107, 226);
-  color: white;
-}
-
 </style>
-
-
-
 
 </html>

@@ -74,21 +74,38 @@
 
       <form class="mx-3" method="POST" style="width: auto;  min-width: 350px;">
 
-        <div class="row mt-2">
-          <input name="post_header" type="text" placeholder="Titre/description de votre sondage" required/>
+        <div class="row mt-3">
+          <input name="post_header" type="text" placeholder="Description/Titre de votre publicartion" required/>
         </div>
-        <div class="row mt-2">
-          <input name="choix" type="text" placeholder="choix1/choix2/choix3...." required/>
+
+        <div class="row justify-content-md-center mt-3">
+                
+
+          <select id="type_select" name="type de publication" class="form-control-primary form-control-sm" onchange="publication_type_changed(this);" required>
+              <option>Sondage</option>
+              <option>Tirage au sort</option>
+          </select>
+      
+      </div>
+
+
+        <div class="row mt-3">
+          <input name="choix" type="text" id="choix" placeholder="choix1/choix2/choix3...." required/>
         </div>
         
-        <div class="form-group form-check mt-2">
+        <div class="form-group form-check mt-3">
           <input name="anon_votes" type="checkbox" class="form-check-input" id="anon_votes_input">
           <label class="form-check-label" for="anon_votes_input">Autoriser les votes anonymes (via le lien de partage)</label>
         </div>
+
+        <input name="publication_type" value="sondage" id="publication_type"  hidden required>
         
         <div class="row mt-2">
-          <button type="submit" class="btn btn-primary">Poster le sondage</button>
+          <button type="submit" class="btn btn-primary">Publier</button>
         </div>
+
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
       </form>
 
     </div>
@@ -101,6 +118,28 @@
   }
 </style>
 
+<script>
+  function publication_type_changed(type_select){
+    var value = type_select.options[type_select.selectedIndex].value;
+
+    switch(value){
+
+      case "Sondage":
+        document.getElementById("choix").setAttribute("placeholder","choix1/choix2/choix3....");
+        document.getElementById("publication_type").setAttribute("value","sondage");
+        break;
+
+      case "Tirage au sort":
+        document.getElementById("choix").setAttribute("placeholder","Texte du bouton participer au tirage au sort");
+        document.getElementById("publication_type").setAttribute("value","tirage");
+        break;
+
+      default:
+        break;
+
+    }
+  }
+</script>
 
     
 </body>

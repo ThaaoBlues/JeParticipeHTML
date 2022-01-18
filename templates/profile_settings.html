@@ -98,11 +98,14 @@
             </div>
           </div>
         </div>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
       </form>
 
       <div class="row mt-5 text-center">
         <form onSubmit="submit_form({},'action/delete_account');return false">
           <button class="btn btn-danger" type="submit">SUPPRIMER MON COMPTE</button>
+
         </form>
       </div>
     </div>
@@ -122,10 +125,17 @@
       alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
     }
 
+
     function submit_form(dict,url){
+
+      var csrf_token = "{{ csrf_token() }}";
+
+
       var xhr = new XMLHttpRequest();
       xhr.open("POST", url, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader("X-CSRFToken", csrf_token);
+
       xhr.send(JSON.stringify(dict));
       
       setTimeout(function() {alert("Votre compte et toutes ses données ont bien été supprimées");window.location.href = "/login" },100);

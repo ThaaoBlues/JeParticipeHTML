@@ -111,6 +111,7 @@
                                         <div class="col"><input name="post_id" value="{{post.id}}" hidden></div>
                                         <div class="col"><input name="post_author" value="{{post.author}}"  hidden></div>
                                         <div class="col"><button type="submit" class="btn btn-danger mx-2 float-end btn-sm" style="width:fit-content;">Supprimer</button></div>
+                                        <div class="col"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/></div>
                                     </form>
                                 </li>
                             </ul>

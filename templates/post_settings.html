@@ -103,6 +103,9 @@
           <button type="submit" class="btn btn-primary">Mettre à jour le sondage</button>
         </div>
   
+
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
       </form>
 
       <div class="row justify-content-md-center mt-3">
@@ -110,6 +113,10 @@
           <div class="col"><input name="post_id" value="{{post.id}}" hidden></div>
           <div class="col"><input name="post_author" value="{{post.author}}"  hidden></div>
           <div class="col"><button type="submit" class="btn btn-danger" style="width: auto;">Supprimer le sondage</button></div>
+        
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+        
         </form>
       </div>
 

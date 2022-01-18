@@ -134,9 +134,13 @@
 
 
     function submit_form(dict,url){
+
+      var csrf_token = "{{ csrf_token() }}";
+
       var xhr = new XMLHttpRequest();
       xhr.open("POST", url, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader("X-CSRFToken", csrf_token);
       xhr.send(JSON.stringify(dict));
       
       setTimeout(function() {document.location.reload();},100);

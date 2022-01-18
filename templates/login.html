@@ -55,6 +55,9 @@
                     <button type='submit'  class="text-center mt-4 btn btn-success" name='submit'>Connection</button>
                 </div>
 
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+
             </form>
 
         </div>
@@ -72,7 +75,7 @@
                     <input type='password' name='password' id='password' placeholder='Mot de passe' required/>
                 </div>
                 <div class="row justify-content-md-center mt-3">
-                    <input type='password' name='password2' id='password' placeholder='Confirmation du mot de passe' required/>
+                    <input type='password' name='password2' id='password2' placeholder='Confirmation du mot de passe' required/>
                 </div>
 
 
@@ -105,6 +108,8 @@
                 <div class="row justify-content-md-center mt-1">
                     <button type='submit'  class="text-center mt-4 btn btn-primary" name='submit'>S'inscrire</button>
                 </div>
+
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
             </form>
 

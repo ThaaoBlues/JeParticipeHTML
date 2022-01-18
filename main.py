@@ -13,6 +13,8 @@ from time import sleep
 from multiprocessing import Process, freeze_support
 from os import remove
 
+# csrf protection
+from flask_wtf.csrf import CSRFProtect
 
 #init flask app
 app = Flask(__name__)
@@ -30,6 +32,11 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 app.secret_key = "".join(choices("1234567890°+AZERTYUIOP¨£µQSDFGHJKLM%WXCVBN?./§<>azertyuiopqsdfghjklmwxcvbn",k=1024))
+
+
+csrf = CSRFProtect(app)
+
+
 
 class User(UserMixin):
     
@@ -222,6 +229,7 @@ def sondage_form():
         
         post_header = request.form.get("post_header",default=None)
         choix = request.form.get("choix",default=None)
+        post_type = request.form.get("publication_type",default="sondage")
         
         try:
             anon_votes = request.form.get("anon_votes",default=False,type=bool)
@@ -230,18 +238,17 @@ def sondage_form():
 
         
         
-        if (choix != None) and (post_header != None) and (anon_votes != None):
+        if (choix != None) and (post_header != None) and (anon_votes != None) and (post_type in db.publication_types):
             
             #remove any empty string
             choix = list(filter(None, choix.split("/")))
             # tries to not transmit XSS
             choix = [db.sanitize(c,text=True) for c in choix]
             
-            
-            if len(choix) == 1:
+            if (len(choix) == 1) and (post_type=="sondage"):
                 return render_template("page_message.html",message="Veuillez remplir le champ des choix comme ceci : choix1/choix2/choix3....",texte_btn="Refaire le sondage",btn_url="/creer_sondage")
                         
-            db.add_post(current_user.id,{"header":post_header,"choix":choix,"anon_votes":anon_votes})
+            db.add_post(current_user.id,{"header":post_header,"choix":choix,"anon_votes":anon_votes,"publication_type":post_type})
             
             return render_template("page_message.html",message="Sondage publié ! Prenez un café et attendez les retours ;)",texte_btn="Revenir à l'accueil",lien="/home")
 
@@ -297,45 +304,64 @@ def stats():
     
         if (request.args.get("post_id",default=None) != None):
             
-                 
             # check if post_id is an int
             try:
                 post_id = request.args.get("post_id",type=int)
             except ValueError:
                 return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
             
-            chart_type = request.args.get("chart_type",default="pie",type=str)
-            
-            if not chart_type in ["bar","pie","doughnut","polarArea"]:
+            if not db.post_exists(post_id):
                 return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
-            
             
             post_dict = db.get_post(post_id)
             
-            stats = db.get_post_stats(post_id)
-            
-            post = Post(post_dict["header"],post_dict["choix"],db.get_user_name(post_dict["owner_id"]),post_dict["owner_id"],results=db.get_results(post_id),vote=db.has_already_voted(current_user.id,post_id),id=post_id,stats=stats)
-                    
-            # vérifie que le post existe bien et appartient bien à l'utilisateur connecté
-            if  (post.author_id == current_user.id) and  (db.post_exists(post_id)):
-                
-                resultats = db.get_results(post_id)
-                
-                # to make the charts
-                colors = [ f"rgb({randint(0, 255)},{randint(0, 255)},{randint(0, 255)})" for _ in range(len(resultats))]
-
-                genders = {"list":[g for g in db.gender_types],"colors":[ f"rgb({randint(0, 255)},{randint(0, 255)},{randint(0, 255)})" for _ in range(len(db.gender_types)+1)]}
-                          
-                # choix without special chars to put as variable names
-                sanitized_choix = {}
-                for c in post_dict["choix"]:
-                    sanitized_choix[c] = db.sanitize(c)
-                
-                return render_template("stats.html",username=current_user.name,post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders,sanitized_choix=sanitized_choix,chart_type=chart_type)
-                
-            else:
+            if post_dict["owner_id"] != current_user.id:
                 return render_template("page_message.html",message="Vous demandez les statistiques d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'accueil",lien="/home")
 
+            
+            
+            
+            
+            match post_dict["publication_type"]:
+                
+                
+                case "sondage":
+                    chart_type = request.args.get("chart_type",default="pie",type=str)
+            
+                    if not chart_type in ["bar","pie","doughnut","polarArea"]:
+                        return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
+                    
+
+                    
+                    stats = db.get_post_stats(post_id)
+                    
+                    post = Post(post_dict["header"],post_dict["choix"],db.get_user_name(post_dict["owner_id"]),post_dict["owner_id"],results=db.get_results(post_id),vote=db.has_already_voted(current_user.id,post_id),id=post_id,stats=stats)
+                                                    
+                    resultats = db.get_results(post_id)
+                    
+                    # to make the charts
+                    colors = [ f"rgb({randint(0, 255)},{randint(0, 255)},{randint(0, 255)})" for _ in range(len(resultats))]
+
+                    genders = {"list":[g for g in db.gender_types],"colors":[ f"rgb({randint(0, 255)},{randint(0, 255)},{randint(0, 255)})" for _ in range(len(db.gender_types)+1)]}
+                            
+                    # choix without special chars to put as variable names
+                    sanitized_choix = {}
+                    for c in post_dict["choix"]:
+                        sanitized_choix[c] = db.sanitize(c)
+                    
+                    return render_template("stats.html",username=current_user.name,post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders,sanitized_choix=sanitized_choix,chart_type=chart_type)
+                    
+                
+                case "tirage":
+                    
+                    participants = db.get_tirage_participants(post_id)
+                    
+                    return render_template("tirage_stats.html",username=current_user.name,participants_ids = participants["id"])
+                
+                case _ :
+                    return jsonify({"erreur":"type de publication non supporté."})
+            
+            
         else:
             return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'accueil",lien="/home")
     
