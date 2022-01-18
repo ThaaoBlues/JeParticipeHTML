@@ -89,10 +89,12 @@
           </ul>
         </div>
         
+        {% if post.type != "tirage"%}
         <div class="form-group form-check mt-3">
           <input name="anon_votes" type="checkbox" class="form-check-input" id="anon_votes_input" {%if post.anon_votes%}checked{%endif%}/>
           <label class="form-check-label" for="anon_votes_input">Autoriser les votes anonymes (via le lien de partage)</label>
         </div>
+        {%endif%}
         
         <div class="form-group form-check mt-3">
           <input name="archive" type="checkbox" class="form-check-input" id="archive_input" {%if post.archive%}checked{%endif%}/>

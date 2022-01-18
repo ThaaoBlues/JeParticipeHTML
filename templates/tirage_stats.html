@@ -73,16 +73,48 @@
     
         <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4 container", style="border: 1px;">
         
-            
-            <div class="row mt-3">
-                
+          <div class="container">
+            <div class="row mx-3 mt-3">
+              <div class="row mt-3">
+                <input id="n_tirage" type="number" value="5" placeholder="nombre de participants tirés"/>
+              </div>
+              <div class="row mt-3">
+
+                <button class="btn btn-primary" id="random_choice_button" onclick="random_choice()">Selectionner des participants au hasard</button>
+              </div>
             </div>
 
+            <div class="row mt-5" id="conteneur_liste" >
 
+            </div>
+          </div>
         </div>
 
 
 </body>
+
+<script>
+  function random_choice(){
+    var n = document.getElementById("n_tirage").getAttribute("value");
+    var tab = {{participants["usernames"] | safe}};
+    var ul = document.createElement('ul');
+    ul.setAttribute('id','proList');
+    ul.setAttribute("style","border: 1px;border-color:blueviolet;");
+    document.getElementById('conteneur_liste').appendChild(ul);
+    tab.forEach(renderList);
+
+    function renderList(element, index, arr) {
+      var li = document.createElement('li');
+      li.setAttribute('class','item');
+
+      ul.appendChild(li);
+
+      li.innerHTML=li.innerHTML + element;
+  }
+
+  }
+
+</script>
 
 <style>
     .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited, .btn-outline-primary {

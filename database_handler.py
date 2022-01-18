@@ -741,8 +741,9 @@ class DataBase:
             ret["ids"] = []
             ret["usernames"] = []
             for ele in tmp:
-                ret["ids"].append(ele["voter_id"])
-                ret["usernames"].append(ele["username"])
+                i = randint(0,len(ret["ids"]))
+                ret["ids"].insert(i,ele["voter_id"])
+                ret["usernames"].insert(i,ele["username"])
 
             return ret
     

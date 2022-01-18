@@ -103,9 +103,10 @@
               <ul class="list-group list-group-flush">
 
               {%for choix in post.choix%}
-                  {%if post.vote%}
+                  {%if (post.vote) and (post.type=="sondage")%}
                     <a class="btn btn-primary mt-2" style="width:100%;">{{choix}} : {{post.resultats[choix]}}% des votes.</a>
-
+                  {%elif (post.vote) and (post.type=="tirage")%}
+                  <a class="btn btn-primary mt-2" style="width:100%;">Vous avez déjà partitipé à ce tirage au sort !</a>
                   {%else%}
                   <form onSubmit="submit_form({author_id:{{post.author_id}},post_id:{{post.id}} ,choix:'{{choix}}'},'action/add_vote');return false">
                     <button class="btn btn-primary mt-2" style="width:100%;" type="submit">{{choix}}</button>
