@@ -100,9 +100,12 @@
 
   function random_choice(){
     var n = document.getElementById("n_tirage").getAttribute("value");
-
+    
+    if(!!document.getElementById("RandList")){
+      document.getElementById("RandList").remove();
+    }
     var ul = document.createElement('ul');
-    ul.setAttribute('id','proList');
+    ul.setAttribute('id','RandList');
     ul.setAttribute("style","border: 1px;border-color:blueviolet;");
     document.getElementById('conteneur_liste').appendChild(ul);
     usernames.forEach(renderList);
