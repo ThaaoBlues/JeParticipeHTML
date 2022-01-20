@@ -217,7 +217,7 @@ def recherche():
         return render_template("search.html",profils=[],req="",username=current_user.name)
 
 
-@app.route("/creer_sondage",methods=["GET","POST"])
+@app.route("/creer_publication",methods=["GET","POST"])
 @login_required
 def sondage_form():
     
@@ -396,14 +396,14 @@ def stats():
 
     
     
-@app.route("/mes_sondages",methods=["GET","POST"])
+@app.route("/mes_publications",methods=["GET","POST"])
 @login_required
 def mes_sondages():
     sondages = db.generate_tl(current_user.id,self_only=True)
         
     return render_template("my_posts.html",username = current_user.name,sondages = sondages)
 
-@app.route("/parametres_sondage",methods=["GET","POST"])
+@app.route("/parametres_publication",methods=["GET","POST"])
 @login_required
 def parametres_sondage():
     
@@ -482,7 +482,7 @@ def parametres_sondage():
             return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/mes_sondages")
 
 
-@app.route("/supprimer_sondage",methods=["POST"])
+@app.route("/supprimer_publication",methods=["POST"])
 @login_required
 def supprimer_sondage():
     # post pour supprimer le sondage
