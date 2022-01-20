@@ -95,14 +95,17 @@
 </body>
 
 <script>
+  let usernames = {{participants["usernames"] | safe}};
+  let emails = {{participants["emails"] | safe}};
+
   function random_choice(){
     var n = document.getElementById("n_tirage").getAttribute("value");
-    var tab = {{participants["usernames"] | safe}};
+
     var ul = document.createElement('ul');
     ul.setAttribute('id','proList');
     ul.setAttribute("style","border: 1px;border-color:blueviolet;");
     document.getElementById('conteneur_liste').appendChild(ul);
-    tab.forEach(renderList);
+    usernames.forEach(renderList);
 
     function renderList(element, index, arr) {
       var li = document.createElement('li');
@@ -110,8 +113,8 @@
 
       ul.appendChild(li);
 
-      li.innerHTML=li.innerHTML + element;
-  }
+      li.innerHTML=li.innerHTML + element +" ("+emails[index]+")";
+    }
 
   }
 
