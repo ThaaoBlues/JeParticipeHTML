@@ -502,7 +502,7 @@ def supprimer_sondage():
             # vérifie que le post existe bien et appartient bien à l'utilisateur connecté
             if (current_user.name == username) and  (db.post_exists(post_id)):
                 db.delete_post(current_user.id,post_id)
-                return render_template("page_message.html",message="Sondage supprimé !",texte_btn="Revenir à l'accueil",lien="/home")
+                return render_template("page_message.html",message="Votre publication a été supprimée !",texte_btn="Revenir à l'accueil",lien="/home")
             else:
                 return render_template("page_message.html",message="Vous demandez la suppression d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'accueil",lien="/home")
 
