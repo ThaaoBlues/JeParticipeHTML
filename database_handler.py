@@ -764,6 +764,31 @@ class DataBase:
             tmp = dict(cursor.execute("SELECT email FROM USERS WHERE user_id=?",(user_id,)).fetchone())["email"]
             return self.unsanitize(tmp)
             
+    def update_email(self,user_id:int,email:str):
+        
+        with closing(self.connector.cursor()) as cursor:
+            
+            email = self.sanitize(email,text=True)
+            cursor.execute("UPDATE USERS SET email=? WHERE user_id=?",(email,user_id))
+            self.connector.commit()
+            
+    def email_exists(self,email:str)->bool:
+        """[summary]
+
+        Args:
+            mail (str): [description]
+
+        Returns:
+            bool: [description]
+        """
+        email = self.sanitize(email,text=True)
+        
+        with closing(self.connector.cursor()) as cursor:
+            
+            tmp = cursor.execute("SELECT * FROM USERS WHERE email=?",(email,)).fetchall()
+            
+            return tmp != []
+        
             
     def get_full_database(self):
         """return all the database content

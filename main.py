@@ -1,5 +1,8 @@
 
 from asyncio.format_helpers import _format_callback_source
+from turtle import update
+
+from itsdangerous import json
 from post import Post
 from passlib.handlers.sha2_crypt import sha256_crypt
 from flask import Flask,url_for, render_template,request,redirect,send_from_directory,jsonify
@@ -275,6 +278,9 @@ def register():
         username = db.sanitize(request.form.get("username"))
         email = db.sanitize(request.form.get("email",str),text=True)
         
+        if db.email_exists(email):
+            return render_template("page_message.html",message="Un compte utilise déjà cette adresse email :/ Ne vous inquiétez pas, vous avez assez d'imagination pour en trouver un autre ;)",texte_btn="Revenir à la page d'enregistrement",lien="/login")
+        
         gender = request.form.get("genre",type=str).lower().replace(" ","_")
         
         # if user already exists, abort and return a nice message
@@ -546,10 +552,10 @@ def edit_profil():
                 md = f.read()
                 f.close()
             
-            return render_template("profile_settings.html",md=md,username=current_user.name,user_id=current_user.id,is_private=db.is_private(current_user.id))
+            return render_template("profile_settings.html",md=md,username=current_user.name,user_id=current_user.id,is_private=db.is_private(current_user.id),email=db.get_email(current_user.id))
         
         elif request.method == "POST":
-                            
+            
                 
             # generate html from markdown
             with open(f"static/users_profile_md/{current_user.id}.md","w") as f:
@@ -565,6 +571,12 @@ def edit_profil():
                 return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/edit_profil")
             db.set_private_status(current_user.id,status)
             
+            email = request.form.get("email",default=None)
+            
+            if email:
+                db.update_email(current_user.id,email)
+            else:
+                return jsonify({"error":"no email in form"})
         
             return redirect("edit_profil")
 

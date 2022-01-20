@@ -23,3 +23,5 @@ from os import path
 #print(path.dirname(__file__)
 #print(db.get_full_database())
 print(db.get_email(1))
+db.update_email(1,"test2@test2.com")
+print(db.email_exists("test2@test2.prout"))

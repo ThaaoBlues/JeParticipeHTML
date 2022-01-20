@@ -82,6 +82,12 @@
           </div>
         </div>
 
+        <div class="row justify-content-md-center mt-3">
+          <label for="email">Adresse email :</label>
+          <input type='email' name='email' id='email' placeholder='adresse email' value="{{email}}" required/>
+          <div id="emailHelp" class="form-text">Uniquement utilisée pour vous contacter si vous participez à un tirage au sort.</div>
+        </div>
+
         <div class="row">
           <div class="col my-3">
             <a href="/profil?user_id={{user_id}}" class="btn btn-primary float-end">Prévisualiser mon profil</a>
@@ -98,6 +104,8 @@
             </div>
           </div>
         </div>
+
+
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
       </form>
