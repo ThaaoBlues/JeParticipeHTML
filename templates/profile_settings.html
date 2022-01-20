@@ -84,7 +84,7 @@
 
         <div class="row justify-content-md-center mt-3">
           <label for="email">Adresse email :</label>
-          <input type='email' name='email' id='email' placeholder='adresse email' value="{{email}}" required/>
+          <input type='email' name='email' id='email' class="email" value="{{email}}" placeholder='Adresse email' pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" required/>
           <div id="emailHelp" class="form-text">Uniquement utilisée pour vous contacter si vous participez à un tirage au sort.</div>
         </div>
 

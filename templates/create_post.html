@@ -95,7 +95,7 @@
         
         <div class="form-group form-check mt-3">
           <input name="anon_votes" type="checkbox" class="form-check-input" id="anon_votes_input">
-          <label class="form-check-label" for="anon_votes_input">Autoriser les votes anonymes (via le lien de partage)</label>
+          <label class="form-check-label" for="anon_votes_input" id="label_anon_votes_input">Autoriser les votes anonymes (via le lien de partage)</label>
         </div>
 
         <input name="publication_type" value="sondage" id="publication_type"  hidden required>
@@ -127,11 +127,16 @@
       case "Sondage":
         document.getElementById("choix").setAttribute("placeholder","choix1/choix2/choix3....");
         document.getElementById("publication_type").setAttribute("value","sondage");
+        document.getElementById("anon_votes_input").removeAttribute("hidden");
+        document.getElementById("label_anon_votes_input").removeAttribute("hidden");
         break;
 
       case "Tirage au sort":
         document.getElementById("choix").setAttribute("placeholder","Texte du bouton participer au tirage au sort");
         document.getElementById("publication_type").setAttribute("value","tirage");
+        document.getElementById("anon_votes_input").setAttribute("hidden",true);
+        document.getElementById("label_anon_votes_input").setAttribute("hidden",true);
+
         break;
 
       default:

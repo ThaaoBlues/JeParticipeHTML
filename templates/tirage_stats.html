@@ -73,10 +73,11 @@
     
         <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4 container", style="border: 1px;">
         
-          <div class="container" style="width: auto; min-width: 350px;">              
+          <div class="container" style="width: auto; min-width: 350px;">          
             
             <div class="row mx-3 mt-3">
                 <input id="n_tirage" type="number" value="5" placeholder="nombre de participants tirés"/>
+                <label for="n_tirage">Sur {{participants["usernames"]|length}} participants.</label>
             </div>
             <div class="row mx-3 mt-3">
 

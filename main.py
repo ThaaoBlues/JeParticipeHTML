@@ -525,7 +525,7 @@ def profil():
     except ValueError:
         return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
     
-    
+
     
     if (user_id != None) and (db.user_exists(user_id)):
         # generate html from markdown
@@ -539,7 +539,7 @@ def profil():
         
         return render_template("profile.html",md=md,username=current_user.name,user_id=user_id,is_following=(user_id in db.get_following(current_user.id)),target_username=db.get_user_name(user_id),posts_count=db.get_posts_count(user_id))
     else:
-        return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'accueil",lien="/login")
+        return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'accueil",lien="/home")
 
 @app.route("/edit_profil",methods=["GET","POST"])
 @login_required
@@ -572,6 +572,10 @@ def edit_profil():
             db.set_private_status(current_user.id,status)
             
             email = request.form.get("email",default=None)
+            
+            if db.email_exists(email):
+                return render_template("page_message.html",message="Un compte utilise déjà cette adresse email :/ Ne vous inquiétez pas, vous avez assez d'imagination pour en trouver un autre ;)",texte_btn="Revenir en arrière",lien="/edit_profil")
+        
             
             if email:
                 db.update_email(current_user.id,email)
