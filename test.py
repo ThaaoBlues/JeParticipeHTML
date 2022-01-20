@@ -22,3 +22,4 @@ from os import path
 #db.get_choix_ids(2)
 #print(path.dirname(__file__)
 #print(db.get_full_database())
+print(db.get_email(1))

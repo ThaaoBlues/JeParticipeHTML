@@ -270,9 +270,10 @@ def register():
     
     
     
-    if (request.form.get("username",None) != None) and (request.form.get("password",None) != None) and (request.form.get("type",default=None).lower() in db.users_types) and (request.form.get("genre",default=None).lower().replace(" ","_") in db.gender_types):
+    if (request.form.get("username",None) != None) and (request.form.get("password",None) != None) and (request.form.get("type",default=None).lower() in db.users_types) and (request.form.get("genre",default=None).lower().replace(" ","_") in db.gender_types) and (request.form.get("email",default=None) != None):
         
         username = db.sanitize(request.form.get("username"))
+        email = db.sanitize(request.form.get("email",str),text=True)
         
         gender = request.form.get("genre",type=str).lower().replace(" ","_")
         
@@ -282,7 +283,7 @@ def register():
         
         password=sha256_crypt.hash(request.form.get("password"))
         
-        user_id = db.register_user(username=username,gender=gender ,password=password,type=request.form.get("type").lower(),franceconnect=True)
+        user_id = db.register_user(username=username,gender=gender,email=email,password=password,type=request.form.get("type").lower(),franceconnect=True)
         
         # login user after registration
         user = User(name=username,id=user_id,gender=db.get_gender(user_id)) 
@@ -508,7 +509,6 @@ def supprimer_sondage():
 
         else:
             return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'accueil",lien="/home")
-    
 
 @app.route("/profil",methods=["GET"])
 @login_required

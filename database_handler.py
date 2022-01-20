@@ -327,10 +327,10 @@ class DataBase:
             cursor.execute("DELETE FROM CHOIX WHERE post_id=? AND owner_id=?",(post_id,user_id))
             self.connector.commit()
         
-    def register_user(self,username="",gender="",password="",type="utilisateur",franceconnect=False,init=False):
+    def register_user(self,username="",email="",gender="",password="",type="utilisateur",franceconnect=False,init=False):
         
         with closing(self.connector.cursor()) as cursor:
-            cursor.execute("INSERT INTO USERS(username,password,age,gender,type,is_verified,is_private) values(?,?,?,?,?,?,?)",(username,password,0,gender,type,franceconnect,False))
+            cursor.execute("INSERT INTO USERS(username,password,age,gender,type,is_verified,is_private,email) values(?,?,?,?,?,?,?,?)",(username,password,0,gender,type,franceconnect,False,email))
             
             self.connector.commit()
             
@@ -433,7 +433,7 @@ class DataBase:
     def __init_db(self):
                 
         c = sql.connect("database.db").cursor()
-        c.execute("CREATE TABLE USERS (user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,username TEXT,password TEXT,age INTEGER,gender TEXT,type TEXT,is_verified BOOL,is_private Bool)")
+        c.execute("CREATE TABLE USERS (user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,username TEXT,password TEXT,age INTEGER,gender TEXT,type TEXT,is_verified BOOL,is_private Bool,email TEXT)")
         c.execute("CREATE TABLE POSTS (post_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,header TEXT,anon_votes BOOL,archived BOOL,publication_type TEXT)")
         c.execute("CREATE TABLE FOLLOWERS (link_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,user_id INTEGER,follower_id INTEGER,is_request BOOL)")
         c.execute("CREATE TABLE CHOIX (choix_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix TEXT,votes INTEGER)")
@@ -740,14 +740,31 @@ class DataBase:
             ret = {}
             ret["ids"] = []
             ret["usernames"] = []
+            ret["genders"] = []
+            ret["emails"] = []
+            
             for ele in tmp:
                 i = randint(0,len(ret["ids"]))
                 ret["ids"].insert(i,ele["voter_id"])
                 ret["usernames"].insert(i,ele["username"])
+                ret["genders"].insert(i,self.get_gender(int(ele["voter_id"])))
+                ret["emails"].insert(i,self.get_email(int(ele["voter_id"])))
+
 
             return ret
     
-    
+    def get_email(self,user_id:int)->str:
+        """return the unsanitized email addr of an user
+
+        Args:
+            user_id (int): [description]
+        """
+        
+        with closing(self.connector.cursor()) as cursor:
+            tmp = dict(cursor.execute("SELECT email FROM USERS WHERE user_id=?",(user_id,)).fetchone())["email"]
+            return self.unsanitize(tmp)
+            
+            
     def get_full_database(self):
         """return all the database content
         as a gigantic dict, one key for each table
