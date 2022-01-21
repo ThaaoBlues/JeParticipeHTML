@@ -178,8 +178,8 @@ def shared():
                 if ("email" in req.keys()):
                     email = req["email"]
                     
-                    #if db.email_exists(req["email"]):
-                        #return jsonify({"erreur":"adresse email deja utilisée"})
+                    if (email in db.get_tirage_participants(post_id)["emails"]) or (email in db.get_tirage_participants(post_id)["usernames"]):
+                        return jsonify({"erreur":"adresse email deja utilisée"})
                     
                     try:
                         if current_user.is_authenticated:

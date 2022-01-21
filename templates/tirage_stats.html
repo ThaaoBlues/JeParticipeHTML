@@ -85,6 +85,12 @@
             
             </div>
 
+            <div class="row mx-3 mt-3">
+
+              <button class="btn btn-primary" id="reload_button" onclick="window.location.reload()">Re-faire la composition aléatoire</button>
+            
+            </div>
+
 
             <div class="row mx-3 mt-5" id="conteneur_liste" >
 
@@ -100,24 +106,30 @@
   let emails = {{participants["emails"] | safe}};
 
   function random_choice(){
-    var n = document.getElementById("n_tirage").getAttribute("value");
-    
-    if(!!document.getElementById("RandList")){
-      document.getElementById("RandList").remove();
+    var n = document.getElementById("n_tirage").value;
+
+    if(n>usernames.length){
+      n = usernames.length;
     }
+
+    document.getElementById("conteneur_liste").innerHTML = "";
+
+
     var ul = document.createElement('ul');
     ul.setAttribute('id','RandList');
     ul.setAttribute("style","border: 1px;border-color:blueviolet;");
     document.getElementById('conteneur_liste').appendChild(ul);
-    usernames.forEach(renderList);
-
-    function renderList(element, index, arr) {
+    for(i=0;i<n;i++){
       var li = document.createElement('li');
       li.setAttribute('class','item');
 
       ul.appendChild(li);
 
-      li.innerHTML=li.innerHTML + element +" ("+emails[index]+")";
+      li.innerHTML=li.innerHTML + usernames[i] +" ("+emails[i]+")";
+    }
+
+    function renderList(element, index, arr) {
+      
     }
 
   }

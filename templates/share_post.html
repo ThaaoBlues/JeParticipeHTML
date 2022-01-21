@@ -64,10 +64,17 @@
             <hr>
             <ul class="list-group list-group-flush">
               {%if post.vote%}
-                {%for choix in post.choix%}
+                {%if post.type == "tirage"%}
+                  <a class="btn btn-primary mt-2" style="width:100%;" id="btn">Participation enregistrée !</a>
+                  <label for="btn">Seule la première participation est vraiment enregistrée.</label>
 
-                  <a class="btn btn-primary mt-2" style="width:100%;">{{choix}} : {{post.resultats[choix]}}% des votes.</a>
-                {%endfor%}
+                {%else%}
+                  {%for choix in post.choix%}
+
+                    <a class="btn btn-primary mt-2" style="width:100%;">{{choix}} : {{post.resultats[choix]}}% des votes.</a>
+                  {%endfor%}
+
+                {%endif%}
               {%elif post.anon_votes%}
                   {%for choix in post.choix%}
 
@@ -135,6 +142,8 @@
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.setRequestHeader("X-CSRFToken", csrf_token);
     xhr.send(JSON.stringify(dict));
+    
+    setTimeout(function() {document.location.href = document.location.href.replace("False","True");},100);
     
   }
 
