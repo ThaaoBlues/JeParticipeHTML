@@ -1,5 +1,5 @@
 from random import randint
-from re import sub
+from re import T, sub
 from passlib.handlers.sha2_crypt import sha256_crypt
 from post import Post
 from difflib import SequenceMatcher
@@ -31,6 +31,9 @@ class DataBase:
             # init database writer
             self.connector = sql.connect("database.db",check_same_thread=False)
             self.connector.row_factory = sql.Row
+            
+            self.register_user(username="anonyme",email=self.sanitize("vote_exterieur",text=True),gender="autre",password="",type="utilisateur")
+            self.set_private_status(1,True)
                     
         # init database writer
         self.connector = sql.connect("database.db",check_same_thread=False)
@@ -48,7 +51,7 @@ class DataBase:
 
             self.connector.commit()
         
-    def add_vote(self,user_id:int,owner_id:int,choix:str,post_id:int,user_gender:str,anon_vote=False):
+    def add_vote(self,user_id:int,owner_id:int,choix:str,post_id:int,user_gender:str,email="anonyme",anon_vote=False):
         
         with closing(self.connector.cursor()) as cursor:
             # to compare with saitized text
@@ -61,7 +64,9 @@ class DataBase:
 
                 choix_id = dict(cursor.execute(f"SELECT choix_id FROM CHOIX WHERE owner_id = ? AND post_id = ? AND choix = ?",(owner_id,post_id,choix)).fetchall()[0])["choix_id"]
 
-                username = "anonymous"
+                username = self.sanitize(email,text=True)
+                user_id = 1
+                user_gender = "autre"
                 cursor.execute(f"INSERT INTO VOTANTS (owner_id,post_id,choix_id,username,voter_id,gender) values(?,?,?,?,?,?)",(owner_id,post_id,choix_id,username,user_id,user_gender))
 
                 self.connector.commit()
@@ -76,7 +81,7 @@ class DataBase:
 
                 choix_id = dict(cursor.execute(f"SELECT choix_id FROM CHOIX WHERE owner_id = ? AND post_id = ? AND choix = ?",(owner_id,post_id,choix)).fetchall()[0])["choix_id"]
 
-                username = self.get_user_name(user_id)
+                username = self.sanitize(self.get_user_name(user_id),text=True)
                 cursor.execute(f"INSERT INTO VOTANTS (owner_id,post_id,choix_id,username,voter_id,gender) values(?,?,?,?,?,?)",(owner_id,post_id,choix_id,username,user_id,user_gender))
 
                 self.connector.commit()
@@ -128,9 +133,11 @@ class DataBase:
         for row in tmp:
             
             row = dict(row)
+            row["username"] = self.unsanitize(row["username"])
             row["choix"] = self.get_choix_text(row["choix_id"])
             
             votants.append(row)
+            
         
         ret = {}
         ret["total_votants"] = len(votants)
@@ -746,7 +753,7 @@ class DataBase:
             for ele in tmp:
                 i = randint(0,len(ret["ids"]))
                 ret["ids"].insert(i,ele["voter_id"])
-                ret["usernames"].insert(i,ele["username"])
+                ret["usernames"].insert(i,self.unsanitize(ele["username"]))
                 ret["genders"].insert(i,self.get_gender(int(ele["voter_id"])))
                 ret["emails"].insert(i,self.get_email(int(ele["voter_id"])))
 

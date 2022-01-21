@@ -58,6 +58,7 @@ class User(UserMixin):
     def is_anonymous(self):
         return False
 
+    @property
     def is_authenticated(self):
         return True
     
@@ -102,7 +103,7 @@ def login():
             
             username = db.sanitize(request.form.get('username'))
 
-            if (not db.username_exists(username)) or (username == "compteur_utilisateurs"):
+            if (not db.username_exists(username)) or (username == "anonyme"):
                 return redirect(url_for("login"))
             
             user_id = db.get_user_id(username,request.form.get('password'))
@@ -144,7 +145,7 @@ def shared():
             if (db.post_exists(post_id)):
                 post = db.get_post(post_id)
 
-                post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],results=db.get_results(post["post_id"]),anon_votes=post["anon_votes"],vote=vote)
+                post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],results=db.get_results(post["post_id"]),anon_votes=post["anon_votes"],vote=vote,post_type=post["publication_type"])
 
                 return render_template("share_post.html",post = post)
                 
@@ -156,34 +157,52 @@ def shared():
     
     
     elif request.method == "POST":
+                
         
-        # anonymous vote
-        choix = request.form.get("choix",default=None)
-        author_id = request.form.get("author_id",default=None)
-        post_id = request.form.get("post_id",default=None)
-        if (choix != None) and  (author_id != None) and  (post_id != None):
+        req = dict(request.get_json())
 
-            choix = request.form.get("choix")
+        
+        if("choix" in req.keys()) and ("post_id" in req.keys()) and ("author_id" in req.keys()):
+
+
+            choix = str(req["choix"])
+            
             # check if post_id is an int
             try:
-                post_id = request.form.get("post_id",type=int)
-                author_id = request.form.get("author_id",type=int)
-                
+                post_id = int(req["post_id"])
+                author_id = int(req["author_id"])
             except ValueError:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/login")
+                return jsonify({"erreur","requête mal formée"})
             
-            
-            # makes sure post exists, selected choice exists and anon_votes is set to True
-            if (db.choix_exists(author_id,post_id,choix)) and (db.anon_votes(post_id)):
-                
-                db.add_vote(0,author_id,choix,post_id,"autre",anon_vote=True)
-        
-                return redirect(f"/partage?owner_id={author_id}&post_id={post_id}&results=True")
-            else:
-                return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé :/",texte_btn="Revenir à l'accueil",lien="/login")
-        else:
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé :/",texte_btn="Revenir à l'accueil",lien="/login")
+            if (db.choix_exists(author_id,post_id,choix)):
+                if ("email" in req.keys()):
+                    email = req["email"]
+                    
+                    #if db.email_exists(req["email"]):
+                        #return jsonify({"erreur":"adresse email deja utilisée"})
+                    
+                    try:
+                        if current_user.is_authenticated:
+                            db.add_vote(current_user.id,author_id,choix,post_id,current_user.gender)
+                        else:
+                            db.add_vote(1,author_id,choix,post_id,"",email=email,anon_vote=True)
+                    except Exception as e:
+                        print(e)
+                        
+                else:
+                    if current_user.is_authenticated:
+                        db.add_vote(current_user.id,author_id,choix,post_id,current_user.gender)
+                    else:
+                        db.add_vote(1,author_id,choix,post_id,"",anon_vote=True)
 
+                    
+                return jsonify({"succes":"requête validée"})
+            
+            else:
+                return jsonify({"erreur","requête mal formée"})
+                    
+        else:
+            return jsonify({"erreur","requête mal formée"})
                 
 @app.route('/home',methods=['GET'])
 @login_required
@@ -456,6 +475,7 @@ def parametres_sondage():
             choix_ids = [ele[0] for ele in request.form.getlist("choix_ids",type=list)]
             archive = request.form.get("archive",default=False,type=bool)
         except ValueError:
+            print("VALUE ERROR")
             return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/mes_sondages")
 
         if not (post_type in db.publication_types):
@@ -464,7 +484,7 @@ def parametres_sondage():
         
         
         # check if every params are not None, if post belongs to the current user, if each choice belongs to the right post and if post exists
-        if (choix != None) and (post_header != None) and (anon_votes != None) and (choix_ids != []) and (archive != None) and (not False in [db.choix_exists(owner_id,post_id,c,check_id=True) for c in choix_ids]) and (db.post_exists(post_id)) and (owner_id == current_user.id):
+        if (choix != None) and (post_header != None) and (anon_votes != None) and (choix_ids != "") and (archive != None) and (db.post_exists(post_id)) and (owner_id == current_user.id):
             
             #remove any empty string
             choix = list(filter(None, choix.split("/")))              
@@ -481,8 +501,8 @@ def parametres_sondage():
                 
                 db.update_post_header(post_id,post_header)
                 db.update_post_archive_state(post_id,archive)
-        
-                return redirect("/mes_sondages")
+
+                return redirect(f"/parametres_publication?owner_id={current_user.id}&post_id={post_id}")
         
         # manque un paramètre de form 
         else:

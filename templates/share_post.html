@@ -70,17 +70,18 @@
                 {%endfor%}
               {%elif post.anon_votes%}
                   {%for choix in post.choix%}
-                  <form onSubmit="submit_form({author_id:{{post.author_id}},post_id:{{post.id}} ,choix:'{{choix}}'},'action/add_vote');return false">
+
+                  <form onSubmit="submit_form({author_id:{{post.author_id}},post_id:{{post.id}} ,choix:'{{choix}}'},'/partage');return false">
                     <button class="btn btn-primary mt-2" style="width:100%;" type="submit">{{choix}}</button>
                   </form>
                   {%endfor%}
-                {%else%}
-                  {%for choix in post.choix%}
-                    <form action="add_vote" method="POST">
-                        <button class="btn btn-primary mt-2" style="width: 100%;" onclick="alert('Connectez-vous pour pouvoir répondre au sondage et en voir les résultats ;)')">{{choix}}</button>
-                    </form>
-                  {%endfor%}
-                {%endif%}
+              {%else%}
+                {%for choix in post.choix%}
+                  <form action="" method="POST">
+                      <button class="btn btn-primary mt-2" style="width: 100%;" onclick="alert('L\'auteur de cette publication a interdit le vote d\'utilisateurs non enregistrés ;)')">{{choix}}</button>
+                  </form>
+                {%endfor%}
+              {%endif%}
               </ul>
             </div>
           </div>
@@ -106,6 +107,27 @@
 
   function submit_form(dict,url){
 
+    
+    {%if post.type == "tirage"%}
+      let email = null;
+      while(email == null){
+        email = prompt("Entrez votre adresse email ici, elle sera uniquement utilisée pour vous contacter si vous gangez ;)");
+      
+        const validateEmail = (email) => {
+          return String(email)
+            .toLowerCase()
+            .match(
+              /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            );
+        };
+        if(!validateEmail(email)){
+          alert("Adresse email invalide :/")
+          email = null
+        }
+      }
+      dict["email"] = email;
+    {%endif%}
+
     var csrf_token = "{{ csrf_token() }}";
 
     var xhr = new XMLHttpRequest();
@@ -114,7 +136,6 @@
     xhr.setRequestHeader("X-CSRFToken", csrf_token);
     xhr.send(JSON.stringify(dict));
     
-    setTimeout(function() {document.location.reload();},100);
   }
 
 </script>

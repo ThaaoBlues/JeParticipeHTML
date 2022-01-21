@@ -71,7 +71,7 @@
   <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
 
     <div class="row mx-3 justify-content-md-center">
-      <form action="parametres_sondage" class="col-md-auto" method="POST" style="width: auto;  min-width: 350px;">
+      <form action="parametres_publication" class="col-md-auto" method="POST" style="width: auto;  min-width: 350px;">
 
         <div class="row justify-content-md-center mt-3">
           <input name="post_header" type="text" placeholder="{{post.header}}" value="{{post.header}}" required/>
@@ -89,12 +89,11 @@
           </ul>
         </div>
         
-        {% if post.type != "tirage"%}
         <div class="form-group form-check mt-3">
           <input name="anon_votes" type="checkbox" class="form-check-input" id="anon_votes_input" {%if post.anon_votes%}checked{%endif%}/>
           <label class="form-check-label" for="anon_votes_input">Autoriser les votes anonymes (via le lien de partage)</label>
         </div>
-        {%endif%}
+        
         
         <div class="form-group form-check mt-3">
           <input name="archive" type="checkbox" class="form-check-input" id="archive_input" {%if post.archive%}checked{%endif%}/>
