@@ -39,7 +39,7 @@ csrf = CSRFProtect(app)
 class User(UserMixin):
     
     
-    def __init__(self, name="", id=0, active=True,gender="autre"):
+    def __init__(self, name="[anonymous]", id=0, active=True,gender="autre"):
         self.name = name
         self.id = int(id)
         self.active = active
@@ -87,6 +87,7 @@ def accueil():
 
 @app.route("/a-propos")
 def a_propos():
+    
     return render_template("about.html")
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -146,7 +147,7 @@ def shared():
 
                 post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],results=db.get_results(post["post_id"]),anon_votes=post["anon_votes"],vote=vote,post_type=post["publication_type"])
 
-                return render_template("share_post.html",post = post)
+                return render_template("share_post.html",post = post,username=current_user.name if current_user.is_authenticated else "[anonymous]")
                 
             else:
                 return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'accueil",lien="/home")

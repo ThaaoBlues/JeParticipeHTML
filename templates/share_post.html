@@ -38,7 +38,32 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
       <a class="navbar-brand mb-2" href="/home">JeParticipe</a>
+      {%if username=="[anonymous]"%}
       <button class="btn btn-primary me-2 mb-2 mt-2" onclick="window.location.href='/login'">S'inscrire/Se connecter</button>
+      {%else%}
+      <ul class="navbar-nav me-2">
+      
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle btn btn-primary" style="color: white;" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Mon compte
+          </a>
+          
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <li><a class="dropdown-item" href="/home">Accueil</a></li>
+            <li><a class="dropdown-item" href="/creer_publication">Publier</a></li>
+            <li><a class="dropdown-item" href="/mes_publications">Mes publications</a></li>
+            <li><a class="dropdown-item" href="/edit_profil">Editer mon profil</a></li>
+            <li><a class="dropdown-item" href="/mes_abonnes">Gérer mes abonnés</a></li>
+            <li><a class="dropdown-item" href="/mes_abonnements">Gérer mes abonnements</a></li>
+            <li><a class="dropdown-item" href="/mes_demandes_dabonnement">Gérer les demandes d'abonnement</a></li>
+            <li><a class="dropdown-item" href="/logout">Déconnection ( {{username}} )</a></li>
+          </ul>
+
+        </li>
+        
+
+      </ul>
+      {%endif%}
       <button class="btn btn-primary" onclick="window.location.href='/a-propos'">Utilisation et infos</button>
 
     </div>
