@@ -85,6 +85,10 @@ def accueil():
     
     return redirect(url_for("login"))
 
+@app.route("/a-propos")
+def a_propos():
+    return render_template("about.html")
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':

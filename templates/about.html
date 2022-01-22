@@ -38,45 +38,51 @@
           <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
       
             <a class="navbar-brand mb-2" href="/home">JeParticipe</a>
-            
+
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-      
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle btn btn-primary" style="color: white;" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Mon compte
-                </a>
-                
-                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                  <li><a class="dropdown-item" href="/home">Accueil</a></li>
-                  <li><a class="dropdown-item" href="/creer_publication">Publier</a></li>
-                  <li><a class="dropdown-item" href="/mes_publications">Mes publications</a></li>
-                  <li><a class="dropdown-item" href="/edit_profil">Editer mon profil</a></li>
-                  <li><a class="dropdown-item" href="/mes_abonnes">Gérer mes abonnés</a></li>
-                  <li><a class="dropdown-item" href="/mes_abonnements">Gérer mes abonnements</a></li>
-                  <li><a class="dropdown-item" href="/mes_demandes_dabonnement">Gérer les demandes d'abonnement</a></li>
-                  <li><a class="dropdown-item" href="/logout">Déconnection ( {{username}} )</a></li>
-                </ul>
-      
-              </li>
-      
               
       
             </ul>
-            <form class="d-flex" action="recherche" method="GET">
-              <input class="form-control me-2 mb-2" type="search" placeholder="Rechercher" aria-label="Search" name="req">
-              <button class="btn btn-outline-success mb-2" type="submit">Rechercher</button>
-            </form>
           </div>
         </div>
       </nav>
     
     
-        <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4 container", style="border: 1px;">
-        
-          <form>
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div id="conteneur_chronologique" class=" d-flex mt-4 container", style="border: 1px;">
+            
+            
+            <div class="col">
+                <img class="img-fluid img-thumbnail float-left" src="https://jeparticipe.tk:8000/logo/logo_transparent.png" alt="">
+            </div>
 
-          </form>
+            <div class="col">
+                <div id="first_row" class="row mt-3 mx-3 text-break">
+                    <h1>Qu'est-ce que JeParticipe ?</h1>
+
+                    <h5><p>
+                        JeParticipe est une solution en ligne multiplateformes pour créer des sondages et tirages aux sort.
+                        </p>
+                        <p>
+                            Vous pourrez les partager super simplement avec des liens et même autoriser la participation anonyme pour un max de réponses !
+                        </p>
+                        <p>
+                            Vous visez un public restreint ? Pas de problèmes ! Notre système de comptes privés vous laisse gérer qui a accès à vos publications ;)
+                        </p>
+                        <p>
+                            Les résultats se mettent en forme tout seul en plein de jolis graphiques tout minions que vous pouvez choisir et télécharger !
+                        </p>
+                        <p>
+                            Vous êtes plutot du genre fan de données ? Toutes les données de vos publications sont téléchargeables au format csv en un seul click !
+                        </p>
+                        <p>
+                            Votre profil et sa description sont entièrement personnalisables ! Laissez libre cours à votre imagination ou faite la description la plus claire jamais vue grâce à notre support du langage markdown ! 
+                        </p>
+                    </h5>
+                </div>
+            </div>
+
+
+
             
         </div>
 
@@ -89,30 +95,19 @@
 
 <script>
 
-  function partage_sondage(owner_id,post_id){
 
-    navigator.permissions.query({name: "clipboard-write"}).then(result => {
-      if (result.state == "granted" || result.state == "prompt") {
-        navigator.clipboard.writeText(window.location.hostname+"/partage?owner_id="+owner_id+"&post_id="+post_id+"&results=False");
-      }
-    });
+    function submit_form(dict,url){
 
-    alert("L'url de partage de la publication a été copiée dans votre presse papier ;)");
-  }
+        var csrf_token = "{{ csrf_token() }}";
 
-
-  function submit_form(dict,url){
-
-    var csrf_token = "{{ csrf_token() }}";
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", url, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader("X-CSRFToken", csrf_token);
-    xhr.send(JSON.stringify(dict));
-    
-    setTimeout(function() {document.location.reload();},100);
-  }
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader("X-CSRFToken", csrf_token);
+        xhr.send(JSON.stringify(dict));
+        
+        setTimeout(function() {document.location.reload();},100);
+    }
 </script>
 
 
