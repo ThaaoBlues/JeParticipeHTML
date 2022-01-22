@@ -48,42 +48,37 @@
       </nav>
     
     
-        <div id="conteneur_chronologique" class=" d-flex mt-4 container", style="border: 1px;">
+        <div id="conteneur_chronologique" class="mt-4 container", style="border: 1px;">
             
-            
-            <div class="col">
-                <img class="img-fluid img-thumbnail float-left" src="https://jeparticipe.tk:8000/logo/logo_transparent.png" alt="">
+            <div id="img_row" class="row mx-3 justify-content-center text-break">
+                <img class="img-figureimg-fluid rounded"  src="https://jeparticipe.tk:8000/logo/logo_transparent.png" style="width:50%;height:auto;">
             </div>
+            <div id="text_row" class="row mx-3 text-break">
+                <h1>Qu'est-ce que JeParticipe ?</h1>
 
-            <div class="col">
-                <div id="first_row" class="row mt-3 mx-3 text-break">
-                    <h1>Qu'est-ce que JeParticipe ?</h1>
+                <h5 class="mt-2"><p>
+                    JeParticipe est une solution en ligne multiplateformes pour créer des sondages et tirages au sort.
+                    </p>
+                    <p>
+                        Vous pourrez les partager super simplement avec des liens et même autoriser la participation anonyme en pour faciliter la réponse !
+                    </p>
+                    <p>
+                        Vous visez un public restreint ? Pas de problème ! Notre système de comptes privés vous laisse la main sur les personnes ayant accés à vos publications ;)
+                    </p>
+                    <p>
+                        Les résultats se mettent en forme tout seul en plein de jolis graphiques tout mignons que vous pouvez choisir et télécharger !
+                    </p>
+                    <p>
+                        Vous êtes plutot du genre fan de données ? Toutes les données de vos publications sont téléchargeables au format csv en un seul click !
+                    </p>
+                    <p>
+                        Votre profil et sa description sont entièrement personnalisables ! Laissez libre cours à votre imagination ou faite la description la plus claire jamais vue grâce à notre support du langage markdown ! 
+                    </p>
+                </h5>
 
-                    <h5><p>
-                        JeParticipe est une solution en ligne multiplateformes pour créer des sondages et tirages aux sort.
-                        </p>
-                        <p>
-                            Vous pourrez les partager super simplement avec des liens et même autoriser la participation anonyme pour un max de réponses !
-                        </p>
-                        <p>
-                            Vous visez un public restreint ? Pas de problèmes ! Notre système de comptes privés vous laisse gérer qui a accès à vos publications ;)
-                        </p>
-                        <p>
-                            Les résultats se mettent en forme tout seul en plein de jolis graphiques tout minions que vous pouvez choisir et télécharger !
-                        </p>
-                        <p>
-                            Vous êtes plutot du genre fan de données ? Toutes les données de vos publications sont téléchargeables au format csv en un seul click !
-                        </p>
-                        <p>
-                            Votre profil et sa description sont entièrement personnalisables ! Laissez libre cours à votre imagination ou faite la description la plus claire jamais vue grâce à notre support du langage markdown ! 
-                        </p>
-                    </h5>
-                </div>
+                <p>Notre code est open source :D <a href="https://www.github.com/thaaoblues/jeparticipeHTML">Vous pouvez le feuilleter ici.</a></p>
             </div>
-
-
-
-            
+               
         </div>
 
 
@@ -94,6 +89,8 @@
 </body>
 
 <script>
+
+    document.onload = function(){document.getElementById("text_row").scrollIntoView({"behavior":"smooth"});};
 
 
     function submit_form(dict,url){
