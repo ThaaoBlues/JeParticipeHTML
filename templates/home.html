@@ -118,6 +118,18 @@
           </div>
         </div> 
         {%endfor%}
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1211866699994753"
+            crossorigin="anonymous"></script>
+        <!-- entre_posts -->
+        <ins class="adsbygoogle"
+            style="display:block"
+            data-ad-client="ca-pub-1211866699994753"
+            data-ad-slot="1457506612"
+            data-ad-format="auto"
+            data-full-width-responsive="true"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
       </div>
               
 
@@ -136,10 +148,14 @@
 
       navigator.permissions.query({name: "clipboard-write"}).then(result => {
         if (result.state == "granted" || result.state == "prompt") {
-          navigator.clipboard.writeText(window.location.hostname+"/partage?owner_id="+owner_id+"&post_id="+post_id+"&results=False");
+          navigator.clipboard.writeText(window.location.hostname+"/partage?owner_id="+owner_id+"&post_id="+post_id+"&results=False").then(() => {
+            alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
+          })
+          .catch(() => {
+            alert("Un problème est survenue lors de la copie. Votre navigateur internet n'est peut être pas encore supporté.");
+          });
         }
       });
-      alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
     }
 
     function submit_form(dict,url){
