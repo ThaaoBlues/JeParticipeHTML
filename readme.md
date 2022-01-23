@@ -11,7 +11,7 @@ I want to make it easier to ask opinion inside enterprises or public institution
 The goal is to make a very attractive platform where you can scroll between short surveys and answer to it by a single tap, to maximize audience. The easier it is, the more people come to answer your surveys ;) 
 
 
-### a demo is available on [my little server](https://www.jeparticipe.tk)
+### a demo is available on [my little server](https://jeparticipe.tk)
 
 
 ## General intro:
