@@ -93,7 +93,12 @@ def a_propos():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
-        return render_template("login.html")
+        
+        if current_user.is_authenticated :
+            return redirect("/home")
+        
+        else:
+            return render_template("login.html")
     
     
     elif(request.form.get('username',default=None) != None ) and (request.form.get('password',default=None) != None):

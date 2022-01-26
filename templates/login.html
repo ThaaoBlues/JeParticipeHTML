@@ -43,87 +43,95 @@
 
     <div id="conteneur_chronologique" class="mt-4 container", style="border: 1px;">
 
-        <div class="row mx-3 justify-content-md-center">
-
-            <form action='login' method='POST'  id="login" class="col-md-auto">                
-                <div class="row justify-content-md-center mt-3">
-                    <input type='text' name='username' id='username' placeholder="Nom d'utilisateur" required/>
-                    <div id="emailHelp" class="form-text">Vos données ne seront pas partagées</div>
-
-                </div>
-                <div class="row justify-content-md-center mt-3">
-                    <input type='password' name='password' id='password' placeholder='Mot de passe' required/>
-                </div>
-                <div class="row justify-content-md-center">
-                    <button type='submit'  class="text-center mt-4 btn btn-success" name='submit'>Connection</button>
-                </div>
-
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-
-
-            </form>
-
+        <div id="loading_overlay" class="">
+            <div class="spinner-border" role="status"></div>
         </div>
 
-        <div class="row mx-3 justify-content-md-center mt-5">
+        <div id="forms">
+            <div class="row mx-3 justify-content-md-center">
 
-            <form action='register' method='POST' id="register" class="col-md-auto" oninput="password2.setCustomValidity(register_password2.value != register_password.value ? 'Les mots de passes ne sont pas les mêmes :/' : '')">
-
-                <div class="row justify-content-md-center mt-3">
-                    <input type='text' name='username' id='register_username' placeholder="Nom d'utilisateur" required/>
-                    <div id="unameHelp" class="form-text">Vos données ne seront pas partagées.</div>
-
-                </div>
-
-                <div class="row justify-content-md-center mt-3">
-                    <input type='email' name='email' id='register_email' class="email" placeholder='Adresse email' pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" required/>
-                    <div id="emailHelp" class="form-text">Uniquement utilisée pour vous contacter si vous participez à un tirage au sort.</div>
-                </div>
-
-                <div class="row justify-content-md-center mt-3">
-                    <input type='password' name='password' id='register_password' placeholder='Mot de passe' required/>
-                </div>
-                <div class="row justify-content-md-center mt-3">
-                    <input type='password' name='password2' id='register_password2' placeholder='Confirmation du mot de passe' required/>
-                </div>
-
-
-
-                <div class="row justify-content-md-center mt-3">
-
-                    <select name="type" class="form-control-primary form-control-sm" required>
-                        <option>Utilisateur</option>
-                        <option>Entreprise</option>
-                        <option>Institution publique</option>
-                        
-                    </select>
-                
-                </div>
-
-                <div class="row justify-content-md-center mt-3">
-                
-
-                    <select name="genre" class="form-control-primary form-control-sm" required>
-                        <option>Homme</option>
-                        <option>Femme</option>
-                        <option>Non genre</option>
-                        <option>Genre fluide</option>
-                        <option>Autre</option>
-                        <option>Personne morale</option>
-                    </select>
-                
-                </div>
-
-                <div class="row justify-content-md-center mt-1">
-                    <button type='submit'  class="text-center mt-4 btn btn-primary" name='submit'>S'inscrire</button>
-                </div>
-
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-
-            </form>
-
+                <form action='login' method='POST'  id="login" class="col-md-auto">                
+                    <div class="row justify-content-md-center mt-3">
+                        <input type='text' name='username' id='username' placeholder="Nom d'utilisateur" required/>
+                        <div id="emailHelp" class="form-text">Vos données ne seront pas partagées</div>
+    
+                    </div>
+                    <div class="row justify-content-md-center mt-3">
+                        <input type='password' name='password' id='password' placeholder='Mot de passe' required/>
+                    </div>
+                    <div class="row justify-content-md-center">
+                        <button type='submit'  class="text-center mt-4 btn btn-success" name='submit' id="connect_button">Connection</button>
+                    </div>
+    
+    
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    
+    
+                </form>
+    
+            </div>
+    
+            <div class="row mx-3 justify-content-md-center mt-5">
+    
+                <form action='register' method='POST' id="register" class="col-md-auto" oninput="password2.setCustomValidity(register_password2.value != register_password.value ? 'Les mots de passes ne sont pas les mêmes :/' : '')">
+    
+                    <div class="row justify-content-md-center mt-3">
+                        <input type='text' name='username' id='register_username' placeholder="Nom d'utilisateur" required/>
+                        <div id="unameHelp" class="form-text">Vos données ne seront pas partagées.</div>
+    
+                    </div>
+    
+                    <div class="row justify-content-md-center mt-3">
+                        <input type='email' name='email' id='register_email' class="email" placeholder='Adresse email' pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" required/>
+                        <div id="emailHelp" class="form-text">Uniquement utilisée pour vous contacter si vous participez à un tirage au sort.</div>
+                    </div>
+    
+                    <div class="row justify-content-md-center mt-3">
+                        <input type='password' name='password' id='register_password' placeholder='Mot de passe' required/>
+                    </div>
+                    <div class="row justify-content-md-center mt-3">
+                        <input type='password' name='password2' id='register_password2' placeholder='Confirmation du mot de passe' required/>
+                    </div>
+    
+    
+    
+                    <div class="row justify-content-md-center mt-3">
+    
+                        <select name="type" class="form-control-primary form-control-sm" required>
+                            <option>Utilisateur</option>
+                            <option>Entreprise</option>
+                            <option>Institution publique</option>
+                            
+                        </select>
+                    
+                    </div>
+    
+                    <div class="row justify-content-md-center mt-3">
+                    
+    
+                        <select name="genre" class="form-control-primary form-control-sm" required>
+                            <option>Homme</option>
+                            <option>Femme</option>
+                            <option>Non genre</option>
+                            <option>Genre fluide</option>
+                            <option>Autre</option>
+                            <option>Personne morale</option>
+                        </select>
+                    
+                    </div>
+    
+                    <div class="row justify-content-md-center mt-1">
+                        <button type='submit'  class="text-center mt-4 btn btn-primary" name='submit'>S'inscrire</button>
+                    </div>
+    
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    
+                </form>
+    
+            </div>
+    
         </div>
-
+        
     </div>
 
     <style>
@@ -132,5 +140,26 @@
             background-color: blueviolet !important;
             border-color: blueviolet;
         }
+
+        .spinner-border {
+            width: 100px; 
+            height: 100px;
+        }
     </style>
+
+    <script>
+
+        document.getElementById("loading_overlay").hidden = true;
+        
+
+
+        document.getElementById("login").addEventListener("submit",function(e){
+            document.getElementById("forms").setAttribute("hidden","true");
+            
+
+            var loading_overlay = document.getElementById("loading_overlay");
+            loading_overlay.setAttribute("class","d-flex justify-content-center mt-5");
+            loading_overlay.hidden = false;
+        },false);
+    </script>
 </body>
