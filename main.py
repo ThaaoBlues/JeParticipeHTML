@@ -598,7 +598,7 @@ def edit_profil():
             
             email = request.form.get("email",default=None)
             
-            if db.email_exists(email):
+            if (db.email_exists(email)) and (not db.get_email(current_user.id) == email) :
                 return render_template("page_message.html",message="Un compte utilise déjà cette adresse email :/ Ne vous inquiétez pas, vous avez assez d'imagination pour en trouver un autre ;)",texte_btn="Revenir en arrière",lien="/edit_profil")
         
             

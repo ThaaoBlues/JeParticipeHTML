@@ -4,6 +4,7 @@ static/
 *.db
 *.sh
 *.php
+missing
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
