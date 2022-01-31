@@ -816,6 +816,7 @@ def action(action):
 def favicon():
     return send_from_directory(path.join(app.root_path,"logo"),'favicon.png', mimetype='image/vnd.microsoft.icon')
 
+
 # logo static data
 @app.route('/logo/<path:filename>')
 def custom_static(filename):
