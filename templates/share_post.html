@@ -113,9 +113,7 @@
                   {%endfor%}
               {%else%}
                 {%for choix in post.choix%}
-                  <form action="" method="POST">
-                      <button class="btn btn-primary mt-2" style="width: 100%;" onclick="alert('L\'auteur de cette publication a interdit le vote d\'utilisateurs non enregistrés ;)')">{{choix}}</button>
-                  </form>
+                  <button class="btn btn-primary mt-2" style="width: 100%;" onclick="alert('L\'auteur de cette publication a interdit le vote d\'utilisateurs non enregistrés ;)')">{{choix}}</button>
                 {%endfor%}
               {%endif%}
               </ul>
