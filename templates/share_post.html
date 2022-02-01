@@ -42,6 +42,8 @@
       <a class="navbar-brand mb-2" href="/home">JeParticipe</a>
       {%if username=="[anonymous]"%}
       <button class="btn btn-primary me-2 mb-2 mt-2" onclick="window.location.href='/login'">S'inscrire/Se connecter</button>
+      <button class="btn btn-primary" onclick="window.location.href='/a-propos'">Utilisation et infos</button>
+
       {%else%}
       <ul class="navbar-nav me-2">
       
@@ -66,8 +68,6 @@
 
       </ul>
       {%endif%}
-      <button class="btn btn-primary" onclick="window.location.href='/a-propos'">Utilisation et infos</button>
-
     </div>
   </div>
 </nav>
