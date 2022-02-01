@@ -66,6 +66,7 @@
                 <form action="stats" method="POST" class="mt-2">
                     <input name="post_id" value="{{post.id}}" hidden/>
                     <button class="btn btn-success mx-3">Télécharger en csv</button>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 </form>
 
                 <li class="nav-item dropdown mt-2">
