@@ -217,6 +217,7 @@ def home():
     while True:
         try:
             sondages = db.generate_tl(current_user.id)
+            sondages.reverse()
             break
         except Exception as e:
             print(e)
