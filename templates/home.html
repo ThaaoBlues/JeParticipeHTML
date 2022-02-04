@@ -174,7 +174,7 @@
       xhr.setRequestHeader("X-CSRFToken", csrf_token);
       xhr.send(JSON.stringify(dict));
       
-      setTimeout(function() {document.location.reload();},100);
+      setTimeout(function() {document.location.reload(true);},100);
     }
 
 </script>
