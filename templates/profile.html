@@ -82,31 +82,39 @@
         <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
     
             <div class="container">
+              
+              <div class="mx-3 mb-3 d-flex">
 
-              <div class="row mx-3">
-                <div class="float-end">
-                  <form onSubmit="submit_form({user_id:{{user_id}}},'action/{%if not is_following%}follow{%else%}unfollow{%endif%}');return false">
-                    {%if not is_following%}
-                      <div class="float-end">
-                        <input type="submit" value="S'abonner" class="btn btn-success">
-                      </div>
-                    {%else%}
-                      <div class="float-end">
-                        <input type="submit" value="Se désabonner" class="btn btn-danger">
-                      </div>
-                    {%endif%}
+                <img  class="img-fluid float-start rounded" style="width:auto; height:auto; max-width: 200px;max-height:200px;" src="{{pp_url}}">
+                <h1 style="margin-top: 40px;" class="ms-3">{{target_username}}</h1>
 
-                  </form>
-                </div>
-                <div class="text-start">
-                  <h1>{{target_username}}</h1>
-                  <h4>{{posts_count}} publication(s).</h4>
-                </div>
 
               </div>
 
+              <div class="row mt-5 text-center">
+                  
+                <form onSubmit="submit_form({user_id:{{user_id}}},'action/{%if not is_following%}follow{%else%}unfollow{%endif%}');return false">
+                  {%if not is_following%}
+                    <div class="">
+                      <input type="submit" value="S'abonner" class="btn btn-success">
+                    </div>
+                  {%else%}
+                    <div class="">
+                      <input type="submit" value="Se désabonner" class="btn btn-danger">
+                    </div>
+                  {%endif%}
+
+                </form>
+              </div>
+
+
+
+
+
 
               <div class="row mt-4 mx-3">
+                <h4 class="mb-3">{{posts_count}} publication(s).</h4>
+
                 <div class="border">
                   <div class="mx-2 text-break mt-2">
                     {{ md | safe }}

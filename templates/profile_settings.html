@@ -96,6 +96,11 @@
           <input type='email' name='email' id='email' class="email" value="{{email}}" placeholder='Adresse email' pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" required/>
           <div id="emailHelp" class="form-text">Uniquement utilisée pour vous contacter si vous participez à un tirage au sort.</div>
         </div>
+        <div class="row justify-content-md-center mt-3">
+          <label for="email">Photo de profil :</label>
+          <input type='url' name='pp_url' id='pp_url' class="url" value="{{pp_url}}" placeholder='http://...image.jpg' pattern="https?:\/\/.*\.(jpg|jpeg|gif|png|tiff|bmp)(\?(.*))?" required/>
+          <div id="emailHelp" class="form-text">Pour embellir votre profil ;)</div>
+        </div>
 
         <div class="row">
           <div class="col my-3">
@@ -140,6 +145,13 @@
       navigator.clipboard.writeText(window.location.hostname+"/partage?owner_id="+owner_id+"&post_id="+post_id+"&results=False");
 
       alert("L'url de partage du sondage a été copiée dans votre presse papier ;)");
+    }
+
+    const isImgLink = (url) => {
+      if (typeof url !== 'string') {
+        return false;
+      }
+      return (url.match(/^http[^\?]*.(jpg|jpeg|gif|png|tiff|bmp)(\?(.*))?$/gmi) !== null);
     }
 
 

@@ -10,6 +10,8 @@ from html_sanitizer import Sanitizer
 from time import sleep
 from multiprocessing import Process, freeze_support
 from os import remove
+from re import match
+
 
 # csrf protection
 from flask_wtf.csrf import CSRFProtect
@@ -563,7 +565,7 @@ def profil():
         md = Sanitizer().sanitize(md)
 
         
-        return render_template("profile.html",md=md,username=current_user.name,user_id=user_id,is_following=(user_id in db.get_following(current_user.id)),target_username=db.get_user_name(user_id),posts_count=db.get_posts_count(user_id))
+        return render_template("profile.html",md=md,username=current_user.name,user_id=user_id,is_following=(user_id in db.get_following(current_user.id)),target_username=db.get_user_name(user_id),posts_count=db.get_posts_count(user_id),pp_url=db.get_pp_url(user_id))
     else:
         return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'accueil",lien="/home")
 
@@ -578,7 +580,7 @@ def edit_profil():
                 md = f.read()
                 f.close()
             
-            return render_template("profile_settings.html",md=md,username=current_user.name,user_id=current_user.id,is_private=db.is_private(current_user.id),email=db.get_email(current_user.id))
+            return render_template("profile_settings.html",md=md,username=current_user.name,user_id=current_user.id,is_private=db.is_private(current_user.id),email=db.get_email(current_user.id),pp_url=db.get_pp_url(current_user.id))
         
         elif request.method == "POST":
             
@@ -602,6 +604,14 @@ def edit_profil():
             if (db.email_exists(email)) and (not db.get_email(current_user.id) == email) :
                 return render_template("page_message.html",message="Un compte utilise déjà cette adresse email :/ Ne vous inquiétez pas, vous avez assez d'imagination pour en trouver un autre ;)",texte_btn="Revenir en arrière",lien="/edit_profil")
         
+            pp_url = request.form.get("pp_url",default="https://images.assetsdelivery.com/compings_v2/yupiramos/yupiramos1706/yupiramos170614990.jpg")
+            
+            if match("https?:\/\/.*\.(jpg|jpeg|gif|png|tiff|bmp)(\?(.*))?",pp_url):
+                
+                db.set_pp_url(current_user.id,pp_url)
+            else:
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/edit_profil")
+            
             
             if email:
                 db.update_email(current_user.id,email)

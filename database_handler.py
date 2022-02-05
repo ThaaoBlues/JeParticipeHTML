@@ -337,7 +337,10 @@ class DataBase:
     def register_user(self,username="",email="",gender="",password="",type="utilisateur",franceconnect=False,init=False):
         
         with closing(self.connector.cursor()) as cursor:
-            cursor.execute("INSERT INTO USERS(username,password,age,gender,type,is_verified,is_private,email) values(?,?,?,?,?,?,?,?)",(username,password,0,gender,type,franceconnect,False,email))
+            pp_url = "https://images.assetsdelivery.com/compings_v2/yupiramos/yupiramos1706/yupiramos170614990.jpg"
+            pp_url = self.sanitize(pp_url,text=True)
+            
+            cursor.execute("INSERT INTO USERS(username,password,age,gender,type,is_verified,is_private,email,pp_url) values(?,?,?,?,?,?,?,?,?)",(username,password,0,gender,type,franceconnect,False,email,pp_url))
             
             self.connector.commit()
             
@@ -440,7 +443,7 @@ class DataBase:
     def __init_db(self):
                 
         c = sql.connect("database.db").cursor()
-        c.execute("CREATE TABLE USERS (user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,username TEXT,password TEXT,age INTEGER,gender TEXT,type TEXT,is_verified BOOL,is_private Bool,email TEXT)")
+        c.execute("CREATE TABLE USERS (user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,username TEXT,password TEXT,age INTEGER,gender TEXT,type TEXT,is_verified BOOL,is_private Bool,email TEXT,pp_url TEXT)")
         c.execute("CREATE TABLE POSTS (post_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,header TEXT,anon_votes BOOL,archived BOOL,publication_type TEXT)")
         c.execute("CREATE TABLE FOLLOWERS (link_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,user_id INTEGER,follower_id INTEGER,is_request BOOL)")
         c.execute("CREATE TABLE CHOIX (choix_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix TEXT,votes INTEGER)")
@@ -796,6 +799,18 @@ class DataBase:
             
             return tmp != []
         
+    def get_pp_url(self,user_id:int)->str:
+        
+        with closing(self.connector.cursor()) as cursor:
+            return self.unsanitize(dict(cursor.execute("SELECT pp_url FROM USERS WHERE user_id=?",(user_id,)).fetchone())["pp_url"])
+    
+    def set_pp_url(self,user_id:int,pp_url:str):
+        
+        with closing(self.connector.cursor()) as cursor:
+            pp_url = self.sanitize(pp_url,text=True)
+            cursor.execute("UPDATE USERS SET pp_url=? WHERE user_id=?",(pp_url,user_id))
+            self.connector.commit()
+            
             
     def get_full_database(self):
         """return all the database content
