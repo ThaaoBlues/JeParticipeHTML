@@ -10,6 +10,7 @@ from os import mkdir,remove
 from csv import DictWriter
 from zipfile import ZipFile
 from contextlib import closing
+from utils import *
 
 
 class DataBase:
@@ -257,23 +258,34 @@ class DataBase:
         
         with closing(self.connector.cursor()) as cursor:
             query = self.sanitize(query)
-            users = cursor.execute("SELECT username,user_id,type,is_verified FROM USERS").fetchall()
+            users = cursor.execute(f"SELECT username,user_id,type,is_verified FROM USERS WHERE username LIKE '%{query}%'").fetchall()
             
             #fetchall to dict
             users = [dict(row) for row in users]
             
-            i = 0        
-            while i<len(users):
+            for i in range(len(users)):
+                users[i]["followers"] = len(cursor.execute("SELECT follower_id FROM FOLLOWERS WHERE user_id=?",(users[i]["user_id"],)).fetchall())
                 
-                if SequenceMatcher(None,query,users[i]["username"]).ratio() >= 0.6:
-                    users[i]["followers"] = len(self.get_followers(users[i]["user_id"]))
+                
+            #sorting algorithm to classify by best match
+            final_users = []
+            for i in range(len(users)):
+                
+                n_diff = abs(len(users[i]["username"])-len(query))
+                
+                if final_users == []:
+                    final_users.append(users[i].copy())
                 else:
-                    users.pop(i)
                     
-                i += 1
-                        
-            
-            return users     
+                    # parcours et ajoute à l'index où la différence devient plus grande
+                    for j in range(len(final_users)):
+                        i_diff = abs(len(final_users[j]["username"])-len(query))
+                        if (i_diff>n_diff) or (i_diff==n_diff):
+                            final_users.insert(j,users[i].copy())
+                            
+            del users
+                              
+            return final_users
     
     def get_type(self,user_id:int)->str:
         with closing(self.connector.cursor()) as cursor:
