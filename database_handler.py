@@ -10,7 +10,6 @@ from os import mkdir,remove
 from csv import DictWriter
 from zipfile import ZipFile
 from contextlib import closing
-from utils import *
 
 
 class DataBase:
