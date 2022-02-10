@@ -29,6 +29,55 @@
   </head>
 <body>
 
+  {%if user_agent == "JeParticipe-app"%}
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <ul class="navbar-nav me-2 mb-2 mb-lg-0">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle btn btn-primary ms-5 mt-2" style="color: white; width:70%;min-width:200px" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Mon compte
+          </a>
+          
+          <ul class="dropdown-menu text-center" aria-labelledby="navbarDropdownMenuLink">
+            <li><a class="dropdown-item bi bi-house-heart-fill" href="/home"><i class="bi bi-house-door me-2"></i>Accueil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/creer_publication"><i class="bi bi-file-plus me-2"></i>Publier</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/mes_publications"><i class="bi bi-archive me-2"></i>Mes publications</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/edit_profil"><i class="bi bi-pencil-square me-2"></i>Editer mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/mes_abonnes"><i class="bi bi-people me-2"></i>Gérer mes abonnés</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/mes_abonnements"><i class="bi bi-person-dash-fill me-2"></i>Gérer mes abonnements</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/mes_demandes_dabonnement"><i class="bi bi-person-check me-2"></i>Gérer les demandes d'abonnement</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/logout"><i class="bi bi-power me-2"></i>Déconnection ( {{username}} )</a></li>
+          </ul>
+
+        </li>
+
+      </ul>
+
+      <button class="btn" style="border-color: black;border-width:2px;" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="bi bi-search" ></span>
+      </button>
+
+      
+      <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+
+        <form class="d-flex" action="recherche" method="GET">
+          <input class="form-control me-2 mb-2 mt-2" type="search" placeholder="Rechercher un profil" aria-label="Search" name="req">
+          <button class="btn btn-outline-success mb-2 mt-2" type="submit">Rechercher</button>
+        </form>
+        
+      </div>
+
+    </div>
+  </nav>
+    
+  {%else%}
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,29 +95,28 @@
               Mon compte
             </a>
             
-                <ul class="dropdown-menu text-center" aria-labelledby="navbarDropdownMenuLink">
-                  <li><a class="dropdown-item bi bi-house-heart-fill" href="/home"><i class="bi bi-house-door me-2"></i>Accueil</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="/creer_publication"><i class="bi bi-file-plus me-2"></i>Publier</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="/mes_publications"><i class="bi bi-archive me-2"></i>Mes publications</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="/edit_profil"><i class="bi bi-pencil-square me-2"></i>Editer mon profil</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="/mes_abonnes"><i class="bi bi-people me-2"></i>Gérer mes abonnés</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="/mes_abonnements"><i class="bi bi-person-dash-fill me-2"></i>Gérer mes abonnements</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="/mes_demandes_dabonnement"><i class="bi bi-person-check me-2"></i>Gérer les demandes d'abonnement</a></li>
-                  <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="/logout"><i class="bi bi-power me-2"></i>Déconnection ( {{username}} )</a></li>
-                </ul>
-            
+            <ul class="dropdown-menu text-center" aria-labelledby="navbarDropdownMenuLink">
+              <li><a class="dropdown-item bi bi-house-heart-fill" href="/home"><i class="bi bi-house-door me-2"></i>Accueil</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/creer_publication"><i class="bi bi-file-plus me-2"></i>Publier</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/mes_publications"><i class="bi bi-archive me-2"></i>Mes publications</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/edit_profil"><i class="bi bi-pencil-square me-2"></i>Editer mon profil</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/mes_abonnes"><i class="bi bi-people me-2"></i>Gérer mes abonnés</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/mes_abonnements"><i class="bi bi-person-dash-fill me-2"></i>Gérer mes abonnements</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/mes_demandes_dabonnement"><i class="bi bi-person-check me-2"></i>Gérer les demandes d'abonnement</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/logout"><i class="bi bi-power me-2"></i>Déconnection ( {{username}} )</a></li>
+            </ul>
+  
           </li>
-  
-          
-  
         </ul>
+
+
         <form class="d-flex" action="recherche" method="GET">
           <input class="form-control me-2 mb-2" type="search" placeholder="Rechercher" aria-label="Search" name="req">
           <button class="btn btn-outline-success mb-2" type="submit">Rechercher</button>
@@ -76,6 +124,8 @@
       </div>
     </div>
   </nav>
+
+  {%endif%}
 
     <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
 

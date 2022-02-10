@@ -146,7 +146,7 @@ def shared():
                 owner_id = request.args.get("owner_id",type=int)
                 vote = True if request.args.get("results") == "True" else False
             except ValueError:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
             
                         
             if (db.post_exists(post_id)):
@@ -154,13 +154,13 @@ def shared():
 
                 post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],results=db.get_results(post["post_id"]),anon_votes=post["anon_votes"],vote=vote,post_type=post["publication_type"])
 
-                return render_template("share_post.html",post = post,username=current_user.name if current_user.is_authenticated else "[anonymous]")
+                return render_template("share_post.html",post = post,username=current_user.name if current_user.is_authenticated else "[anonymous]",user_agent=str(request.user_agent))
                 
             else:
-                return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'accueil",lien="/home")
+                return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
 
         else:
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé ou un paramètre de votre requète a été mal-formé :/ :/",texte_btn="Revenir à l'accueil",lien="/home")
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible ou n'a jamais existé ou un paramètre de votre requète a été mal-formé :/ :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
     
     
     elif request.method == "POST":
@@ -225,7 +225,8 @@ def home():
             print(e)
             logout_user()
             return redirect("/")
-    return render_template("home.html",username = current_user.name,sondages = sondages)
+        
+    return render_template("home.html",username = current_user.name,sondages = sondages,user_agent=str(request.user_agent))
 
 @app.route("/recherche",methods=["GET"])
 @login_required
@@ -242,9 +243,9 @@ def recherche():
         
         error = profils == []
 
-        return render_template("search.html",following = following,profils=profils,error=error,username=current_user.name)
+        return render_template("search.html",following = following,profils=profils,error=error,username=current_user.name,user_agent=str(request.user_agent))
     else:
-        return render_template("search.html",profils=[],req="",username=current_user.name)
+        return render_template("search.html",profils=[],req="",username=current_user.name,user_agent=str(request.user_agent))
 
 
 @app.route("/creer_publication",methods=["GET","POST"])
@@ -343,15 +344,15 @@ def stats():
             try:
                 post_id = request.args.get("post_id",type=int)
             except ValueError:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
             
             if not db.post_exists(post_id):
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
             
             post_dict = db.get_post(post_id)
             
             if post_dict["owner_id"] != current_user.id:
-                return render_template("page_message.html",message="Vous demandez les statistiques d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'accueil",lien="/home")
+                return render_template("page_message.html",message="Vous demandez les statistiques d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
 
             
             
@@ -364,7 +365,7 @@ def stats():
                     chart_type = request.args.get("chart_type",default="pie",type=str)
             
                     if not chart_type in ["bar","pie","doughnut","polarArea"]:
-                        return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
+                        return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
                     
 
                     
@@ -384,14 +385,14 @@ def stats():
                     for c in post_dict["choix"]:
                         sanitized_choix[c] = db.sanitize(c)
                     
-                    return render_template("stats.html",username=current_user.name,post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders,sanitized_choix=sanitized_choix,chart_type=chart_type)
+                    return render_template("stats.html",username=current_user.name,post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders,sanitized_choix=sanitized_choix,chart_type=chart_typen,user_agent=str(request.user_agent))
                     
                 
                 case "tirage":
                     
                     participants = db.get_tirage_participants(post_id)
                     
-                    return render_template("tirage_stats.html",username=current_user.name,participants = participants)
+                    return render_template("tirage_stats.html",username=current_user.name,participants = participants,user_agent=str(request.user_agent))
                 
                 case _ :
                     return jsonify({"erreur":"type de publication non supporté."})
@@ -435,7 +436,7 @@ def stats():
 def mes_sondages():
     sondages = db.generate_tl(current_user.id,self_only=True)
         
-    return render_template("my_posts.html",username = current_user.name,sondages = sondages)
+    return render_template("my_posts.html",username = current_user.name,sondages = sondages,user_agent=str(request.user_agent))
 
 @app.route("/parametres_publication",methods=["GET","POST"])
 @login_required
@@ -449,10 +450,10 @@ def parametres_sondage():
             post_id = request.args.get("post_id",type=int,default=None)
             owner_id = request.args.get("owner_id",type=int,default=None)
         except ValueError:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/mes_sondages")
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/mes_sondages",user_agent=str(request.user_agent))
 
         if (post_id == None) or (owner_id == None):
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/mes_sondages")
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/mes_sondages",user_agent=str(request.user_agent))
         
         post = db.get_post(post_id)
 
@@ -460,12 +461,12 @@ def parametres_sondage():
         if db.post_exists(post_id) and (owner_id == current_user.id) and (post["owner_id"] == current_user.id):
             post = Post(post["header"],post["choix"],db.get_user_name(post["owner_id"]),post["owner_id"],id=post["post_id"],anon_votes=post["anon_votes"],choix_ids=db.get_choix_ids(post["post_id"]),archive=post["archived"],post_type=post["publication_type"])
             
-            return render_template("post_settings.html",post=post,username=current_user.name)
+            return render_template("post_settings.html",post=post,username=current_user.name,user_agent=str(request.user_agent))
         
         # else throw an error message
         else:
             
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible pour vous ou n'a jamais existé",texte_btn="Revenir à l'accueil",lien=request.url)
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible pour vous ou n'a jamais existé",texte_btn="Revenir à l'accueil",lien=request.url,user_agent=str(request.user_agent))
 
 
             
@@ -529,7 +530,7 @@ def supprimer_sondage():
             try:
                 post_id = request.form.get("post_id",type=int)
             except ValueError:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
             
             
             username = request.form.get("post_author")            
@@ -537,12 +538,12 @@ def supprimer_sondage():
             # vérifie que le post existe bien et appartient bien à l'utilisateur connecté
             if (current_user.name == username) and  (db.post_exists(post_id)):
                 db.delete_post(current_user.id,post_id)
-                return render_template("page_message.html",message="Votre publication a été supprimée !",texte_btn="Revenir à l'accueil",lien="/home")
+                return render_template("page_message.html",message="Votre publication a été supprimée !",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
             else:
-                return render_template("page_message.html",message="Vous demandez la suppression d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'accueil",lien="/home")
+                return render_template("page_message.html",message="Vous demandez la suppression d'un sondage qui n'est pas le votre :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
 
         else:
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'accueil",lien="/home")
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
 
 @app.route("/profil",methods=["GET"])
 @login_required
@@ -551,7 +552,7 @@ def profil():
     try:
         user_id = request.args.get("user_id",default=None,type=int)
     except ValueError:
-        return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
+        return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
     
 
     
@@ -565,9 +566,9 @@ def profil():
         md = Sanitizer().sanitize(md)
 
         
-        return render_template("profile.html",md=md,username=current_user.name,user_id=user_id,is_following=(user_id in db.get_following(current_user.id)),target_username=db.get_user_name(user_id),posts_count=db.get_posts_count(user_id),pp_url=db.get_pp_url(user_id))
+        return render_template("profile.html",md=md,username=current_user.name,user_id=user_id,is_following=(user_id in db.get_following(current_user.id)),target_username=db.get_user_name(user_id),posts_count=db.get_posts_count(user_id),pp_url=db.get_pp_url(user_id),user_agent=str(request.user_agent))
     else:
-        return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'accueil",lien="/home")
+        return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
 
 @app.route("/edit_profil",methods=["GET","POST"])
 @login_required
@@ -580,7 +581,7 @@ def edit_profil():
                 md = f.read()
                 f.close()
             
-            return render_template("profile_settings.html",md=md,username=current_user.name,user_id=current_user.id,is_private=db.is_private(current_user.id),email=db.get_email(current_user.id),pp_url=db.get_pp_url(current_user.id))
+            return render_template("profile_settings.html",md=md,username=current_user.name,user_id=current_user.id,is_private=db.is_private(current_user.id),email=db.get_email(current_user.id),pp_url=db.get_pp_url(current_user.id),user_agent=str(request.user_agent))
         
         elif request.method == "POST":
             
@@ -596,13 +597,13 @@ def edit_profil():
             try:
                 status = request.form.get("is_private",default=False,type=bool)
             except ValueError:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/edit_profil")
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/edit_profil",user_agent=str(request.user_agent))
             db.set_private_status(current_user.id,status)
             
             email = request.form.get("email",default=None)
             
             if (db.email_exists(email)) and (not db.get_email(current_user.id) == email) :
-                return render_template("page_message.html",message="Un compte utilise déjà cette adresse email :/ Ne vous inquiétez pas, vous avez assez d'imagination pour en trouver un autre ;)",texte_btn="Revenir en arrière",lien="/edit_profil")
+                return render_template("page_message.html",message="Un compte utilise déjà cette adresse email :/ Ne vous inquiétez pas, vous avez assez d'imagination pour en trouver un autre ;)",texte_btn="Revenir en arrière",lien="/edit_profil",user_agent=str(request.user_agent))
         
             pp_url = request.form.get("pp_url",default="https://images.assetsdelivery.com/compings_v2/yupiramos/yupiramos1706/yupiramos170614990.jpg")
             
@@ -610,7 +611,7 @@ def edit_profil():
                 
                 db.set_pp_url(current_user.id,pp_url)
             else:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/edit_profil")
+                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/edit_profil",user_agent=str(request.user_agent))
             
             
             if email:
@@ -637,7 +638,7 @@ def mes_abonnes():
 
     profils = [db.get_user_info(user_id) for user_id in followers_id]
     
-    return render_template("followers.html",profils=profils,following=db.get_following(current_user.id),username=current_user.name)
+    return render_template("followers.html",profils=profils,following=db.get_following(current_user.id),username=current_user.name,user_agent=str(request.user_agent))
 
 
 @app.route("/mes_abonnements",methods=["GET"])
@@ -656,7 +657,7 @@ def mes_abonnements():
 
     profils = [db.get_user_info(user_id) for user_id in following_id]
     
-    return render_template("following.html",profils=profils,following=db.get_following(current_user.id),username=current_user.name)
+    return render_template("following.html",profils=profils,following=db.get_following(current_user.id),username=current_user.name,user_agent=str(request.user_agent))
     
 
 @app.route("/mes_demandes_dabonnement",methods=["GET","POST"])
@@ -670,9 +671,9 @@ def mes_demandes():
     """
     
     if not db.is_private(current_user.id):
-        return render_template("page_message.html",message="Votre compte n'est pas en mode privé, cette section ne vous sert à rien ;)",texte_btn="revenir à l'accueil",lien="/home")
+        return render_template("page_message.html",message="Votre compte n'est pas en mode privé, cette section ne vous sert à rien ;)",texte_btn="revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
     else:
-        return render_template("follow_requests.html",profils=db.generate_requests_tl(current_user.id),following=db.get_following(current_user.id),username=current_user.name)
+        return render_template("follow_requests.html",profils=db.generate_requests_tl(current_user.id),following=db.get_following(current_user.id),username=current_user.name,user_agent=str(request.user_agent))
 
 @app.route("/action/<action>",methods=["POST"])
 @login_required
