@@ -255,17 +255,23 @@ class DataBase:
    
     def match_users(self,query:str)->list:
         
+        if query == "":
+            return []
+        
         
         with closing(self.connector.cursor()) as cursor:
             query = self.sanitize(query)
-            users = cursor.execute(f"SELECT username,user_id,type,is_verified FROM USERS WHERE username LIKE '%{query}%'").fetchall()
+            users = cursor.execute(f"SELECT username,user_id,type,is_verified FROM USERS WHERE username LIKE '%{query}%' AND username != 'anonyme'").fetchall()
+            
             
             #fetchall to dict
             users = [dict(row) for row in users]
+            print(users)
             
             for i in range(len(users)):
                 users[i]["followers"] = len(cursor.execute("SELECT follower_id FROM FOLLOWERS WHERE user_id=?",(users[i]["user_id"],)).fetchall())
                 
+
                 
             #sorting algorithm to classify by best match
             final_users = []
@@ -277,11 +283,20 @@ class DataBase:
                     final_users.append(users[i].copy())
                 else:
                     
+                    inserted = False
                     # parcours et ajoute à l'index où la différence devient plus grande
                     for j in range(len(final_users)):
                         i_diff = abs(len(final_users[j]["username"])-len(query))
                         if (i_diff>n_diff) or (i_diff==n_diff):
                             final_users.insert(j,users[i].copy())
+                            inserted = True
+                            break
+                            
+                    # si aucun username déjà ajouté n'a une différence plus grande, 
+                    # ajouter l'utilisateur à la fin de la liste 
+                    if not inserted:
+                        final_users.append(users[i].copy())
+                            
                             
             del users
                               
