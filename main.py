@@ -385,7 +385,7 @@ def stats():
                     for c in post_dict["choix"]:
                         sanitized_choix[c] = db.sanitize(c)
                     
-                    return render_template("stats.html",username=current_user.name,post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders,sanitized_choix=sanitized_choix,chart_type=chart_typen,user_agent=str(request.user_agent))
+                    return render_template("stats.html",username=current_user.name,post = post,resultats=resultats,resultats_values=list(resultats.values()),chart_colors=colors,genders=genders,sanitized_choix=sanitized_choix,chart_type=chart_type,user_agent=str(request.user_agent))
                     
                 
                 case "tirage":
@@ -399,7 +399,7 @@ def stats():
             
             
         else:
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'accueil",lien="/home")
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
     
     elif request.method == "POST":
         
@@ -407,7 +407,7 @@ def stats():
         try:    
             post_id = request.form.get("post_id",default=None,type=int)
         except ValueError:
-            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
             
     
         # post exists ?
@@ -425,9 +425,9 @@ def stats():
                 return send_from_directory(app.config["DOWNLOAD_FOLDER"],filename,environ=request.environ,download_name="resultats_sondage.zip")
 
             else:
-                return render_template("page_message.html",message="Le sondage demandé ne vous appartiens pas :/",texte_btn="Revenir à l'accueil",lien="/home")
+                return render_template("page_message.html",message="Le sondage demandé ne vous appartiens pas :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
         else:
-            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'accueil",lien="/home")
+            return render_template("page_message.html",message="Le sondage que vous demandez n'est malheureusement pas/plus disponible :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
 
     
     
