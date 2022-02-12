@@ -838,6 +838,16 @@ class DataBase:
             self.connector.commit()
             
             
+    def archive_all_posts(self):
+        """may be used to archive all posts and so clean all timelines every <frequency>
+        """
+        
+        
+        with closing(self.connector.cursor()) as cursor:
+            
+            cursor.execute("UPDATE POSTS SET archived=? WHERE archived=?",(True,False)).fetchall()
+            self.connector.commit()   
+            
     def get_full_database(self):
         """return all the database content
         as a gigantic dict, one key for each table

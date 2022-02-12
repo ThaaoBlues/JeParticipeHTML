@@ -268,14 +268,14 @@ def sondage_form():
         except ValueError:
             return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
 
-        
+        print(choix,post_header,post_type,anon_votes)
         
         if (choix != None) and (post_header != None) and (anon_votes != None) and (post_type in db.publication_types):
             
             #remove any empty string
             choix = list(filter(None, choix.split("/")))
             # tries to not transmit XSS
-            choix = [db.sanitize(c,text=True) for c in choix]
+            choix = [db.sanitize(c,text=True) for c in choix][:10]
             
             if (len(choix) == 1) and (post_type=="sondage"):
                 return render_template("page_message.html",message="Veuillez remplir le champ des choix comme ceci : choix1/choix2/choix3....",texte_btn="Refaire le sondage",btn_url="/creer_sondage")
@@ -484,7 +484,6 @@ def parametres_sondage():
             choix_ids = [ele[0] for ele in request.form.getlist("choix_ids",type=list)]
             archive = request.form.get("archive",default=False,type=bool)
         except ValueError:
-            print("VALUE ERROR")
             return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/mes_sondages")
 
         if not (post_type in db.publication_types):
