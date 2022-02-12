@@ -275,7 +275,10 @@ def sondage_form():
             #remove any empty string
             choix = list(filter(None, choix.split("/")))
             # tries to not transmit XSS
-            choix = [db.sanitize(c,text=True) for c in choix][:10]
+            choix = [db.sanitize(c,text=True) for c in choix]
+            choix = choix[:10] if len(choix) > 10 else choix
+            
+            post_header = post_header[:1500] if len(post_header) > 1500 else post_header
             
             if (len(choix) == 1) and (post_type=="sondage"):
                 return render_template("page_message.html",message="Veuillez remplir le champ des choix comme ceci : choix1/choix2/choix3....",texte_btn="Refaire le sondage",btn_url="/creer_sondage")
