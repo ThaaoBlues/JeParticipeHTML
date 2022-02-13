@@ -255,7 +255,7 @@ def sondage_form():
     
     if request.method == "GET":
         return render_template("create_post.html",username=current_user.name,user_agent=str(request.user_agent))
-    
+     
     
     elif request.method == "POST":
         
