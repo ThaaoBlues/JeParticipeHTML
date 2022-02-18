@@ -42,8 +42,8 @@ app.secret_key = "".join(choices("1234567890°+AZERTYUIOP¨£µQSDFGHJKLM%WXCVBN
 
 
 blueprint = make_google_blueprint(
-    client_id="70544792963-f5cguhvv1nr4rm4c4ka4e1k7cmu6vnut.apps.googleusercontent.com",
-    client_secret="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",
+    client_id="XXX",
+    client_secret="XXX",
     scope=["email","profile"]
 )
 app.register_blueprint(blueprint, url_prefix="/google_login")
