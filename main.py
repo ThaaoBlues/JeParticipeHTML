@@ -11,7 +11,7 @@ from time import sleep
 from multiprocessing import Process, freeze_support
 from os import remove
 from re import match
-
+from flask_dance.contrib.google import make_google_blueprint, google
 
 # csrf protection
 from flask_wtf.csrf import CSRFProtect
@@ -25,14 +25,28 @@ db = database_handler.DataBase()
 app.config["DOWNLOAD_FOLDER"] = "./static/downloads"
 app.config['CUSTOM_LOGO_PATH'] = "./logo"
 
+# Somewhere in webapp_example.py, before the app.run for example
+import os 
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = '1'
+
 # sessions and login manager stuff
 
 login_manager = LoginManager()
 
 login_manager.init_app(app)
 
+
 app.secret_key = "".join(choices("1234567890°+AZERTYUIOP¨£µQSDFGHJKLM%WXCVBN?./§<>azertyuiopqsdfghjklmwxcvbn",k=1024))
 
+
+
+blueprint = make_google_blueprint(
+    client_id="XXX",
+    client_secret="XXX",
+    scope=["email","profile"]
+)
+app.register_blueprint(blueprint, url_prefix="/google_login")
 
 csrf = CSRFProtect(app)
 
@@ -41,11 +55,14 @@ csrf = CSRFProtect(app)
 class User(UserMixin):
     
     
-    def __init__(self, name="[anonymous]", id=0, active=True,gender="autre"):
+    def __init__(self, name="[anonymous]", id=0, active=True,gender="autre",oauth=False):
         self.name = name
         self.id = int(id)
         self.active = active
         self.gender = gender
+        self.is_from_oauth = oauth
+        print(f"instancie Users avec oauth = {oauth}")
+
 
     def is_active(self):
         # Here you should write whatever the code is
@@ -62,19 +79,20 @@ class User(UserMixin):
     def get_id(self):
         return self.id
 
+
 @login_manager.user_loader
 def user_loader(user_id):
     
     # prevent multiples refresh from one ip to make server crash
     while True:
         try:
-            user = User(name=db.get_user_name(user_id),id=user_id,gender=db.get_gender(user_id))
+            user = User(name=db.get_user_name(user_id),id=user_id,gender=db.get_gender(user_id),oauth=db.is_from_oauth(user_id))
             return user
+
         except Exception as e:
             print("exception",e)
             
             sleep(2)
-
 
         
         
@@ -85,7 +103,10 @@ def unauthorized_handler():
 @app.route("/")
 def accueil():
     
-    return redirect(url_for("login"))
+    if not google.authorized:
+        return redirect(url_for("login"))
+    else:
+        return redirect("/google_login")
 
 @app.route("/a-propos")
 def a_propos():
@@ -105,29 +126,73 @@ def login():
     
     elif(request.form.get('username',default=None) != None ) and (request.form.get('password',default=None) != None):
     
-        if request.form.get('username',default=None) != None:
-            
-            
-            username = db.sanitize(request.form.get('username'))
+        
+        
+        username = db.sanitize(request.form.get('username'))
 
-            if (not db.username_exists(username)) or (username == "anonyme"):
-                return redirect(url_for("login"))
-            
-            user_id = db.get_user_id(username,request.form.get('password'))
-            
-            if user_id == None:
-                return redirect(url_for("login"))
-            
-            is_auth = sha256_crypt.verify(request.form.get('password'),db.get_password(user_id))
+        if (not db.username_exists(username)) or (username == "anonyme"):
+            return redirect(url_for("login"))
+        
+        user_id = db.get_user_id(username,request.form.get('password'))
+        
+        if db.is_from_oauth(user_id):
+            return redirect(url_for("login"))
+        
+        if user_id == None:
+            return redirect(url_for("login"))
+        
+        is_auth = sha256_crypt.verify(request.form.get('password'),db.get_password(user_id))
 
-            if is_auth:
-                user = User(name=username,id=user_id,gender=db.get_gender(user_id)) 
-                login_user(user,remember=True)
-            
-            return redirect(url_for('home'))
+        if is_auth:
+            user = User(name=username,id=user_id,gender=db.get_gender(user_id)) 
+            login_user(user,remember=True)
+        
+        return redirect(url_for('home'))
 
     else:
         return redirect(url_for("login"))
+
+
+@app.route("/google_login",methods=["GET","POST"])
+def google_login():
+    
+    
+    if not google.authorized:
+        return redirect(url_for("google.login"))
+    
+    resp = google.get("/oauth2/v2/userinfo")
+    
+    if not resp.ok:
+        redirect("/login")
+    else:
+        username = resp.json()["name"].replace(" ","_")
+        email = resp.json()["email"]
+        pp_url = resp.json()["picture"]
+
+        
+    if (username == "anonyme"):
+        return redirect(url_for("login"))
+    
+    elif (not db.email_exists(email)): #register google user        
+        
+        email = db.sanitize(resp.json()["email"],text=True)
+
+        # random big-ass password
+        password = "".join(choices("1234567890°+AZERTYUIOP¨£µQSDFGHJKLM%WXCVBN?./§<>azertyuiopqsdfghjklmwxcvbn",k=1024))
+        # hash it like it was the last
+        password=sha256_crypt.hash(password)
+        #register the user
+        user_id = db.register_user(username=username,email=email,gender="autre",password=password,pp_url=pp_url,is_from_oauth=True)
+    
+    else: # user exists, log him in
+        
+        user_id = db.get_user_id_from_email(email)
+        
+    # now that we are sure the user is registered, log him in
+    
+    user = User(name=username,id=user_id,gender=db.get_gender(user_id),oauth=True) 
+    login_user(user,remember=True)
+    return redirect("/home")
 
 
 @app.route('/partage',methods=["GET","POST"])
@@ -295,6 +360,18 @@ def sondage_form():
 @app.route('/logout')
 @login_required
 def logout():
+    
+    
+    if current_user.is_from_oauth:
+        token = blueprint.token["access_token"]
+        resp = google.post(
+            "https://accounts.google.com/o/oauth2/revoke",
+            params={"token": token},
+            headers={"Content-Type": "application/x-www-form-urlencoded"}
+        )
+        
+        del blueprint.token
+    
     logout_user()
     return redirect("/")
 
