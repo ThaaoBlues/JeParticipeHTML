@@ -61,12 +61,10 @@ class User(UserMixin):
         self.active = active
         self.gender = gender
         self.is_from_oauth = oauth
-        print(f"instancie Users avec oauth = {oauth}")
 
 
     def is_active(self):
-        # Here you should write whatever the code is
-        # that checks the database if your user is active
+
         return self.active
 
     def is_anonymous(self):
@@ -659,8 +657,9 @@ def edit_profil():
             with open(f"static/users_profile_md/{current_user.id}.md","r") as f:
                 md = f.read()
                 f.close()
-            
-            return render_template("profile_settings.html",md=md,username=current_user.name,user_id=current_user.id,is_private=db.is_private(current_user.id),email=db.get_email(current_user.id),pp_url=db.get_pp_url(current_user.id),user_agent=str(request.user_agent))
+                
+            print(db.get_user_info(current_user.id))
+            return render_template("profile_settings.html",md=md,username=current_user.name,profil=db.get_user_info(current_user.id),user_agent=str(request.user_agent))
         
         elif request.method == "POST":
             
@@ -697,6 +696,19 @@ def edit_profil():
                 db.update_email(current_user.id,email)
             else:
                 return jsonify({"error":"no email in form"})
+            
+            
+            password = request.form.get("password",type=str,default="")
+            
+            if password != "":
+                db.update_password(current_user.id,password)
+                
+                
+            gender = request.form.get("gender",type=str,default=current_user.gender)
+            
+            if (gender != current_user.gender) and (gender in db.gender_types):
+                db.update_gender(current_user.id)
+                
         
             return redirect("edit_profil")
 

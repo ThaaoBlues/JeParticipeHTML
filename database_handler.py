@@ -691,7 +691,12 @@ class DataBase:
             dict: [description]
         """
         with closing(self.connector.cursor()) as cursor:
-            return dict(cursor.execute("SELECT username,user_id,type,is_verified FROM USERS WHERE user_id=?",(user_id,)).fetchone())
+            info = dict(cursor.execute("SELECT username,user_id,type,is_verified,email,pp_url,gender,is_private FROM USERS WHERE user_id=?",(user_id,)).fetchone())
+            info["email"] = self.unsanitize(info["email"])
+            info["pp_url"] = self.unsanitize(info["pp_url"])
+            
+            
+            return info
 
     def get_follow_requests(self,user_id:int)->list:
         
@@ -884,3 +889,21 @@ class DataBase:
                 database[table] = [dict(row) for row in t_content]
                 
             return database
+        
+        
+    def update_password(self,user_id:int,password:str):
+        
+        password = sha256_crypt.hash(password)
+        
+        with closing(self.connector.cursor()) as cursor:
+            
+            cursor.execute("UPDATE USERS SET password=? WHERE user_id=?",(password,user_id))
+            self.connector.commit()
+            
+            
+    def update_gender(self,user_id:int,gender:str):
+                
+        with closing(self.connector.cursor()) as cursor:
+            
+            cursor.execute("UPDATE USERS SET gender=? WHERE user_id=?",(gender,user_id))
+            self.connector.commit()

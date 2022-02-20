@@ -142,25 +142,43 @@
         <div class="row">
 
           <div class="form-check mt-3">
-            <input name="is_private" type="checkbox" class="form-check-input" id="is_private" {%if is_private%}checked{%endif%}/>
+            <input name="is_private" type="checkbox" class="form-check-input" id="is_private" {%if profil['is_private'] == 1%}checked{%endif%}/>
             <label class="form-check-label" for="is_private">Profil privé (Vous aurez à accepter/refuser les demandes d'abonnement)</label>
           </div>
         </div>
 
         <div class="row justify-content-md-center mt-3">
           <label for="email">Adresse email :</label>
-          <input type='email' name='email' id='email' class="email" value="{{email}}" placeholder='Adresse email' pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" required/>
+          <input type='email' name='email' id='email' class="email" value="{{profil['email']}}" placeholder='Adresse email' pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" required/>
           <div id="emailHelp" class="form-text">Uniquement utilisée pour vous contacter si vous participez à un tirage au sort.</div>
         </div>
         <div class="row justify-content-md-center mt-3">
-          <label for="email">Photo de profil :</label>
-          <input type='url' name='pp_url' id='pp_url' class="url" value="{{pp_url}}" placeholder='http://...image.jpg' pattern="https?:\/\/.*\.(jpg|jpeg|gif|png|tiff|bmp)(\?(.*))?" required/>
-          <div id="emailHelp" class="form-text">Pour embellir votre profil ;)</div>
+          <label for="pp_url">Photo de profil :</label>
+          <input type='url' name='pp_url' id='pp_url' class="url" value="{{profil['pp_url']}}" placeholder='http://...image.jpg' pattern="https?:\/\/.*\.(jpg|jpeg|gif|png|tiff|bmp)(\?(.*))?" required/>
+          <div id="pp_helper" class="form-text">Pour embellir votre profil ;)</div>
         </div>
+
+        <div class="row justify-content-md-center mt-3">
+          <label for="genre">Genre :</label>
+    
+          <select name="genre" id="genre" class="form-control-primary form-control-sm" required>
+
+            <option selected hidden>{{profil["gender"]}}</option>
+            <option>Homme</option>
+            <option>Femme</option>
+            <option>Non genre</option>
+            <option>Genre fluide</option>
+            <option>Autre</option>
+            <option>Personne morale</option>
+          </select>
+          <div id="gender_helper" class="form-text"> </div>
+        </div>
+
+
 
         <div class="row">
           <div class="col my-3">
-            <a href="/profil?user_id={{user_id}}" class="btn btn-primary float-end">Prévisualiser mon profil</a>
+            <a href="/profil?user_id={{profil['user_id']}}" class="btn btn-primary float-end">Prévisualiser mon profil</a>
           </div>
             <h4 id="edit_desc_title">Editez la description de votre profil !</h4>
             <label for="edit_desc_title">Langage MARKDOWN et balises HTML basiques supportées</label>
@@ -168,21 +186,38 @@
 
         <div class="row mt-3">
           <textarea name="profile_desc" class="form-control textarea-autosize">{{ md }}</textarea>
-          <div class="row mt-3">
-            <div class="text-center">
-              <input type="submit" class="btn-lg btn-success ms-4 h-20" value="Mettre à jour le profil">
-            </div>
+        </div>
+
+
+        <div class="row justify-content-md-center mt-3">
+
+          <button class="btn btn-warning mt-3" style="pointer-events: none;"><i class="bi bi-radioactive me-3"></i>ZONE DANGEREUSE</button>
+          <label for="password" class="mt-4">Changer son mot de passe :</label>
+          <input type='password' name='password' id='password' class="password" placeholder="Entrez votre futur mot de passe ici."/>
+          <div id="pw_helper" class="form-text">Faite une phrase ponctuée et intégrez y des chiffres, + simple à retenir et sécurisé ;)</div>
+        </div>
+
+
+        <div class="row mt-5">
+          <div class="text-center">
+            <input type="submit" class="btn-lg btn-success ms-4 h-20" value="Mettre à jour le profil">
           </div>
         </div>
 
 
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
+
       </form>
 
+
+
+
       <div class="row mt-5 text-center">
+        <button class="btn btn-danger mt-4" style="pointer-events: none;"><i class="bi bi-radioactive me-3"></i>ZONE ENCORE PLUS DANGEREUSE</button>
+
         <form onSubmit="submit_form({},'action/delete_account');return false">
-          <button class="btn btn-danger" type="submit">SUPPRIMER MON COMPTE</button>
+          <button class="btn btn-danger mt-4" type="submit">SUPPRIMER MON COMPTE</button>
 
         </form>
       </div>
