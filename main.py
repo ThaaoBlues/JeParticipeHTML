@@ -939,9 +939,6 @@ def remove_zip(filename):
     remove(f"static/downloads/{filename}")
 
 
-
-
-
 if __name__ == "__main__":
     
     freeze_support()
