@@ -658,7 +658,6 @@ def edit_profil():
                 md = f.read()
                 f.close()
                 
-            print(db.get_user_info(current_user.id))
             return render_template("profile_settings.html",md=md,username=current_user.name,profil=db.get_user_info(current_user.id),user_agent=str(request.user_agent))
         
         elif request.method == "POST":
