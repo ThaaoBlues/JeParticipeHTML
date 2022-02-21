@@ -1,3 +1,4 @@
+from itsdangerous import json
 from post import Post
 from passlib.handlers.sha2_crypt import sha256_crypt
 from flask import Flask,url_for, render_template,request,redirect,send_from_directory,jsonify
@@ -13,6 +14,7 @@ from os import remove
 from re import match
 from flask_dance.contrib.google import make_google_blueprint, google
 from json import loads
+from werkzeug import security
 
 # csrf protection
 from flask_wtf.csrf import CSRFProtect
@@ -933,6 +935,22 @@ def app_manifest():
         json = loads(f.read())
 
     return jsonify(json)
+
+#edge app service workers
+@app.route("/pwa/<path:file>")
+def app_workers(file):
+    
+    file = security.safe_join("pwa",file)
+    
+    if path.exists(file):
+        with open(file,"r") as f:
+            worker_js = f.read()
+            
+        return worker_js
+    else:
+        return jsonify({"error":"don't try digging everywhere, your dad would be upset you know."}) 
+
+
 @app.errorhandler(404)
 def page_not_found(error):
     return redirect(url_for("home"))
