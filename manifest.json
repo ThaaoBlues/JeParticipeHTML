@@ -1,0 +1,16 @@
+{
+    "name": "JeParticipe",
+    "lang": "fr-FR",
+    "short_name": "JeParticipe",
+    "description": "La meilleure plateforme de sondage et tirages au sort !",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "any",
+    "icons": [
+        {
+            "src": "/logo/512x512.png",
+            "sizes": "512x512"
+        }
+    ]
+}

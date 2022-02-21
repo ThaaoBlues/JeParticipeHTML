@@ -929,7 +929,7 @@ def custom_static(filename):
 @app.route("/manifest.json")
 def app_manifest():
     
-    with open("static/manifest.json","r") as f:
+    with open("manifest.json","r") as f:
         json = loads(f.read())
 
     return jsonify(json)
