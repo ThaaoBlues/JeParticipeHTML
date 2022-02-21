@@ -12,6 +12,7 @@ from multiprocessing import Process, freeze_support
 from os import remove
 from re import match
 from flask_dance.contrib.google import make_google_blueprint, google
+from json import loads
 
 # csrf protection
 from flask_wtf.csrf import CSRFProtect
@@ -924,6 +925,14 @@ def favicon():
 def custom_static(filename):
     return send_from_directory(app.config['CUSTOM_LOGO_PATH'], filename)
 
+#edge app manifest.json
+@app.route("/manifest.json")
+def app_manifest():
+    
+    with open("static/manifest.json","r") as f:
+        json = loads(f.read())
+
+    return jsonify(json)
 @app.errorhandler(404)
 def page_not_found(error):
     return redirect(url_for("home"))
