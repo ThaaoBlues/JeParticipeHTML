@@ -575,23 +575,28 @@ def parametres_sondage():
         # check if every params are not None, if post belongs to the current user, if each choice belongs to the right post and if post exists
         if (choix != None) and (post_header != None) and (anon_votes != None) and (choix_ids != "") and (archive != None) and (db.post_exists(post_id)) and (owner_id == current_user.id):
             
-            #remove any empty string
-            choix = list(filter(None, choix.split("/")))              
             
-            if (len(choix) == 1) and (post_type=="sondage"):
-                return render_template("page_message.html",message="Veuillez remplir le champ des choix comme ceci : choix1/choix2/choix3....",texte_btn="Refaire le sondage",btn_url=request.url)
+            if (post_type=="sondage"):
+                #remove any empty string
+                choix = list(filter(None, choix.split("/")))              
+                
+                if (len(choix) == 1):
+                    return render_template("page_message.html",message="Veuillez remplir le champ des choix comme ceci : choix1/choix2/choix3....",texte_btn="Refaire le sondage",btn_url=request.url)
 
             #everything is okay
-            else:
-                db.update_anon_votes(post_id,anon_votes)
-                
+            db.update_anon_votes(post_id,anon_votes)
+            
+            if (post_type == "sondage"):
                 for c_id,c_text in zip(choix_ids,choix):
                     db.update_choix(post_id,c_id,c_text)
-                
-                db.update_post_header(post_id,post_header)
-                db.update_post_archive_state(post_id,archive)
+                    
+            else:
+                db.update_choix(post_id,choix_ids[0],choix)
+            
+            db.update_post_header(post_id,post_header)
+            db.update_post_archive_state(post_id,archive)
 
-                return redirect(f"/parametres_publication?owner_id={current_user.id}&post_id={post_id}")
+            return redirect(f"/parametres_publication?owner_id={current_user.id}&post_id={post_id}")
         
         # manque un paramètre de form 
         else:
@@ -940,13 +945,11 @@ def app_manifest():
 @app.route("/pwa/<path:file>")
 def app_workers(file):
     
-    file = security.safe_join("pwa",file)
+    file_path = security.safe_join("pwa",file)
     
-    if path.exists(file):
-        with open(file,"r") as f:
-            worker_js = f.read()
+    if path.exists(file_path):
             
-        return worker_js
+        return send_from_directory("pwa",file)
     else:
         return jsonify({"error":"don't try digging everywhere, your dad would be upset you know."}) 
 
