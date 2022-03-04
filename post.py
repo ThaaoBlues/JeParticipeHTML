@@ -1,6 +1,5 @@
 from base64 import b64decode
 
-
 class Post:
     
     
@@ -11,7 +10,7 @@ class Post:
             header (str): [description]
             choix (list): [description]
         """
-        
+                
         self.header = header
         self.choix = choix
         self.author_id = author_id
@@ -25,6 +24,11 @@ class Post:
         self.archive = archive
         self.type = post_type
         
+        self.votes_count= 0
+        
+    
+    def set_votes_count(self,v_c:int)->int:
+        self.votes_count = v_c
         
     def unsanitize(self,header:bytes)->str:
         

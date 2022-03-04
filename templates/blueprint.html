@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+{% block head%}
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -30,7 +31,11 @@
     <meta property="twitter:image" content="https://jeparticipe.tk:8000/logo/facebook_cover_photo_2.png">
 
 </head>
+{%endblock%}
+
 <body>
+
+  {% block navbar%}
   <style>
     .popout { position: absolute !important;}
   </style>
@@ -134,17 +139,15 @@
 
   {%endif%}
 
-    
-    
-    
-        <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4 container", style="border: 1px;">
-        
-          <form>
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  {%endblock%}
 
-          </form>
-            
-        </div>
+  {% block chronologie%}
+  <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4 container", style="border: 1px;">
+
+  </div>
+    
+  {%endblock%}
+
 
 
 
@@ -153,6 +156,7 @@
 
 </body>
 
+{%block scripts%}
 <script>
 
   function partage_sondage(owner_id,post_id){
@@ -177,27 +181,38 @@
     alert("L'url de partage de la publication a été copiée dans votre presse papier ;)");
   }
 
+    function submit_form(dict,url){
 
-  function submit_form(dict,url){
+      var csrf_token = "{{ csrf_token() }}";
 
-    var csrf_token = "{{ csrf_token() }}";
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader("X-CSRFToken", csrf_token);
+      xhr.send(JSON.stringify(dict));
+      
+      setTimeout(function() {document.location.reload(true);},100);
+    }
 
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", url, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader("X-CSRFToken", csrf_token);
-    xhr.send(JSON.stringify(dict));
-    
-    setTimeout(function() {document.location.reload(true);},100);
-  }
 </script>
+{%endblock%}
 
-
+{%block style%}
 <style>
+
   .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited, .btn-outline-primary {
-    background-color: blueviolet !important;
-    border-color: blueviolet;
-}
-</style>
+      background-color: blueviolet !important;
+      border-color: blueviolet;
+      color: white;
+  }
+  
+  .btn-blue, .btn-blue:hover, .btn-blue:active, .btn-blue:visited, .btn-outline-blue {
+    background-color: rgb(43, 107, 226) !important;
+    border-color: rgb(43, 107, 226);
+    color: white;
+  }
+  
+  </style>
+{%endblock%}
 
 </html>

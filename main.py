@@ -136,6 +136,9 @@ def login():
         
         user_id = db.get_user_id(username,request.form.get('password'))
         
+        if user_id == None:
+            return redirect("/login")
+        
         if db.is_from_oauth(user_id):
             return redirect(url_for("login"))
         

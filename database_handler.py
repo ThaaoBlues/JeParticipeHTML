@@ -247,7 +247,8 @@ class DataBase:
         # make Post objects and gather all missing data
         for i in range(len(posts)):
             posts[i] = Post(self.unsanitize(posts[i]["header"]),posts[i]["choix"],self.get_user_name(posts[i]["owner_id"]),posts[i]["owner_id"],results=self.get_results(posts[i]["post_id"]),vote=self.has_already_voted(user_id,posts[i]["post_id"]),id=posts[i]["post_id"],stats=self.get_post_stats(posts[i]["post_id"]),archive=posts[i]["archived"],post_type=posts[i]["publication_type"])
-        
+
+            posts[i].set_votes_count(self.get_post_votes_count(posts[i].id))
         
         
         return posts
@@ -866,6 +867,7 @@ class DataBase:
     def is_from_oauth(self,user_id:int):
         """_summary_
         """
+        print(user_id)
         with closing(self.connector.cursor()) as cursor:
             tmp = cursor.execute("SELECT is_from_oauth FROM USERS WHERE user_id=?",(user_id,)).fetchone()
             
@@ -907,3 +909,15 @@ class DataBase:
             
             cursor.execute("UPDATE USERS SET gender=? WHERE user_id=?",(gender,user_id))
             self.connector.commit()
+            
+            
+            
+    def get_post_votes_count(self,post_id:int)->int:
+        
+        with closing(self.connector.cursor()) as cursor:
+            
+            tmp = [dict(row) for row in cursor.execute("SELECT votes FROM CHOIX WHERE post_id=?",(post_id,)).fetchall()]
+            
+            return sum([ele["votes"] for ele in tmp])
+        
+        
