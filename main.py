@@ -925,6 +925,17 @@ def action(action):
             return jsonify({"erreur","requête mal formée"})
 
 
+
+@app.route("/conditions")
+def terms_and_conditions():
+    
+    return render_template("terms_and_conditions.html")
+
+@app.route("/confidentialite")
+def privacy_policy():
+    
+    return render_template("privacy_policy.html")
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(path.join(app.root_path,"logo"),'favicon.png', mimetype='image/vnd.microsoft.icon')

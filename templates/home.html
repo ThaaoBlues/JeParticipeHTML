@@ -1,16 +1,13 @@
 
 <!DOCTYPE html>
-<html lang="en">
-{% extends "blueprint.html"%}
+<html lang="fr">
 
-{%block head%}
-{{super()}}
-{%endblock%}
+{%extends "blueprint.html"%}
 
 <body>
 
-  {%block navbar%}
-  {{super()}}
+
+  {%block navbar_nologin%}
   {%endblock%}
 
   {% block chronologie%}
@@ -97,13 +94,6 @@
     
 </body>
 
-{%block scripts%}
-{{super()}}
-{%endblock%}
-
-{%block style%}
-{{super()}}
-{%endblock%}
 
 
 </html>
