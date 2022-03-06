@@ -182,7 +182,7 @@ def google_login():
     resp = google.get("/oauth2/v2/userinfo")
     
     if not resp.ok:
-        redirect("/login")
+        return redirect("/login")
     else:
         username = resp.json()["name"].replace(" ","_")
         email = resp.json()["email"]
@@ -195,11 +195,20 @@ def google_login():
     elif (not db.email_exists(email)): #register google user        
         
         email = db.sanitize(resp.json()["email"],text=True)
-
+        
+        
         # random big-ass password
-        password = "".join(choices("1234567890°+AZERTYUIOP¨£µQSDFGHJKLM%WXCVBN?./§<>azertyuiopqsdfghjklmwxcvbn",k=1024))
+        #password = "".join(choices("1234567890°+AZERTYUIOP¨£µQSDFGHJKLM%WXCVBN?./§<>azertyuiopqsdfghjklmwxcvbn",k=1024))
+        
+        #my sever only has 512mo of ram SOOO
+        password = "a"
+        #don't worry password login for oauth users is disabled
+        
         # hash it like it was the last
         password=sha256_crypt.hash(password)
+        
+        
+        
         #register the user
         user_id = db.register_user(username=username,email=email,gender="autre",password=password,pp_url=pp_url,is_from_oauth=True)
     
@@ -225,7 +234,7 @@ def discord_login():
     resp = discord.get("api/users/@me",params={"token":token})
     
     if not resp.ok:
-        redirect("/login")
+        return redirect("/login")
     else:
         resp = resp.json()
         username = resp["username"].replace(" ","_")
@@ -240,12 +249,20 @@ def discord_login():
     
     elif (not db.email_exists(email)): #register discord user        
         
-        email = db.sanitize(resp["email"],text=True)
+        email = db.sanitize(email,text=True)
 
         # random big-ass password
-        password = "".join(choices("1234567890°+AZERTYUIOP¨£µQSDFGHJKLM%WXCVBN?./§<>azertyuiopqsdfghjklmwxcvbn",k=1024))
+        #password = "".join(choices("1234567890°+AZERTYUIOP¨£µQSDFGHJKLM%WXCVBN?./§<>azertyuiopqsdfghjklmwxcvbn",k=1024))
+        
+        #my sever only has 512mo of ram SOOO
+        password = "a"
+        #don't worry password login for oauth users is disabled
+        
         # hash it like it was the last
         password=sha256_crypt.hash(password)
+        
+
+        
         #register the user
         user_id = db.register_user(username=username,email=email,pp_url=pp_url,gender="autre",password=password,is_from_oauth=True)
     
