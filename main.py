@@ -13,8 +13,10 @@ from multiprocessing import Process, freeze_support
 from os import remove
 from re import match
 from flask_dance.contrib.google import make_google_blueprint, google
+from flask_dance.contrib.discord import make_discord_blueprint, discord
 from json import loads
 from werkzeug import security
+from requests import get
 
 # csrf protection
 from flask_wtf.csrf import CSRFProtect
@@ -44,12 +46,25 @@ app.secret_key = "".join(choices("1234567890°+AZERTYUIOP¨£µQSDFGHJKLM%WXCVBN
 
 
 
-blueprint = make_google_blueprint(
+google_blueprint = make_google_blueprint(
     client_id="XXX",
     client_secret="XXX",
     scope=["email","profile"]
 )
-app.register_blueprint(blueprint, url_prefix="/google_login")
+
+
+discord_blueprint = make_discord_blueprint(
+    client_id="XXX",
+    client_secret="XXX",
+    redirect_url="/discord_login",
+    authorized_url="/authorized",
+    scope=["email","identify"]
+
+
+)
+app.register_blueprint(google_blueprint, url_prefix="/google_login")
+app.register_blueprint(discord_blueprint, url_prefix="/discord_login")
+
 
 csrf = CSRFProtect(app)
 
@@ -187,6 +202,52 @@ def google_login():
         password=sha256_crypt.hash(password)
         #register the user
         user_id = db.register_user(username=username,email=email,gender="autre",password=password,pp_url=pp_url,is_from_oauth=True)
+    
+    else: # user exists, log him in
+        
+        user_id = db.get_user_id_from_email(email)
+        
+    # now that we are sure the user is registered, log him in
+    
+    user = User(name=username,id=user_id,gender=db.get_gender(user_id),oauth=True) 
+    login_user(user,remember=True)
+    return redirect("/home")
+
+
+@app.route("/discord_login",methods=["GET","POST"])
+def discord_login():
+    
+    
+    if not discord.authorized:
+        return redirect(url_for("discord.login"))
+    
+    token = discord_blueprint.token["access_token"]
+    resp = discord.get("api/users/@me",params={"token":token})
+    
+    if not resp.ok:
+        redirect("/login")
+    else:
+        resp = resp.json()
+        username = resp["username"].replace(" ","_")
+        email = resp["email"]
+    
+    pp_url = f"http://cdn.discordapp.com/avatars/{resp['id']}/{resp['avatar']}.png"
+
+
+        
+    if (username == "anonyme"):
+        return redirect(url_for("login"))
+    
+    elif (not db.email_exists(email)): #register discord user        
+        
+        email = db.sanitize(resp["email"],text=True)
+
+        # random big-ass password
+        password = "".join(choices("1234567890°+AZERTYUIOP¨£µQSDFGHJKLM%WXCVBN?./§<>azertyuiopqsdfghjklmwxcvbn",k=1024))
+        # hash it like it was the last
+        password=sha256_crypt.hash(password)
+        #register the user
+        user_id = db.register_user(username=username,email=email,pp_url=pp_url,gender="autre",password=password,is_from_oauth=True)
     
     else: # user exists, log him in
         
@@ -367,14 +428,26 @@ def logout():
     
     
     if current_user.is_from_oauth:
-        token = blueprint.token["access_token"]
-        resp = google.post(
-            "https://accounts.google.com/o/oauth2/revoke",
-            params={"token": token},
-            headers={"Content-Type": "application/x-www-form-urlencoded"}
-        )
         
-        del blueprint.token
+        if google.authorized:
+            token = google_blueprint.token["access_token"]
+            resp = google.post(
+                "https://accounts.google.com/o/oauth2/revoke",
+                params={"token": token},
+                headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
+            
+            del google_blueprint.token
+        
+        if discord.authorized:
+            token = discord_blueprint.token["access_token"]
+            resp = discord.post(
+                "https://discord.com/api/oauth2/token/revoke",
+                params={"token": token},
+                headers={"Content-Type": "application/x-www-form-urlencoded"}
+            )
+            
+            del discord_blueprint.token
     
     logout_user()
     return redirect("/")
