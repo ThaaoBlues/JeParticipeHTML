@@ -415,7 +415,6 @@ def sondage_form():
         except ValueError:
             return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
 
-        print(choix,post_header,post_type,anon_votes)
         
         if (choix != None) and (post_header != None) and (anon_votes != None) and (post_type in db.publication_types):
             
