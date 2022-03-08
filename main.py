@@ -59,9 +59,8 @@ discord_blueprint = make_discord_blueprint(
     redirect_url="/discord_login",
     authorized_url="/authorized",
     scope=["email","identify"]
-
-
 )
+
 app.register_blueprint(google_blueprint, url_prefix="/google_login")
 app.register_blueprint(discord_blueprint, url_prefix="/discord_login")
 
