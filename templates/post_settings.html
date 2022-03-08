@@ -11,7 +11,7 @@
   <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4", style="border: 1px;">
 
     <div class="row mx-3 justify-content-md-center">
-      <form action="parametres_publication" class="col-md-auto" method="POST" style="width: auto;  min-width: 350px;">
+      <form action="parametres_publication" class="col-md-auto" method="POST" style="width: auto;  {%if user_agent == "JeParticipe-app"%}300px;{%else%}350px;{%endif%}">
 
         <div class="row justify-content-md-center mt-3">
             <textarea name="post_header" id="post_header" type="text" class="form-control textarea-autosize" placeholder="Description/Titre de votre publicartion" required>{{post.header}}</textarea>

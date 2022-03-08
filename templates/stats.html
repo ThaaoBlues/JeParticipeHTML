@@ -113,7 +113,7 @@
 
                 <div class="col-sm-3 mx-5">
 
-                    <div name="post" class="card mt-4 mx-3 w-60" style="width: auto; min-width: 100px;">
+                    <div name="post" class="card mt-4 mx-3 w-60" style="width: auto; min-width: {%if user_agent == "JeParticipe-app"%}300px;{%else%}350px;{%endif%}">
                         
                         <div class="card-header">
                             <a class="bi bi-share-fill mt-2 mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author_id}}',{{post.id}});"></a>

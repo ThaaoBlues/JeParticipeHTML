@@ -24,7 +24,7 @@
         
         {%for post in sondages%}
 
-        <div name="post" class="card mt-4 mx-3" style="width: auto; min-width: 350px;">
+        <div name="post" class="card mt-4 mx-3" style="width: auto; min-width: {%if user_agent == "JeParticipe-app"%}300px;{%else%}350px;{%endif%}">
           <div class="card-header">
             <a class="bi bi-share-fill mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author_id}}',{{post.id}});"></a>
             <a class="bi bi-gear-fill mx-2" style="color: black;" href="/parametres_publication?owner_id={{post.author_id}}&post_id={{post.id}}"></a>
