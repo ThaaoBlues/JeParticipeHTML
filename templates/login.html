@@ -63,13 +63,13 @@
 
   function change_lg(){  
     var ele = document.getElementsByClassName("goog-te-combo")[0];
-    ele.value = navigator.language.split("-")[0];
+    ele.value = "fr";
     triggerHtmlEvent(ele, 'change');
 
 
   }
 
-    setTimeout(change_lg,100)
+    setTimeout(change_lg,1000)
   }
 
 </script>
@@ -82,6 +82,8 @@
     
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
+            <div id="google_translate_element" hidden></div>
+
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
@@ -125,7 +127,7 @@
 
             <div class="row mx-3 justify-content-md-center mt-5">
                 <button class="btn btn-danger" onclick="window.location.href='/google_login'" style="max-width: 350px;" hidden><i class="bi bi-google me-3"></i>Connection avec <b translate="no">Google</b></button>
-                <button class="btn btn-primary" onclick="window.location.href='/discord_login'" style="max-width: 350px;"><i class="bi bi-discord me-3"></i>Connection avec  <b translate="no"> discord</b></button>
+                <button class="btn btn-primary" onclick="window.location.href='/discord_login'" style="max-width: 350px;"><i class="bi bi-discord me-3"></i>Connection avec  <b translate="no"> Discord</b></button>
 
             </div>
 
