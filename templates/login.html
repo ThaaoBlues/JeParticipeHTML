@@ -63,7 +63,7 @@
 
   function change_lg(){  
     var ele = document.getElementsByClassName("goog-te-combo")[0];
-    ele.value = "fr";
+    ele.value = navigator.language;
     triggerHtmlEvent(ele, 'change');
 
 
