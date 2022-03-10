@@ -867,7 +867,6 @@ class DataBase:
     def is_from_oauth(self,user_id:int):
         """_summary_
         """
-        print(user_id)
         with closing(self.connector.cursor()) as cursor:
             tmp = cursor.execute("SELECT is_from_oauth FROM USERS WHERE user_id=?",(user_id,)).fetchone()
             

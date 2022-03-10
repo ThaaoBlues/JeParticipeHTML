@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 {% block head%}
 <head>
     <meta charset="UTF-8">
@@ -31,11 +31,59 @@
     <meta property="twitter:image" content="https://jeparticipe.tk:8000/logo/facebook_cover_photo_2.png">
 
 </head>
+
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script type="text/javascript">
+
+  function googleTranslateElementInit() {
+    var te = new google.translate.TranslateElement({pageLanguage: "fr",
+    layout: google.translate.TranslateElement.InlineLayout.VERTICAL,
+    autoDisplay: true
+  }, 'google_translate_element');
+
+
+
+  function triggerHtmlEvent(element, eventName) {
+    var event;
+    if(document.createEvent) {
+        event = document.createEvent('HTMLEvents');
+        event.initEvent(eventName, true, true);
+        element.dispatchEvent(event);
+    } else {
+        event = document.createEventObject();
+        event.eventType = eventName;
+        element.fireEvent('on' + event.eventType, event);
+    } 
+  
+  }
+
+
+
+
+  function change_lg(){  
+    var ele = document.getElementsByClassName("goog-te-combo")[0];
+    ele.value = navigator.language.split("-")[0];
+    ele.value = "es";
+    triggerHtmlEvent(ele, 'change');
+
+
+  }
+
+    setTimeout(change_lg,100)
+  }
+
+
+
+
+  </script>
+
 {%endblock%}
 
 <body>
 
   {% block navbar_nologin%}
+  <div id="google_translate_element" hidden></div>
+
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,6 +106,7 @@
 
 
   {% block navbar%}
+
   <style>
     .popout { position: absolute !important;}
   </style>
@@ -66,6 +115,8 @@
 
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
+      <div id="google_translate_element" hidden></div>
+
       <ul class="navbar-nav me-2 mb-2 mb-lg-0">
         <li class="nav-item dropdown ms-4">
           <a class="dropdown-toggle btn btn-primary ms-5 mt-2" style="color: white; width:70%;min-width:200px" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -114,6 +165,8 @@
   {%else%}
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
+      <div id="google_translate_element" hidden></div>
+
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -180,6 +233,9 @@
 {%block scripts%}
 <script>
 
+
+
+
   function partage_sondage(owner_id,post_id){
 
     try{
@@ -215,6 +271,9 @@
       setTimeout(function() {document.location.reload(true);},100);
     }
 
+
+
+
 </script>
 {%endblock%}
 
@@ -232,8 +291,15 @@
     border-color: rgb(43, 107, 226);
     color: white;
   }
-  
+  .goog-te-banner-frame.skiptranslate {
+    display: none !important;
+    } 
+  body {
+    top: 0px !important; 
+    }
   </style>
+
+
 {%endblock%}
 
 </html>

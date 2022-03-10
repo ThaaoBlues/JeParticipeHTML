@@ -29,9 +29,57 @@
     <meta property="twitter:title" content="JeParticipe">
     <meta property="twitter:description" content="Demandez l'opinion des gens facilement !">
     <meta property="twitter:image" content="https://jeparticipe.tk:8000/logo/facebook_cover_photo_2.png">
+
+
+
+
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script type="text/javascript">
+
+  function googleTranslateElementInit() {
+    var te = new google.translate.TranslateElement({pageLanguage: "fr",
+    layout: google.translate.TranslateElement.InlineLayout.VERTICAL,
+    autoDisplay: true
+  }, 'google_translate_element');
+
+
+
+  function triggerHtmlEvent(element, eventName) {
+    var event;
+    if(document.createEvent) {
+        event = document.createEvent('HTMLEvents');
+        event.initEvent(eventName, true, true);
+        element.dispatchEvent(event);
+    } else {
+        event = document.createEventObject();
+        event.eventType = eventName;
+        element.fireEvent('on' + event.eventType, event);
+    } 
+  
+  }
+
+
+
+
+  function change_lg(){  
+    var ele = document.getElementsByClassName("goog-te-combo")[0];
+    ele.value = navigator.language.split("-")[0];
+    triggerHtmlEvent(ele, 'change');
+
+
+  }
+
+    setTimeout(change_lg,100)
+  }
+
+</script>
+
 </head>
 <body>
 
+
+
+    
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,8 +124,8 @@
             </div>
 
             <div class="row mx-3 justify-content-md-center mt-5">
-                <button class="btn btn-danger" onclick="window.location.href='/google_login'" style="max-width: 350px;" hidden><i class="bi bi-google me-3"></i>Connection avec <b>Google</b></button>
-                <button class="btn btn-primary" onclick="window.location.href='/discord_login'" style="max-width: 350px;"><i class="bi bi-discord me-3"></i>Connection avec <b>discord</b></button>
+                <button class="btn btn-danger" onclick="window.location.href='/google_login'" style="max-width: 350px;" hidden><i class="bi bi-google me-3"></i>Connection avec <b translate="no">Google</b></button>
+                <button class="btn btn-primary" onclick="window.location.href='/discord_login'" style="max-width: 350px;"><i class="bi bi-discord me-3"></i>Connection avec  <b translate="no"> discord</b></button>
 
             </div>
 
@@ -157,6 +205,12 @@
             width: 100px; 
             height: 100px;
         }
+        .goog-te-banner-frame.skiptranslate {
+            display: none !important;
+            } 
+          body {
+            top: 0px !important; 
+            }
     </style>
 
     <script>
