@@ -49,6 +49,8 @@ app.secret_key = "".join(choices("1234567890°+AZERTYUIOP¨£µQSDFGHJKLM%WXCVBN
 google_blueprint = make_google_blueprint(
     client_id="XXX",
     client_secret="XXX",
+    redirect_url="/google_login",
+    authorized_url="/authorized",
     scope=["email","profile"]
 )
 
@@ -118,10 +120,8 @@ def unauthorized_handler():
 @app.route("/")
 def accueil():
     
-    if not google.authorized:
-        return redirect(url_for("login"))
-    else:
-        return redirect("/google_login")
+    return redirect(url_for("login"))
+
 
 @app.route("/a-propos")
 def a_propos():
