@@ -149,7 +149,10 @@
         <span class="bi bi-search" ></span>
       </button>
 
-      
+      {%if request != "tendances"%}
+      <button class="btn btn-primary mx-3" onclick="document.location.href='/tendances'"><i class="bi bi-graph-up-arrow"> </i>Tendances</button>
+      {%endif%}
+
       <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
 
         <form class="d-flex" action="recherche" method="GET">
@@ -202,9 +205,11 @@
   
           </li>
         </ul>
-
-
-        <form class="d-flex" action="recherche" method="GET">
+        
+        {%if request.endpoint != "tendances"%}
+        <button class="btn btn-primary mx-3" onclick="document.location.href='/tendances'"><i class="bi bi-graph-up-arrow"> </i>Tendances</button>
+        {%endif%}
+        <form class="d-flex mt-2" action="recherche" method="GET">
           <input class="form-control me-2 mb-2" type="search" placeholder="Recherche" aria-label="Search" name="req">
           <button class="btn btn-outline-success mb-2" type="submit">Recherche</button>
         </form>

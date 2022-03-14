@@ -920,9 +920,39 @@ class DataBase:
             return sum([ele["votes"] for ele in tmp])
         
         
-    def get_trend(self):
+    def get_trend(self,user_id:int):
         
         
         with closing(self.connector.cursor()) as cursor:
             
-            cursor.execute("SELECT * FROM POSTS ORDER BY post_date ASC")
+            tmp = [dict(row) for row in cursor.execute("SELECT * FROM POSTS WHERE archived=? ORDER BY post_date DESC",(False,)).fetchall()[:100]]
+            
+            
+            #add votes count and delete posts from private users
+            for i in range(len(tmp)):
+                if not self.is_private(tmp[i]["owner_id"]):
+                    tmp[i]["votes"] = self.get_post_votes_count(tmp[i]["post_id"])
+                else:
+                    tmp.pop(i)
+            # sort by votes count
+            for i in range(len(tmp)):
+                
+                post = tmp[i]
+                
+                
+                j = i
+                
+                
+                while j>0 and tmp[j-1]["votes"]>post["votes"]:
+                    tmp[j] = tmp[j-1]
+                    
+                    j -=1
+                    
+            
+            for i in range(len(tmp)):
+                choix = [dict(row)["choix"] for row in cursor.execute("SELECT choix FROM CHOIX WHERE post_id=?",(tmp[i]["post_id"],)).fetchall()]
+                tmp[i]["choix"] = [self.unsanitize(c) for c in choix]
+                
+                tmp[i] = Post(self.unsanitize(tmp[i]["header"]),tmp[i]["choix"],self.get_user_name(tmp[i]["owner_id"]),tmp[i]["owner_id"],results=self.get_results(tmp[i]["post_id"]),vote=self.has_already_voted(user_id,tmp[i]["post_id"]),id=tmp[i]["post_id"],stats=self.get_post_stats(tmp[i]["post_id"]),archive=tmp[i]["archived"],post_type=tmp[i]["publication_type"])
+            
+            return tmp

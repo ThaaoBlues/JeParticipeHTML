@@ -1,0 +1,12 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "jeparticipe-test",
+            "group": "jeparticipe",
+            "database": "${workspaceFolder:JeParticipeHTML}/database.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}

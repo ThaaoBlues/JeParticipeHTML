@@ -1015,6 +1015,14 @@ def action(action):
         case _:
             return jsonify({"erreur","requête mal formée"})
 
+@app.route("/tendances")
+@login_required
+def tendances():
+    
+    sondages = db.get_trend(current_user.id)
+    return render_template("trends.html",username = current_user.name,sondages = sondages,user_agent=str(request.user_agent))
+
+
 
 
 @app.route("/conditions")

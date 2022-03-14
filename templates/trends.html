@@ -1,0 +1,87 @@
+
+
+<!DOCTYPE html>
+<html lang="fr">
+{%extends "blueprint.html"%}
+
+
+{%block navbar_nologin%}
+{%endblock%}
+
+<body>
+    {%block chronologie%}
+
+    <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4 container", style="border: 1px;">
+        
+        <div class="card-columns">
+        
+            {%for post in sondages%}
+
+            <div name="post" class="card mt-4 mx-3" style="width: auto; min-width: {%if user_agent == "JeParticipe-app"%}300px;{%else%}350px;{%endif%}">
+                <div class="card-header">
+                    <a class="bi bi-share-fill mx-2" style="color:black;" href="javascript:partage_sondage('{{post.author_id}}',{{post.id}});"></a>
+                {%if post.author == username%}
+                    <button class="btn btn-blue mx-2 btn-sm float-end" onclick="window.location.href='/stats?post_id={{post.id}}'" style="width:fit-content">Stats</button>
+                {%else%}
+                    <button class="btn mx-2 btn-sm float-end" onclick="window.location.href='/profil?user_id={{post.author_id}}'">Publié par {{post.author}}</button>
+                {%endif%}
+                </div>
+
+                <div class="row mx-3 mb-3 justify-content-md-center">
+
+                <div clas="card-body">
+
+                    <p class="text-break text-center mt-2">{{post.header}}</p>
+
+                    <hr>
+                    <ul class="list-group list-group-flush">
+
+                    {%for choix in post.choix%}
+                        {%if (post.vote) and (post.type=="sondage")%}
+                        <a class="btn btn-primary mt-2" style="width:100%;">{{choix}} : {{post.resultats[choix]}}% des votes.</a>
+                        {%elif (post.vote) and (post.type=="tirage")%}
+                        <a class="btn btn-primary mt-2" style="width:100%;">Vous avez déjà partitipé à ce tirage au sort !</a>
+                        {%else%}
+                        <form onSubmit="submit_form({author_id:{{post.author_id}},post_id:{{post.id}} ,choix:'{{choix}}'},'action/add_vote');return false">
+                        <button class="btn btn-primary mt-2" style="width:100%;" type="submit">{{choix}}</button>
+                        </form>
+                        {%endif%}
+                    {%endfor%}
+                    </ul>
+                    {%if post.type=="sondage"%}
+                    <i class="blockquote-footer">pourcentages des {{post.votes_count}} réponses</i>
+                    {%elif post.type == "tirage"%}
+            
+                    <i class="blockquote-footer">{{post.votes_count}} participants</i>
+            
+                    {%endif%}
+                </div>
+                </div>
+            </div> 
+            {%endfor%}
+
+            <!-- entre_posts -->
+            <ins class="adsbygoogle"
+                style="display:block"
+                data-ad-client="ca-pub-1211866699994753"
+                data-ad-slot="1457506612"
+                data-ad-format="auto"
+                data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+            </div>
+                    
+
+
+            </div>
+    
+    
+    </div>
+
+    {%endblock%}
+</body>
+
+
+
+</html>
