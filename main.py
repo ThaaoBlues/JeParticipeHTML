@@ -25,6 +25,9 @@ from flask_wtf.csrf import CSRFProtect
 app = Flask(__name__)
 
 
+#templates auto-update
+app.config["TEMPLATES_AUTO_RELOAD"] = True
+
 db = database_handler.DataBase()
 
 app.config["DOWNLOAD_FOLDER"] = "./static/downloads"

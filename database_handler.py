@@ -34,7 +34,7 @@ class DataBase:
             
             self.register_user(username="anonyme",email=self.sanitize("vote_exterieur",text=True),gender="autre",password="",type="utilisateur")
             self.set_private_status(1,True)
-                    
+                
         # init database writer
         self.connector = sql.connect("database.db",check_same_thread=False)
         self.connector.row_factory = sql.Row
@@ -44,7 +44,7 @@ class DataBase:
             # sanitize entries
             post["header"] = self.sanitize(post["header"],text=True)        
             
-            cursor.execute("INSERT INTO POSTS (owner_id,header,anon_votes,archived,publication_type) values(?,?,?,?,?)",(user_id,post["header"],post["anon_votes"],False,post["publication_type"]))
+            cursor.execute("INSERT INTO POSTS (owner_id,header,anon_votes,archived,publication_type,post_date) values(?,?,?,?,?,DATE('now'))",(user_id,post["header"],post["anon_votes"],False,post["publication_type"]))
             post_id = cursor.lastrowid
             for choix in post["choix"]:
                 cursor.execute("INSERT INTO CHOIX (post_id,choix,owner_id,votes) values(?,?,?,?)",(post_id,choix,user_id,0))
@@ -229,7 +229,7 @@ class DataBase:
        
     def generate_tl(self,user_id:int,self_only=False)->list:
         
-        
+
         # get posts general info as dict
         posts = []
         
@@ -479,7 +479,7 @@ class DataBase:
                 
         c = sql.connect("database.db").cursor()
         c.execute("CREATE TABLE USERS (user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,username TEXT,password TEXT,age INTEGER,gender TEXT,type TEXT,is_verified BOOL,is_private Bool,email TEXT,pp_url TEXT,is_from_oauth BOOL)")
-        c.execute("CREATE TABLE POSTS (post_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,header TEXT,anon_votes BOOL,archived BOOL,publication_type TEXT)")
+        c.execute("CREATE TABLE POSTS (post_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,header TEXT,anon_votes BOOL,archived BOOL,publication_type TEXT,post_date DATETIME)")
         c.execute("CREATE TABLE FOLLOWERS (link_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,user_id INTEGER,follower_id INTEGER,is_request BOOL)")
         c.execute("CREATE TABLE CHOIX (choix_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix TEXT,votes INTEGER)")
         c.execute("CREATE TABLE VOTANTS (vote_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix_id INTEGER,username TEXT,voter_id INTEGER,gender TEXT)")
@@ -920,3 +920,9 @@ class DataBase:
             return sum([ele["votes"] for ele in tmp])
         
         
+    def get_trend(self):
+        
+        
+        with closing(self.connector.cursor()) as cursor:
+            
+            cursor.execute("SELECT * FROM POSTS ORDER BY post_date ASC")
