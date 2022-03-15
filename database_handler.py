@@ -943,16 +943,22 @@ class DataBase:
                 j = i
                 
                 
-                while j>0 and tmp[j-1]["votes"]>post["votes"]:
+                while j>0 and tmp[j-1]["votes"]<post["votes"]:
                     tmp[j] = tmp[j-1]
                     
                     j -=1
-                    
+                
+                tmp[j] = post
+                        
             
             for i in range(len(tmp)):
                 choix = [dict(row)["choix"] for row in cursor.execute("SELECT choix FROM CHOIX WHERE post_id=?",(tmp[i]["post_id"],)).fetchall()]
                 tmp[i]["choix"] = [self.unsanitize(c) for c in choix]
                 
-                tmp[i] = Post(self.unsanitize(tmp[i]["header"]),tmp[i]["choix"],self.get_user_name(tmp[i]["owner_id"]),tmp[i]["owner_id"],results=self.get_results(tmp[i]["post_id"]),vote=self.has_already_voted(user_id,tmp[i]["post_id"]),id=tmp[i]["post_id"],stats=self.get_post_stats(tmp[i]["post_id"]),archive=tmp[i]["archived"],post_type=tmp[i]["publication_type"])
-            
+                
+                post = Post(self.unsanitize(tmp[i]["header"]),tmp[i]["choix"],self.get_user_name(tmp[i]["owner_id"]),tmp[i]["owner_id"],results=self.get_results(tmp[i]["post_id"]),vote=self.has_already_voted(user_id,tmp[i]["post_id"]),id=tmp[i]["post_id"],stats=self.get_post_stats(tmp[i]["post_id"]),archive=tmp[i]["archived"],post_type=tmp[i]["publication_type"])
+                post.set_votes_count(tmp[i]["votes"])
+                tmp[i] = post
+                
+                
             return tmp

@@ -21,9 +21,13 @@ from requests import get
 # csrf protection
 from flask_wtf.csrf import CSRFProtect
 
+
 #init flask app
 app = Flask(__name__)
 
+
+#disable cache limit
+app.jinja_env.cache = {}
 
 #templates auto-update
 app.config["TEMPLATES_AUTO_RELOAD"] = True
