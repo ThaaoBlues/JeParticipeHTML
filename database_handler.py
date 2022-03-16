@@ -933,7 +933,7 @@ class DataBase:
             for i in range(len(tmp)):
                 if not self.is_private(tmp[i]["owner_id"]):
                     tmp[i]["votes"] = self.get_post_votes_count(tmp[i]["post_id"])
-                    posts.append(tmp)
+                    posts.append(tmp[i])
                     
             del tmp
                     
