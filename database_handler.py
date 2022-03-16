@@ -928,37 +928,41 @@ class DataBase:
             tmp = [dict(row) for row in cursor.execute("SELECT * FROM POSTS WHERE archived=? ORDER BY post_date DESC",(False,)).fetchall()[:100]]
             
             
+            posts = []
             #add votes count and delete posts from private users
             for i in range(len(tmp)):
                 if not self.is_private(tmp[i]["owner_id"]):
                     tmp[i]["votes"] = self.get_post_votes_count(tmp[i]["post_id"])
-                else:
-                    tmp.pop(i)
+                    posts.append(tmp)
+                    
+            del tmp
+                    
+                    
             # sort by votes count
-            for i in range(len(tmp)):
+            for i in range(len(posts)):
                 
-                post = tmp[i]
+                post = posts[i]
                 
                 
                 j = i
                 
                 
-                while j>0 and tmp[j-1]["votes"]<post["votes"]:
-                    tmp[j] = tmp[j-1]
+                while j>0 and posts[j-1]["votes"]<post["votes"]:
+                    posts[j] = posts[j-1]
                     
                     j -=1
                 
-                tmp[j] = post
+                posts[j] = post
                         
             
-            for i in range(len(tmp)):
-                choix = [dict(row)["choix"] for row in cursor.execute("SELECT choix FROM CHOIX WHERE post_id=?",(tmp[i]["post_id"],)).fetchall()]
-                tmp[i]["choix"] = [self.unsanitize(c) for c in choix]
+            for i in range(len(posts)):
+                choix = [dict(row)["choix"] for row in cursor.execute("SELECT choix FROM CHOIX WHERE post_id=?",(posts[i]["post_id"],)).fetchall()]
+                posts[i]["choix"] = [self.unsanitize(c) for c in choix]
                 
                 
-                post = Post(self.unsanitize(tmp[i]["header"]),tmp[i]["choix"],self.get_user_name(tmp[i]["owner_id"]),tmp[i]["owner_id"],results=self.get_results(tmp[i]["post_id"]),vote=self.has_already_voted(user_id,tmp[i]["post_id"]),id=tmp[i]["post_id"],stats=self.get_post_stats(tmp[i]["post_id"]),archive=tmp[i]["archived"],post_type=tmp[i]["publication_type"])
-                post.set_votes_count(tmp[i]["votes"])
-                tmp[i] = post
+                post = Post(self.unsanitize(posts[i]["header"]),posts[i]["choix"],self.get_user_name(posts[i]["owner_id"]),posts[i]["owner_id"],results=self.get_results(posts[i]["post_id"]),vote=self.has_already_voted(user_id,posts[i]["post_id"]),id=posts[i]["post_id"],stats=self.get_post_stats(posts[i]["post_id"]),archive=posts[i]["archived"],post_type=posts[i]["publication_type"])
+                post.set_votes_count(posts[i]["votes"])
+                posts[i] = post
                 
                 
-            return tmp
+            return posts
