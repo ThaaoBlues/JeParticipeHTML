@@ -266,7 +266,6 @@ class DataBase:
             
             #fetchall to dict
             users = [dict(row) for row in users]
-            print(users)
             
             for i in range(len(users)):
                 users[i]["followers"] = len(cursor.execute("SELECT follower_id FROM FOLLOWERS WHERE user_id=?",(users[i]["user_id"],)).fetchall())
@@ -966,3 +965,10 @@ class DataBase:
                 
                 
             return posts
+        
+        
+    def is_follow_request(self,user_id:int,follower_id:int)->bool:
+        
+        with closing(self.connector.cursor()) as cursor:
+            
+            return dict(cursor.execute("SELECT is_request FROM FOLLOWERS WHERE user_id=? AND follower_id=?",(user_id,follower_id)).fetchone())["is_request"]

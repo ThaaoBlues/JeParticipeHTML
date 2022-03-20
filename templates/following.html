@@ -35,12 +35,19 @@
                         <i class="bi bi-flag-fill ml-2" style = "color:blue;"></i>
                     {%endif%}
                     
+                    {%if profil["is_request"]%}
+                    <div class="float-end">
+                        <form onSubmit="submit_form({user_id:{{profil['user_id']}} },'action/unfollow');return false">
+                            <button class="btn btn-warning" type="submit">Annuler la demander d'abonnement</button>
+                        </form>
+                    </div>
+                    {%else%}
                     <div class="float-end">
                         <form onSubmit="submit_form({user_id:{{profil['user_id']}} },'action/unfollow');return false">
                             <button class="btn btn-danger" type="submit">Se désabonner</button>
                         </form>
-                    
                     </div>
+                    {%endif%}
                 </h4>
 
             </div>

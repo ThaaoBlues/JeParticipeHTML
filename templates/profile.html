@@ -16,22 +16,27 @@
         
         <div class="mx-3 mb-3 d-flex">
 
-          <img  class="img-fluid float-start rounded" style="width:auto; height:auto; max-width: 200px;max-height:200px;" src="{{pp_url}}">
-          <h1 style="margin-top: 40px;" class="ms-3">{{target_username}}</h1>
+          <img  class="img-fluid float-start rounded" style="width:auto; height:auto; max-width: 200px;max-height:200px;" src="{{profile['pp_url']}}">
+          <h1 style="margin-top: 40px;" class="ms-3">{{profile["username"]}}</h1>
 
 
         </div>
 
         <div class="row mt-5 text-center">
             
-          <form onSubmit="submit_form({user_id:{{user_id}}},'action/{%if not is_following%}follow{%else%}unfollow{%endif%}');return false">
-            {%if not is_following%}
+          <form onSubmit="submit_form({user_id:{{profile['user_id']}}},'action/{%if profile['follow_state'] == 'not_following'%}follow{%else%}unfollow{%endif%}');return false">
+            {%if profile['follow_state'] == 'not_following'%}
               <div class="">
                 <input type="submit" value="S'abonner" class="btn btn-success">
               </div>
-            {%else%}
+            {%elif  profile['follow_state'] == 'following'%}
               <div class="">
                 <input type="submit" value="Se désabonner" class="btn btn-danger">
+              </div>
+
+            {%elif  profile['follow_state'] == 'request'%}
+              <div class="">
+                <input type="submit" value="Annuler la demande d'abonnement" class="btn btn-warning">
               </div>
             {%endif%}
 
@@ -44,11 +49,11 @@
 
 
         <div class="row mt-4 mx-3">
-          <h4 class="mb-3">{{posts_count}} publication(s).</h4>
+          <h4 class="mb-3">{{profile["post_count"]}} publication(s).</h4>
 
           <div class="border">
             <div class="mx-2 text-break mt-2">
-              {{ md | safe }}
+              {{ profile["markdown"] | safe }}
             </div>
           </div>
         </div>

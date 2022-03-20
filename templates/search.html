@@ -40,8 +40,11 @@
             <button class="btn btn-success mt-2" type="submit">S'abonner</button>
 
         {%else%}
+          {%if profil["is_request"]%}
+            <button class="btn btn-warning" type="submit">Annuler la demander d'abonnement</button>
+          {%else%}
             <button class="btn btn-danger mt-2" type="submit">Se désabonner</button>
-
+          {%endif%}
         {%endif%}
       
 

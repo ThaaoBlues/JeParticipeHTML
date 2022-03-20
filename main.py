@@ -395,6 +395,10 @@ def recherche():
         profils = db.match_users(req)
         
         error = profils == []
+        
+        for p in profils:
+            if p["user_id"] in following:
+                p["is_request"] = db.is_follow_request(p["user_id"],current_user.id)
 
         return render_template("search.html",following = following,profils=profils,error=error,username=current_user.name,user_agent=str(request.user_agent))
     else:
@@ -740,16 +744,34 @@ def profil():
 
     
     if (user_id != None) and (db.user_exists(user_id)):
+                    
+        profile = {}
+        
         # generate html from markdown
         with open(f"static/users_profile_md/{user_id}.md","r") as f:
             
-            md = markdown(f.read(),output_format="html")
+            profile["markdown"] = markdown(f.read(),output_format="html")
             f.close()
         # sanitize generated html
-        md = Sanitizer().sanitize(md)
-
+        profile["markdown"] = Sanitizer().sanitize(profile["markdown"])
         
-        return render_template("profile.html",md=md,username=current_user.name,user_id=user_id,is_following=(user_id in db.get_following(current_user.id)),target_username=db.get_user_name(user_id),posts_count=db.get_posts_count(user_id),pp_url=db.get_pp_url(user_id),user_agent=str(request.user_agent))
+        
+        if (user_id in db.get_following(current_user.id)):
+            if (not db.is_follow_request(user_id,current_user.id)):
+                profile["follow_state"] = "following"
+            else:
+                profile["follow_state"] = "request"
+            
+        else:
+            profile["follow_state"] = "not_following"
+        
+        profile["user_id"] = user_id
+        profile["username"] = db.get_user_name(user_id)
+        profile["post_count"] = db.get_posts_count(user_id)
+        profile["pp_url"] = db.get_pp_url(user_id)
+        
+        
+        return render_template("profile.html",username=current_user.name,user_agent=str(request.user_agent),profile=profile)
     else:
         return render_template("page_message.html",message="Cet utilisateur n'existe pas :/",texte_btn="Revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
 
@@ -852,6 +874,9 @@ def mes_abonnements():
     following_id.pop(following_id.index(current_user.id))
 
     profils = [db.get_user_info(user_id) for user_id in following_id]
+    
+    for p in profils:
+        p["is_request"] = db.is_follow_request(p["user_id"],current_user.id)
     
     return render_template("following.html",profils=profils,following=db.get_following(current_user.id),username=current_user.name,user_agent=str(request.user_agent))
     
