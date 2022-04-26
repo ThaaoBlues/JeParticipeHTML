@@ -15,19 +15,23 @@
       <div class="container" style=" min-width: {%if user_agent == "JeParticipe-app"%}300px;{%else%}350px;{%endif%}">          
         
         <div class="row mx-3 mt-3">
-            <label for="n_tirage">{{suggestions["usernames"]|length}} suggestion(s).</label>
+            <form>
+                <label for="n_tirage">{{suggestions["usernames"]|length}} suggestion(s).</label>
+                <button class="btn btn-success ms-4">Télécharger au format CSV (à venir)</button>
+            </form>
+
         </div>
 
         <div class="row mx-3 mt-3">
             <input type="text" onkeyup="sort_table();" class="input" id="keywords_input" placeholder="Entrez ici des mots clé"/>
         </div>
-        <div class="row mx-1 mt-3" style="min-width: 100%;">
+        <div class="row mx-1 mt-3" style="">
 
         <table class="table" id="suggestions_table" style="color: blueviolet;">
             <thead>
               <tr>
                 <th scope="col" style="color: black;">#</th>
-                <th scope="col" style="color: black;">courriel</th>
+                <th scope="col" style="color: black;">nom d'utilisateur/courriel</th>
                 <th scope="col" style="color: black;">suggestion</th>
               </tr>
             </thead>
