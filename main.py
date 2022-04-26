@@ -426,13 +426,16 @@ def sondage_form():
             return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/home")
 
         
-        if (choix != None) and (post_header != None) and (anon_votes != None) and (post_type in db.publication_types):
+        if (choix != None or post_type == "suggestions") and (post_header != None) and (anon_votes != None) and (post_type in db.publication_types):
             
             #remove any empty string
             choix = list(filter(None, choix.split("/")))
             # tries to not transmit XSS
             choix = [db.sanitize(c,text=True) for c in choix]
             choix = choix[:10] if len(choix) > 10 else choix
+            
+            if post_type == "suggestions":
+                choix = [db.sanitize("[SUGGESTION FLAG]",text=True)]
             
             post_header = post_header[:1500] if len(post_header) > 1500 else post_header
             
@@ -576,7 +579,10 @@ def stats():
                     participants = db.get_tirage_participants(post_id)
                     
                     return render_template("tirage_stats.html",username=current_user.name,participants = participants,user_agent=str(request.user_agent))
-                
+                case "suggestions":
+                    
+                    suggestions = db.get_suggestions(post_id)
+                    return render_template("suggestions_stats.html",username=current_user.name,suggestions = suggestions,user_agent=str(request.user_agent))
                 case _ :
                     return jsonify({"erreur":"type de publication non supporté."})
             
@@ -926,9 +932,10 @@ def action(action):
                 except ValueError:
                     return jsonify({"erreur","requête mal formée"})
                 
-                if (db.choix_exists(author_id,post_id,choix)):
+                is_suggestions = db.get_post(post_id)["publication_type"] == "suggestions"
+                if (db.choix_exists(author_id,post_id,choix)) or is_suggestions:
                     
-                    db.add_vote(current_user.id,author_id,choix,post_id,current_user.gender)
+                    db.add_vote(current_user.id,author_id,choix,post_id,current_user.gender,is_suggestions=is_suggestions)
                     return jsonify({"succes":"requête validée"})
                 
                 else:

@@ -27,6 +27,7 @@
           <select id="type_select" name="type de publication" class="form-control-primary form-control-sm" onchange="publication_type_changed(this);" required>
               <option>Sondage</option>
               <option>Tirage au sort</option>
+              <option>Suggestions</option>
           </select>
       
       </div>
@@ -77,6 +78,13 @@
             document.getElementById("choix").setAttribute("placeholder","Texte du bouton participer au tirage au sort");
             document.getElementById("publication_type").setAttribute("value","tirage");
     
+            break;
+
+
+          case "Suggestions":
+            document.getElementById("choix").setAttribute("hidden","true");
+            document.getElementById("choix").required = false;
+            document.getElementById("publication_type").setAttribute("value","suggestions");
             break;
     
           default:

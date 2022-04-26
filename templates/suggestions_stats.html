@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+{%extends "blueprint.html"%}
+
+<body>
+    
+    {%block navbar_nologin%}
+    {%endblock%}
+
+
+    {%block chronologie%}
+    <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4 container", style="border: 1px;">
+    
+      <div class="container" style="width: auto; min-width: {%if user_agent == "JeParticipe-app"%}300px;{%else%}350px;{%endif%}">          
+        
+        <div class="row mx-3 mt-3">
+            <label for="n_tirage">{{suggestions["usernames"]|length}} suggestion(s).</label>
+        </div>
+
+        <ul>
+            {%for ele in suggestions["usernames"]%}
+                <li>{{ele}} :: {{suggestions["suggestions"][loop.index0]}}</li>
+            {%endfor%}
+        </ul>
+
+
+    {%endblock%}
+
+
+</body>
+
+
+</html>

@@ -265,9 +265,12 @@
     alert("L'url de partage de la publication a été copiée dans votre presse papier ;)");
   }
 
-    function submit_form(dict,url){
+  function submit_form(dict,url){
 
       var csrf_token = "{{ csrf_token() }}";
+      if(dict["choix"].localeCompare('[SUGGESTIONS FLAG]') == 1){
+        dict["choix"] = document.getElementById(dict["choix"].replace("[SUGGESTIONS FLAG]=","")).value;
+      }
 
       var xhr = new XMLHttpRequest();
       xhr.open("POST", url, true);

@@ -41,20 +41,36 @@
                   <a class="btn btn-primary mt-2" style="width:100%;" id="btn">Participation enregistrée !</a>
                   <label for="btn">Seule la première participation est vraiment enregistrée.</label>
 
-                {%else%}
+                {%elif post.type == "sondage"%}
                   {%for choix in post.choix%}
 
                     <a class="btn btn-primary mt-2" style="width:100%;">{{choix}} : {{post.resultats[choix]}}% des votes.</a>
                   {%endfor%}
 
+                {%elif post.type == "suggestions"%}
+
+                  <input type="text" class="form-control" value="Vous avez déjà suggéré votre opinion :D" disabled/>
+
                 {%endif%}
               {%elif post.anon_votes%}
+
+                  {%if post.type == "suggestions"%}
+                  <input type="text" class="form-control" id="suggestions_input" placeholder="écrivez ici votre réponse :D" required/>
+
+                  <form onsubmit="submit_form({author_id:{{post.author_id}},post_id:{{post.id}},choix:'[SUGGESTIONS FLAG]'},'/partage');return false">
+                    <button class="btn btn-primary mt-2" style="width:100%;" type="submit" >Répondre</button>
+                  </form>
+                  {%else%}
+
+
                   {%for choix in post.choix%}
 
                   <form onSubmit="submit_form({author_id:{{post.author_id}},post_id:{{post.id}} ,choix:'{{choix}}'},'/partage');return false">
                     <button class="btn btn-primary mt-2" style="width:100%;" type="submit">{{choix}}</button>
                   </form>
                   {%endfor%}
+
+                  {%endif%}
               {%else%}
                 {%for choix in post.choix%}
                   <button class="btn btn-primary mt-2" style="width: 100%;" onclick="alert('L\'auteur de cette publication a interdit le vote d\'utilisateurs non enregistrés ;)')">{{choix}}</button>
@@ -82,7 +98,7 @@
   function submit_form(dict,url){
 
     
-    {%if post.type == "tirage"%}
+    {%if post.type in ["tirage","suggestions"]%}
       let email = null;
       while(email == null){
         email = prompt("Entrez votre adresse email ici, elle sera uniquement utilisée pour vous contacter si vous gangez ;)");
@@ -101,6 +117,10 @@
       }
       dict["email"] = email;
     {%endif%}
+
+    if(dict["choix"].localeCompare('[SUGGESTIONS FLAG]') == 1){
+      dict["choix"] = document.getElementById("suggestions_input").value;
+    }
 
     var csrf_token = "{{ csrf_token() }}";
 

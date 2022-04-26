@@ -17,7 +17,7 @@ class DataBase:
     def __init__(self) -> None:
         self.users_types = ["entreprise","institution publique","utilisateur"]
         self.gender_types = ["homme","femme","genre_fluide","non_genre","autre","personne_morale"]
-        self.publication_types = ["sondage","tirage"]
+        self.publication_types = ["sondage","tirage","suggestions"]
 
                
         if not path.exists("static"):
@@ -51,15 +51,35 @@ class DataBase:
 
             self.connector.commit()
         
-    def add_vote(self,user_id:int,owner_id:int,choix:str,post_id:int,user_gender:str,email="anonyme",anon_vote=False):
+    def add_vote(self,user_id:int,owner_id:int,choix:str,post_id:int,user_gender:str,email="anonyme",anon_vote=False,is_suggestions=False):
         
         with closing(self.connector.cursor()) as cursor:
-            # to compare with saitized text
+            # to compare with sanitized text
             choix = self.sanitize(choix,text=True)
+            
 
+            if is_suggestions == True:
+                
+                choix_id = dict(cursor.execute(f"SELECT choix_id FROM CHOIX WHERE owner_id = ? AND post_id = ?",(owner_id,post_id)).fetchall()[0])["choix_id"]
+
+                if anon_vote:
+                    username = self.sanitize(email,text=True)
+                    user_id = 1
+                    user_gender = "autre"
+                    cursor.execute(f"INSERT INTO VOTANTS (owner_id,post_id,choix_id,username,voter_id,gender) values(?,?,?,?,?,?)",(owner_id,post_id,choix_id,username,user_id,user_gender))
+                else:
+                    username = self.sanitize(self.get_user_name(user_id),text=True)
+                    cursor.execute(f"INSERT INTO VOTANTS (owner_id,post_id,choix_id,username,voter_id,gender) values(?,?,?,?,?,?)",(owner_id,post_id,choix_id,username,user_id,user_gender))
+
+                cursor.execute("INSERT INTO SUGGESTIONS (post_id,owner_id,user_id,sg_text) VALUES(?,?,?,?)",(post_id,owner_id,user_id,choix))
+                cursor.execute(f"UPDATE CHOIX SET votes = votes + 1 WHERE owner_id=? AND post_id=?",(owner_id,post_id))
+                self.connector.commit()
+                
+                return
+            
             if anon_vote:
 
-                cursor.execute(f"UPDATE CHOIX SET votes = votes + 1 WHERE owner_id=? AND post_id=? AND choix=?",(owner_id,post_id,choix))
+                cursor.execute(f"UPDATE CHOIX SET votes = votes + 1 WHERE owner_id=? AND post_id=? AND choix=?",(owner_id,post_id,choix if not is_suggestions else "suggestions"))
 
 
                 choix_id = dict(cursor.execute(f"SELECT choix_id FROM CHOIX WHERE owner_id = ? AND post_id = ? AND choix = ?",(owner_id,post_id,choix)).fetchall()[0])["choix_id"]
@@ -366,6 +386,7 @@ class DataBase:
             cursor.execute("DELETE FROM POSTS WHERE post_id=? AND owner_id=?",(post_id,user_id))
             cursor.execute("DELETE FROM VOTANTS WHERE post_id=? AND owner_id=?",(post_id,user_id))
             cursor.execute("DELETE FROM CHOIX WHERE post_id=? AND owner_id=?",(post_id,user_id))
+            cursor.execute("DELETE FROM SUGGESTIONS WHERE post_id=?",(post_id,))
             self.connector.commit()
         
     def register_user(self,username="",email="",gender="",password="",type="utilisateur",franceconnect=False,init=False,pp_url = "https://images.assetsdelivery.com/compings_v2/yupiramos/yupiramos1706/yupiramos170614990.jpg",is_from_oauth=False):
@@ -456,6 +477,7 @@ class DataBase:
 
     def has_already_voted(self,user_id:int,post_id:int):
         with closing(self.connector.cursor()) as cursor:
+            
             return True if cursor.execute("SELECT 1 FROM VOTANTS WHERE post_id = ? and voter_id = ?",(post_id,user_id)).fetchall() != [] else False
       
     def anon_votes(self,post_id:int)->bool:
@@ -482,8 +504,10 @@ class DataBase:
         c.execute("CREATE TABLE FOLLOWERS (link_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,user_id INTEGER,follower_id INTEGER,is_request BOOL)")
         c.execute("CREATE TABLE CHOIX (choix_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix TEXT,votes INTEGER)")
         c.execute("CREATE TABLE VOTANTS (vote_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,owner_id INTEGER,post_id INTEGER,choix_id INTEGER,username TEXT,voter_id INTEGER,gender TEXT)")
+        c.execute("CREATE TABLE SUGGESTIONS (sg_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, post_id INTEGER NOT NULL,owner_id INTERGER NOT NULL, user_id INTEGER NOT NULL, sg_text TEXT )")
         c.close()
-                        
+        
+        
     def sanitize(self,string:str,text=False)->str:
         """sanitize and remove all special chars from a string
 
@@ -900,7 +924,6 @@ class DataBase:
             cursor.execute("UPDATE USERS SET password=? WHERE user_id=?",(password,user_id))
             self.connector.commit()
             
-            
     def update_gender(self,user_id:int,gender:str):
                 
         with closing(self.connector.cursor()) as cursor:
@@ -908,16 +931,13 @@ class DataBase:
             cursor.execute("UPDATE USERS SET gender=? WHERE user_id=?",(gender,user_id))
             self.connector.commit()
             
-            
-            
     def get_post_votes_count(self,post_id:int)->int:
         
         with closing(self.connector.cursor()) as cursor:
             
             tmp = [dict(row) for row in cursor.execute("SELECT votes FROM CHOIX WHERE post_id=?",(post_id,)).fetchall()]
             
-            return sum([ele["votes"] for ele in tmp])
-        
+            return sum([ele["votes"] for ele in tmp])    
         
     def get_trend(self,user_id:int):
         
@@ -965,10 +985,22 @@ class DataBase:
                 
                 
             return posts
-        
-        
+              
     def is_follow_request(self,user_id:int,follower_id:int)->bool:
         
         with closing(self.connector.cursor()) as cursor:
             
             return dict(cursor.execute("SELECT is_request FROM FOLLOWERS WHERE user_id=? AND follower_id=?",(user_id,follower_id)).fetchone())["is_request"]
+        
+        
+        
+    def get_suggestions(self,post_id:int)->dict:
+        
+        with closing(self.connector.cursor()) as cursor:
+            
+            suggestions = [self.unsanitize(dict(row)["sg_text"]) for row in cursor.execute("SELECT sg_text FROM SUGGESTIONS WHERE post_id=?",(post_id,)).fetchall()]
+            
+            usernames = [self.unsanitize(dict(r)["username"]) for r in cursor.execute("SELECT username FROM VOTANTS WHERE post_id=?",(post_id,)).fetchall()]
+
+            
+            return {"usernames":usernames,"suggestions":suggestions}

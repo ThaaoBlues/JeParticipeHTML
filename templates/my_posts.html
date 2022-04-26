@@ -42,14 +42,30 @@
               <ul class="list-group list-group-flush">
 
                 
-                  {%if post.type=="tirage"%}
-                  <a class="btn btn-primary mt-2" style="width:100%;">Vous avez déjà partitipé à ce tirage au sort !</a>
+                {%if (not post.vote) and (post.type == "suggestions")%}
+                <input type="text" class="form-control" id="suggestions_input{{loop.index0}}" placeholder="écrivez ici votre réponse :D" required/>
 
-                {%else%}
-                {%for choix in post.choix%}
-                    <a class="btn btn-primary mt-2" style="width:100%;">{{choix}} : {{post.resultats[choix]}}% des votes.</a>
-                {%endfor%}                
+                <form onsubmit="submit_form({author_id:{{post.author_id}},post_id:{{post.id}},choix:'[SUGGESTIONS FLAG]=suggestions_input{{loop.index0}}'},'action/add_vote');return false">
+                  <button class="btn btn-primary mt-2" style="width:100%;" type="submit" >Répondre</button>
+                </form>
+                {%elif (post.vote) and (post.type == "suggestions")%}
+                  <input type="text" class="form-control" value="Vous avez déjà suggéré votre opinion :D" disabled/>
                 {%endif%}
+
+
+                {%for choix in post.choix%}
+                  {%if (post.vote) and (post.type=="sondage")%}
+                    <a class="btn btn-primary mt-2" style="width:100%;">{{choix}} : {{post.resultats[choix]}}% des votes.</a>
+                  {%elif (post.vote) and (post.type=="tirage")%}
+                    <a class="btn btn-primary mt-2" style="width:100%;">Vous avez déjà partitipé à ce tirage au sort !</a>
+                  
+                  
+                  {%elif post.type != "suggestions"%}
+                  <form onSubmit="submit_form({author_id:{{post.author_id}},post_id:{{post.id}} ,choix:'{{choix}}'},'action/add_vote');return false">
+                    <button class="btn btn-primary mt-2" style="width:100%;" type="submit">{{choix}}</button>
+                  </form>
+                  {%endif%}
+                {%endfor%}
 
               </ul>
             </div>
