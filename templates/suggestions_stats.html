@@ -10,25 +10,73 @@
 
 
     {%block chronologie%}
-    <div id="conteneur_chronologique" class="d-flex justify-content-center mt-4 container", style="border: 1px;">
+    <div id="conteneur_chronologique" class="d-flex mt-4 container", style="border: 1px;">
     
-      <div class="container" style="width: auto; min-width: {%if user_agent == "JeParticipe-app"%}300px;{%else%}350px;{%endif%}">          
+      <div class="container" style=" min-width: {%if user_agent == "JeParticipe-app"%}300px;{%else%}350px;{%endif%}">          
         
         <div class="row mx-3 mt-3">
             <label for="n_tirage">{{suggestions["usernames"]|length}} suggestion(s).</label>
         </div>
 
-        <ul>
-            {%for ele in suggestions["usernames"]%}
-                <li>{{ele}} :: {{suggestions["suggestions"][loop.index0]}}</li>
-            {%endfor%}
-        </ul>
+        <div class="row mx-3 mt-3">
+            <input type="text" onkeyup="sort_table();" class="input" id="keywords_input" placeholder="Entrez ici des mots clé"/>
+        </div>
+        <div class="row mx-1 mt-3" style="min-width: 100%;">
 
+        <table class="table" id="suggestions_table" style="color: blueviolet;">
+            <thead>
+              <tr>
+                <th scope="col" style="color: black;">#</th>
+                <th scope="col" style="color: black;">courriel</th>
+                <th scope="col" style="color: black;">suggestion</th>
+              </tr>
+            </thead>
+            <tbody>                
+            {%for ele in suggestions["usernames"]%}
+
+              <tr>
+
+                <th scope="row" style="color: black;">{{loop.index0}}</th>
+                <td style="color: black;">{{ele}}</td>
+                <td class="text-break" style="color: black;">{{suggestions["suggestions"][loop.index0]}}</td>
+              </tr>
+
+            {%endfor%}
+            </tbody>
+        </table>
+        </div>
 
     {%endblock%}
 
 
 </body>
+
+
+{%block scripts%}
+<script>
+    function sort_table() {
+      // Declare variables
+      var input, filter, table, tr, td, i, txtValue;
+      input = document.getElementById("keywords_input");
+      filter = input.value.toUpperCase();
+      table = document.getElementById("suggestions_table");
+      tr = table.getElementsByTagName("tr");
+    
+      // Loop through all table rows, and hide those who don't match the search query
+      for (i = 0; i < tr.length; i++) {
+        td = tr[i].getElementsByTagName("td")[1];
+        if (td) {
+          txtValue = td.textContent || td.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            tr[i].style.display = "";
+          } else {
+            tr[i].style.display = "none";
+          }
+        }
+      }
+    }
+    </script>
+{%endblock%}
 
 
 </html>
