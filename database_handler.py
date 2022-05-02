@@ -2,13 +2,16 @@ from random import randint
 from re import T, sub
 from passlib.handlers.sha2_crypt import sha256_crypt
 from post import Post
-from difflib import SequenceMatcher
 from os import path
 from base64 import b64decode, b64encode
 import sqlite3 as sql
 from os import mkdir,remove
+
+# for csv downloads
 from csv import DictWriter
 from zipfile import ZipFile
+
+# for auto closing cursors
 from contextlib import closing
 
 

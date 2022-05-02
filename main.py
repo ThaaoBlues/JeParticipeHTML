@@ -21,6 +21,7 @@ import constants
 
 # csrf protection
 from flask_wtf.csrf import CSRFProtect
+from metrics import FlaskMetrics
 
 
 #init flask app
@@ -34,6 +35,7 @@ app.jinja_env.cache = {}
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 db = database_handler.DataBase()
+metrics = FlaskMetrics(max_rows=10)
 
 app.config["DOWNLOAD_FOLDER"] = "./static/downloads"
 app.config['CUSTOM_LOGO_PATH'] = "./logo"
@@ -125,9 +127,10 @@ def user_loader(user_id):
 def unauthorized_handler():
     return redirect(url_for("login"))
 
+
 @app.route("/")
 def accueil():
-    
+    metrics.store_visit(url="/",ip_addr=request.remote_addr)
     return redirect(url_for("login"))
 
 
@@ -138,6 +141,9 @@ def a_propos():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    
+    metrics.store_visit(url="/login",ip_addr=request.remote_addr)
+    
     if request.method == 'GET':
         
         if current_user.is_authenticated :
