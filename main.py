@@ -1,3 +1,4 @@
+import re
 from itsdangerous import json
 from post import Post
 from passlib.handlers.sha2_crypt import sha256_crypt
@@ -130,7 +131,7 @@ def unauthorized_handler():
 
 @app.route("/")
 def accueil():
-    metrics.store_visit(url="/",ip_addr=request.remote_addr)
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
     return redirect(url_for("login"))
 
 
@@ -141,9 +142,7 @@ def a_propos():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    
-    metrics.store_visit(url="/login",ip_addr=request.remote_addr)
-    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
     if request.method == 'GET':
         
         if current_user.is_authenticated :
@@ -187,7 +186,8 @@ def login():
 
 @app.route("/google_login",methods=["GET","POST"])
 def google_login():
-    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
+
     
     if not google.authorized:
         return redirect(url_for("google.login"))
@@ -239,7 +239,8 @@ def google_login():
 @app.route("/discord_login",methods=["GET","POST"])
 def discord_login():
     
-    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
+
     if not discord.authorized:
         return redirect(url_for("discord.login"))
     
@@ -292,7 +293,7 @@ def discord_login():
 
 @app.route('/partage',methods=["GET","POST"])
 def shared():
-    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
     """penser à metre l'arg vote dans le script dans chaque template et mettre la condition de vote dans le template share"""
     
     if request.method == "GET":
@@ -374,7 +375,7 @@ def shared():
 @app.route('/home',methods=['GET'])
 @login_required
 def home():
-    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
     # prevent user from spamming requests
     while True:
         try:
@@ -391,7 +392,7 @@ def home():
 @app.route("/recherche",methods=["GET"])
 @login_required
 def recherche():    
-    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)  
     # get request
     if request.args.get("req",default=None) != None:
         req = db.sanitize(request.args.get("req"))
@@ -415,7 +416,7 @@ def recherche():
 @app.route("/creer_publication",methods=["GET","POST"])
 @login_required
 def sondage_form():
-    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages) 
     
     if request.method == "GET":
         return render_template("create_post.html",username=current_user.name,user_agent=str(request.user_agent))
@@ -491,7 +492,7 @@ def logout():
 
 @app.route('/register',methods=["POST"])
 def register():
-    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
     
     
     if (request.form.get("username",None) != None) and (request.form.get("password",None) != None) and (request.form.get("type",default=None).lower() in db.users_types) and (request.form.get("genre",default=None).lower().replace(" ","_") in db.gender_types) and (request.form.get("email",default=None) != None):
@@ -526,7 +527,7 @@ def register():
 @app.route("/stats",methods=["GET","POST"])
 @login_required
 def stats():
-    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
     # page de stats et possibilité de delete le sondage
     
     if request.method == "GET":
@@ -630,6 +631,8 @@ def stats():
 @app.route("/mes_publications",methods=["GET","POST"])
 @login_required
 def mes_sondages():
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
+    
     sondages = db.generate_tl(current_user.id,self_only=True)
         
     return render_template("my_posts.html",username = current_user.name,sondages = sondages,user_agent=str(request.user_agent))
@@ -637,7 +640,7 @@ def mes_sondages():
 @app.route("/parametres_publication",methods=["GET","POST"])
 @login_required
 def parametres_sondage():
-    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
     
     if request.method == "GET":
         
@@ -721,6 +724,9 @@ def parametres_sondage():
 @app.route("/supprimer_publication",methods=["POST"])
 @login_required
 def supprimer_sondage():
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
+    
+    
     # post pour supprimer le sondage
     if request.method == "POST":
         
@@ -748,7 +754,7 @@ def supprimer_sondage():
 @app.route("/profil",methods=["GET"])
 @login_required
 def profil():
-    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
     try:
         user_id = request.args.get("user_id",default=None,type=int)
     except ValueError:
@@ -792,65 +798,66 @@ def profil():
 @login_required
 def edit_profil():
     
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
+
+    if request.method == "GET":
+        # generate html from markdown
+        with open(f"static/users_profile_md/{current_user.id}.md","r") as f:
+            md = f.read()
+            f.close()
+            
+        return render_template("profile_settings.html",md=md,username=current_user.name,profil=db.get_user_info(current_user.id),user_agent=str(request.user_agent))
     
-        if request.method == "GET":
-            # generate html from markdown
-            with open(f"static/users_profile_md/{current_user.id}.md","r") as f:
-                md = f.read()
-                f.close()
-                
-            return render_template("profile_settings.html",md=md,username=current_user.name,profil=db.get_user_info(current_user.id),user_agent=str(request.user_agent))
-        
-        elif request.method == "POST":
-            
-                
-            # generate html from markdown
-            with open(f"static/users_profile_md/{current_user.id}.md","w") as f:
-                md = request.form.get("profile_desc",default="",type=str)
-                f.write(md.replace("\n",""))
-                f.close()
+    elif request.method == "POST":
         
             
-            # change is an user is private or not, a private user have a follow request section
-            try:
-                status = request.form.get("is_private",default=False,type=bool)
-            except ValueError:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/edit_profil",user_agent=str(request.user_agent))
-            db.set_private_status(current_user.id,status)
-            
-            email = request.form.get("email",default=None)
-            
-            if (db.email_exists(email)) and (not db.get_email(current_user.id) == email) :
-                return render_template("page_message.html",message="Un compte utilise déjà cette adresse email :/ Ne vous inquiétez pas, vous avez assez d'imagination pour en trouver un autre ;)",texte_btn="Revenir en arrière",lien="/edit_profil",user_agent=str(request.user_agent))
+        # generate html from markdown
+        with open(f"static/users_profile_md/{current_user.id}.md","w") as f:
+            md = request.form.get("profile_desc",default="",type=str)
+            f.write(md.replace("\n",""))
+            f.close()
+    
         
-            pp_url = request.form.get("pp_url",default="https://images.assetsdelivery.com/compings_v2/yupiramos/yupiramos1706/yupiramos170614990.jpg")
-            
-            if match("https?:\/\/.*\.(jpg|jpeg|gif|png|tiff|bmp)(\?(.*))?",pp_url):
-                
-                db.set_pp_url(current_user.id,pp_url)
-            else:
-                return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/edit_profil",user_agent=str(request.user_agent))
-            
-            
-            if email:
-                db.update_email(current_user.id,email)
-            else:
-                return jsonify({"error":"no email in form"})
-            
-            
-            password = request.form.get("password",type=str,default="")
-            
-            if password != "":
-                db.update_password(current_user.id,password)
-                
-                
-            gender = request.form.get("gender",type=str,default=current_user.gender)
-            
-            if (gender != current_user.gender) and (gender in db.gender_types):
-                db.update_gender(current_user.id)
-                
+        # change is an user is private or not, a private user have a follow request section
+        try:
+            status = request.form.get("is_private",default=False,type=bool)
+        except ValueError:
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/edit_profil",user_agent=str(request.user_agent))
+        db.set_private_status(current_user.id,status)
         
-            return redirect("edit_profil")
+        email = request.form.get("email",default=None)
+        
+        if (db.email_exists(email)) and (not db.get_email(current_user.id) == email) :
+            return render_template("page_message.html",message="Un compte utilise déjà cette adresse email :/ Ne vous inquiétez pas, vous avez assez d'imagination pour en trouver un autre ;)",texte_btn="Revenir en arrière",lien="/edit_profil",user_agent=str(request.user_agent))
+    
+        pp_url = request.form.get("pp_url",default="https://images.assetsdelivery.com/compings_v2/yupiramos/yupiramos1706/yupiramos170614990.jpg")
+        
+        if match("https?:\/\/.*\.(jpg|jpeg|gif|png|tiff|bmp)(\?(.*))?",pp_url):
+            
+            db.set_pp_url(current_user.id,pp_url)
+        else:
+            return render_template("page_message.html",message="Un paramètre de votre requète a été mal-formé :/",texte_btn="Revenir à l'accueil",lien="/edit_profil",user_agent=str(request.user_agent))
+        
+        
+        if email:
+            db.update_email(current_user.id,email)
+        else:
+            return jsonify({"error":"no email in form"})
+        
+        
+        password = request.form.get("password",type=str,default="")
+        
+        if password != "":
+            db.update_password(current_user.id,password)
+            
+            
+        gender = request.form.get("gender",type=str,default=current_user.gender)
+        
+        if (gender != current_user.gender) and (gender in db.gender_types):
+            db.update_gender(current_user.id)
+            
+    
+        return redirect("edit_profil")
 
 
 @app.route("/mes_abonnes",methods=["GET"])
@@ -861,6 +868,10 @@ def mes_abonnes():
     Returns:
         [type]: [description]
     """
+    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
+    
+    
     
     followers_id = db.get_followers(current_user.id)
     
@@ -880,6 +891,10 @@ def mes_abonnements():
     Returns:
         [type]: [description]
     """
+    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
+    
+    
     
     following_id = db.get_following(current_user.id)
     
@@ -904,6 +919,9 @@ def mes_demandes():
         [type]: [description]
     """
     
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
+    
+    
     if not db.is_private(current_user.id):
         return render_template("page_message.html",message="Votre compte n'est pas en mode privé, cette section ne vous sert à rien ;)",texte_btn="revenir à l'accueil",lien="/home",user_agent=str(request.user_agent))
     else:
@@ -912,7 +930,10 @@ def mes_demandes():
 @app.route("/action/<action>",methods=["POST"])
 @login_required
 def action(action):
-            
+    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
+    
+    
     req = dict(request.get_json())
     
     match action:
@@ -1062,6 +1083,9 @@ def action(action):
 @login_required
 def tendances():
     
+    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
+    
     sondages = db.get_trend(current_user.id)
     return render_template("trends.html",username = current_user.name,sondages = sondages,user_agent=str(request.user_agent))
 
@@ -1112,6 +1136,9 @@ def app_workers(file):
 
 @app.errorhandler(404)
 def page_not_found(error):
+    
+    metrics.store_visit(url=request.full_path,ip_addr=request.remote_addr,browser=request.user_agent.browser,accept_languages=request.accept_languages)
+    
     return redirect(url_for("home"))
 
 def remove_zip(filename):
