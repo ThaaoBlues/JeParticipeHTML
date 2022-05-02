@@ -48,7 +48,7 @@ class FlaskMetrics():
                 self.clear_db()
                 
                 
-            cursor.execute("INSERT INTO METRICS (IP_ADDR,URL,BROWSER,LANGUAGE) VALUES(?,?,?,?)",(ip_addr,url,str(browser),str(accept_languages)))
+            cursor.execute("INSERT INTO METRICS (IP_ADDR,URL,BROWSER,ACCEPT_LANGUAGES) VALUES(?,?,?,?)",(ip_addr,url,str(browser),str(accept_languages)))
             self.connector.commit()
     
     
