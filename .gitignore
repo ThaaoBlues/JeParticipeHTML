@@ -5,6 +5,7 @@ static/
 *.sh
 *.php
 missing
+constants.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

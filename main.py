@@ -17,6 +17,7 @@ from flask_dance.contrib.discord import make_discord_blueprint, discord
 from json import loads
 from werkzeug import security
 from requests import get
+import constants
 
 # csrf protection
 from flask_wtf.csrf import CSRFProtect
@@ -54,8 +55,8 @@ app.secret_key = "".join(choices("1234567890°+AZERTYUIOP¨£µQSDFGHJKLM%WXCVBN
 
 
 google_blueprint = make_google_blueprint(
-    client_id="XXX",
-    client_secret="XXX",
+    client_id=constants.google["client_id"],
+    client_secret=constants.google["client_secret"],
     redirect_url="/google_login",
     authorized_url="/authorized",
     scope=["email","profile"]
@@ -63,8 +64,8 @@ google_blueprint = make_google_blueprint(
 
 
 discord_blueprint = make_discord_blueprint(
-    client_id="XXX",
-    client_secret="XXX",
+    client_id=constants.discord["client_id"],
+    client_secret=constants.discord["client_secret"],
     redirect_url="/discord_login",
     authorized_url="/authorized",
     scope=["email","identify"]
