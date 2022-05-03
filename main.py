@@ -1,5 +1,3 @@
-import re
-from itsdangerous import json
 from post import Post
 from passlib.handlers.sha2_crypt import sha256_crypt
 from flask import Flask,url_for, render_template,request,redirect,send_from_directory,jsonify
@@ -17,12 +15,15 @@ from flask_dance.contrib.google import make_google_blueprint, google
 from flask_dance.contrib.discord import make_discord_blueprint, discord
 from json import loads
 from werkzeug import security
-from requests import get
 import constants
+
+from flask_ipban import IpBan
+
 
 # csrf protection
 from flask_wtf.csrf import CSRFProtect
 from metrics import FlaskMetrics
+
 
 
 #init flask app
@@ -36,15 +37,22 @@ app.jinja_env.cache = {}
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 db = database_handler.DataBase()
-metrics = FlaskMetrics(max_rows=10)
+metrics = FlaskMetrics(max_rows=100)
 
 app.config["DOWNLOAD_FOLDER"] = "./static/downloads"
 app.config['CUSTOM_LOGO_PATH'] = "./logo"
 
 # Somewhere in webapp_example.py, before the app.run for example
-import os 
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = '1'
+from os import environ
+environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = '1'
+
+
+
+# excessive crawl protection
+
+ip_ban = IpBan(ban_seconds=3600*24*7) #one week ban
+ip_ban.init_app(app)
 
 # sessions and login manager stuff
 
